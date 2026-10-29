@@ -1,0 +1,25 @@
+<!--
+templateType: global_partial
+isAvailableForNewContent: false
+label: SW Global Site Header
+-->
+
+{# ===============================
+   Internal name: SW Site Header
+   Smithworks' SW Site Header Partial
+   Master Version: 2026.04.29.21.17
+   SW Version Note: Default header partial; see changelog.
+   Purpose: Global header partial for SW templates
+   Usage: SW Header Simple module (logo, nav, buttons, announcement bar, top bar)
+   =============================== #}
+
+{% dnd_area "sw_site_header" label="SW Header Modules — default SW Header Simple" %}
+  {% dnd_section %}
+    {% dnd_module 
+      path="../sw-modules/SW Header Simple.module",
+      label="SW Header Simple"
+    %}
+    {% end_dnd_module %}
+  {% end_dnd_section %}
+{% end_dnd_area %}
+

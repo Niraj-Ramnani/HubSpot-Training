@@ -1,0 +1,25 @@
+<!--
+templateType: global_partial
+isAvailableForNewContent: false
+label: SW Global Site Footer
+-->
+
+{# ===============================
+   Internal name: SW Site Footer
+   Smithworks' SW Site Footer Partial
+   Master Version: 2026.04.21.12.20
+   SW Version Note: Default footer partial; see changelog.
+   Purpose: Global footer partial for SW templates (uses SW Footer Simple)
+   Usage: Add footer modules to this DND area
+   =============================== #}
+
+{% dnd_area "sw_site_footer" label="SW Footer Modules - Add footer modules here" %}
+  {% dnd_section %}
+    {% dnd_module 
+      path="../sw-modules/SW Footer Simple.module",
+      label="SW Footer Simple"
+    %}
+    {% end_dnd_module %}
+  {% end_dnd_section %}
+{% end_dnd_area %}
+

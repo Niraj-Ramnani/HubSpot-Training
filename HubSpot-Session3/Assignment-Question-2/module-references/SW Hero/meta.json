@@ -1,0 +1,13 @@
+{
+  "global" : false,
+  "content_types" : [ "CASE_STUDY", "LANDING_PAGE", "SITE_PAGE", "CUSTOMER_PORTAL", "BLOG_LISTING", "BLOG_POST" ],
+  "inline_help_text" : "<a href='https://smithworks.marketing/contact'>Support</a> | <a href='https://smithworks.marketing/faqs'>Documentation</a>",
+  "css_render_options" : {
+    "async" : false
+  },
+  "host_template_types" : [ "PAGE", "BLOG_LISTING", "BLOG_POST" ],
+  "module_id" : 225139098506,
+  "label" : "SW Hero",
+  "icon" : "https://22211562.fs1.hubspotusercontent-na1.net/hubfs/22211562/meta-icons/banners.svg",
+  "is_available_for_new_content" : true
+}

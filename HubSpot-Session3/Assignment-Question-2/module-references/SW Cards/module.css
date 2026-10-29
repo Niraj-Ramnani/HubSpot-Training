@@ -1,0 +1,1128 @@
+/* ===============================
+   Smithworks' SW Cards module.css
+   SW Category: Sections
+   Master version number: 2026.09.17.13.23
+   Changelog: ../CHANGELOG.md
+   =============================== */
+
+.sw-cards,
+.sw-cards__container,
+.sw-cards__inner {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sw-cards__module-outer-root,
+.sw-cards__module-outer-root.smithworks-module-outer-root {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+.sw-cards__module-outer-bg,
+.sw-cards__module-outer-bg.smithworks-module-outer-bg {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Full-bleed paint stays within the outer root (no 100vw — avoids horizontal page scroll). */
+.sw-cards__module-outer-root--full-bleed .sw-cards__module-outer-bg {
+  width: 100%;
+  left: 0;
+  right: 0;
+  transform: none;
+}
+
+.sw-cards__module-outer-bg-backdrop,
+.sw-cards__module-outer-bg-backdrop.smithworks-module-outer-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.sw-cards__module-outer-bg-fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  max-width: var(--outer-max-width, none);
+  height: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+.sw-cards__module-outer-bg-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--sw-cards-outer-overlay, transparent);
+  pointer-events: none;
+}
+
+/* Module Outer SVG Overlay — above Outer fill + Aurora + fill ::after scrim; below Inner / cards. */
+.sw-cards__svg-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+  display: flex;
+  opacity: calc(var(--sw-svo-opacity, 100) / 100);
+}
+
+.sw-cards__svg-overlay[data-pos="left top"] { justify-content: flex-start; align-items: flex-start; }
+.sw-cards__svg-overlay[data-pos="center top"] { justify-content: center; align-items: flex-start; }
+.sw-cards__svg-overlay[data-pos="right top"] { justify-content: flex-end; align-items: flex-start; }
+.sw-cards__svg-overlay[data-pos="left center"] { justify-content: flex-start; align-items: center; }
+.sw-cards__svg-overlay[data-pos="center center"] { justify-content: center; align-items: center; }
+.sw-cards__svg-overlay[data-pos="right center"] { justify-content: flex-end; align-items: center; }
+.sw-cards__svg-overlay[data-pos="left bottom"] { justify-content: flex-start; align-items: flex-end; }
+.sw-cards__svg-overlay[data-pos="center bottom"] { justify-content: center; align-items: flex-end; }
+.sw-cards__svg-overlay[data-pos="right bottom"] { justify-content: flex-end; align-items: flex-end; }
+
+.sw-cards__svg-overlay[data-pos="custom"] {
+  display: block;
+}
+
+.sw-cards__svg-overlay-graphic {
+  width: calc(var(--sw-svo-scale, 100) * 1%);
+  height: calc(var(--sw-svo-scale, 100) * 1%);
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.sw-cards__svg-overlay[data-pos="custom"] .sw-cards__svg-overlay-graphic {
+  position: absolute;
+  left: var(--sw-svo-left, auto);
+  right: var(--sw-svo-right, auto);
+  top: var(--sw-svo-top, auto);
+  bottom: var(--sw-svo-bottom, auto);
+}
+
+.sw-cards__svg-overlay-graphic svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.sw-cards__svg-overlay .sw-svo-shape {
+  transition: opacity 0.11s linear;
+}
+
+@media (min-width: 1200px) {
+  .sw-cards__svg-overlay.is-svo-hide-xl {
+    display: none !important;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  .sw-cards__svg-overlay.is-svo-hide-lg {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .sw-cards__svg-overlay.is-svo-hide-md {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .sw-cards__svg-overlay.is-svo-hide-sm {
+    display: none !important;
+  }
+}
+
+
+.sw-cards__module-outer-root--full-bleed .sw-cards__module-outer-bg-fill {
+  max-width: none;
+}
+
+.sw-cards__module-outer-divider-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.sw-cards__module-outer-inner,
+.sw-cards__module-outer-inner.smithworks-module-outer-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sw-cards__module-outer-inner--width-constrained {
+  max-width: var(--outer-max-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sw-cards--over-outer {
+  position: relative;
+  z-index: 1;
+}
+
+.sw-cards__container {
+  display: flex;
+  flex-direction: column;
+}
+
+.sw-cards__inner {
+  z-index: 2;
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+/* Bootstrap .row uses ±15px gutters; neutralize so full-bleed Cards cannot widen the document. */
+.sw-cards__grid.row {
+  margin-left: 0;
+  margin-right: 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sw-cards--has-bg-image .sw-cards__container,
+.sw-cards--has-bg-video .sw-cards__container {
+  overflow: hidden;
+}
+
+/* Card as link: wrapper for entire card when Enable Card as Link is on */
+.sw-cards__card-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+/* Override global theme link styles so card content does NOT look like a link.
+   Only the card wrapper is clickable; inner text (headings, description) should
+   retain normal appearance. Links inside the content keep theme styling. */
+.sw-cards a.sw-cards__card-link,
+.sw-cards a.sw-cards__card-link:hover,
+.sw-cards a.sw-cards__card-link:active,
+.sw-cards a.sw-cards__card-link:focus,
+.sw-cards a.sw-cards__card-link:visited {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+/* Reset any theme rules that style content inside links (e.g. a *, a h1).
+   Exclude .sw-cards__button so it keeps theme button colors (e.g. white on primary). */
+.sw-cards a.sw-cards__card-link .sw-cards__icon,
+.sw-cards a.sw-cards__card-link .sw-cards__image,
+.sw-cards a.sw-cards__card-link .sw-cards__svg,
+.sw-cards a.sw-cards__card-link .sw-cards__video,
+.sw-cards a.sw-cards__card-link .sw-cards__card-headings,
+.sw-cards a.sw-cards__card-link .sw-cards__card-heading,
+.sw-cards a.sw-cards__card-link .sw-cards__content {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+/* Caret styling for button arrows - matches SW Simple Hero / SW Pillar Section */
+.caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  color: currentColor;
+}
+
+.caret--right {
+  border-width: 6px 0 6px 8px;
+  border-color: transparent transparent transparent currentColor;
+  margin-left: 0.25rem;
+}
+
+/* Heading repeater (module + per-card): zero theme margin from .h1–.h6 on <p> tags (Hero parity).
+   Do NOT set padding here — Override Padding uses inline padding-top/padding-bottom. */
+.sw-cards .sw-cards__heading-item,
+.sw-cards .sw-cards__card-heading {
+  margin: 0 !important;
+}
+
+.sw-cards .sw-cards__heading-item + .sw-cards__heading-item,
+.sw-cards .sw-cards__card-heading + .sw-cards__card-heading {
+  margin-top: 0.35rem;
+}
+
+/* Module Inner background video wrapper */
+.sw-cards__video-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.sw-cards--has-bg-video .sw-cards__video-wrap video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+}
+
+.sw-cards--has-bg-video .sw-cards__video-wrap .iframe_wrapper,
+.sw-cards--has-bg-video .sw-cards__video-wrap iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  border: 0;
+  object-fit: cover;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Module Outer background video stays on the full band, outside the max-width content container. */
+.sw-cards__module-outer-root--has-bg-video .sw-cards__video-wrap--outer {
+  z-index: 1;
+}
+
+.sw-cards__module-outer-root--has-bg-video .sw-cards__video-wrap--outer video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+}
+
+.sw-cards__module-outer-root--has-bg-video .sw-cards__video-wrap--outer .iframe_wrapper,
+.sw-cards__module-outer-root--has-bg-video .sw-cards__video-wrap--outer iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  border: 0;
+  object-fit: cover;
+  transform: none;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.sw-cards__module-outer-video-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Video from files: native <video> in card media and modal */
+.sw-cards__video-file {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.sw-cards__video-file-thumbnail {
+  /* Placeholder when Video from files is used in modal and no poster is set */
+  min-height: 1px;
+}
+
+/* Slide bounce hint when auto-advance is off (left to right) */
+@keyframes sw-cards-bounce {
+  0%, 100% { transform: translateX(0); }
+  35% { transform: translateX(-12px); }
+  70% { transform: translateX(-3px); }
+}
+.sw-cards .blaze-track-container.sw-cards__bounce {
+  animation: sw-cards-bounce 0.45s ease-in-out;
+}
+
+/* Content style: override text-wrap balance for Large (text full-width) */
+.sw-content-style--no-balance {
+  text-wrap: initial;
+}
+
+
+/* --- Aurora Updates (Outer Animated, Aurora, Inner Effect, Card Effect) --- */
+.sw-cards__outer-animated-stage {
+  position: absolute;
+  left: var(--sw-cards-oa-px, 50%);
+  top: var(--sw-cards-oa-py, 50%);
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  color: var(--sw-cards-oa-color, #ca3521);
+  transform-origin: center center;
+  --sw-cards-oa-bleed: calc(
+    ((1 - var(--sw-cards-oa-cover, 1)) * 1) +
+    (var(--sw-cards-oa-cover, 1) * (abs(cos(var(--sw-cards-oa-rot, 0deg))) + abs(sin(var(--sw-cards-oa-rot, 0deg)))))
+  );
+  transform: translate(-50%, -50%)
+    rotate(var(--sw-cards-oa-rot, 0deg))
+    scale(
+      calc((var(--sw-cards-oa-sx, 100) / 100) * var(--sw-cards-oa-bleed)),
+      calc((var(--sw-cards-oa-sy, 100) / 100) * var(--sw-cards-oa-bleed))
+    );
+}
+
+.sw-cards__outer-animated-source {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sw-cards__outer-animated-stage.is-oa-live .sw-cards__outer-animated-source,
+.sw-cards__outer-animated-stage.is-oa-static .sw-cards__outer-animated-source {
+  opacity: 0;
+  z-index: 0;
+}
+
+html.hs-inline-edit .sw-cards__outer-animated-source,
+body.hs-inline-edit .sw-cards__outer-animated-source,
+.sw-cards__outer-animated-stage.is-oa-editor .sw-cards__outer-animated-source {
+  opacity: 1;
+  z-index: 2;
+}
+
+.sw-cards__outer-animated-source svg,
+.sw-cards__outer-animated-fallback svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.sw-cards__outer-animated-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 1;
+  background: transparent;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms ease;
+}
+
+.sw-cards__outer-animated-canvas.is-idle {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.sw-cards__outer-animated-stage.is-oa-live .sw-cards__outer-animated-canvas:not(.is-idle) {
+  visibility: visible;
+  opacity: 1;
+}
+
+.sw-cards__outer-animated-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.sw-cards__outer-animated-fallback.is-hidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.sw-cards__outer-animated-source.is-recolor svg :is(path, circle, ellipse, polygon, polyline, rect, line),
+.sw-cards__outer-animated-fallback.is-recolor svg :is(path, circle, ellipse, polygon, polyline, rect, line) {
+  stroke: currentColor !important;
+}
+
+.sw-cards__outer-animated-source.is-recolor svg :is(path, circle, ellipse, polygon, polyline, rect)[fill='none'],
+.sw-cards__outer-animated-fallback.is-recolor svg :is(path, circle, ellipse, polygon, polyline, rect)[fill='none'] {
+  fill: none !important;
+}
+
+.sw-cards__outer-animated-source.is-recolor svg :is(path, circle, ellipse, polygon, polyline, rect):not([fill='none']),
+.sw-cards__outer-animated-fallback.is-recolor svg :is(path, circle, ellipse, polygon, polyline, rect):not([fill='none']) {
+  fill: currentColor !important;
+}
+
+.sw-cards__outer-aurora {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: var(--sw-outer-aurora-blend, normal);
+}
+
+.sw-cards__outer-aurora-blob {
+  position: absolute;
+  display: block;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  overflow: visible;
+  background: none;
+  pointer-events: none;
+}
+
+.sw-cards__inner-aurora {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  mix-blend-mode: var(--sw-outer-aurora-blend, normal);
+}
+
+.sw-cards.sw-cards--inner-aurora {
+  overflow: hidden;
+}
+
+.sw-cards__outer-aurora.is-aurora-motion .sw-cards__outer-aurora-blob,
+.sw-cards__inner-aurora.is-aurora-motion .sw-cards__outer-aurora-blob {
+  will-change: transform;
+}
+
+.sw-cards__outer-aurora-stamp {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: 50%;
+  background-color: rgb(var(--sw-outer-aurora-blob-rgb, 52, 59, 237));
+  opacity: calc(var(--sw-outer-aurora-stamp-alpha, 0.5) * var(--sw-outer-aurora-strength, 0.5));
+  -webkit-filter: none;
+  filter: none;
+}
+
+.sw-cards__outer-aurora:not(.is-aurora-sharp) .sw-cards__outer-aurora-stamp,
+.sw-cards__inner-aurora:not(.is-aurora-sharp) .sw-cards__outer-aurora-stamp {
+  -webkit-filter: blur(var(--sw-outer-aurora-blur, 0px));
+  filter: blur(var(--sw-outer-aurora-blur, 0px));
+}
+
+.sw-cards__outer-aurora.is-aurora-custom .sw-cards__outer-aurora-stamp,
+.sw-cards__inner-aurora.is-aurora-custom .sw-cards__outer-aurora-stamp {
+  border-radius: 0;
+  -webkit-mask-image: var(--sw-outer-aurora-svg);
+  mask-image: var(--sw-outer-aurora-svg);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center center;
+  mask-position: center center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  mask-mode: alpha;
+}
+
+.sw-cards__outer-aurora-blob--1 {
+  --sw-outer-aurora-stamp-alpha: var(--sw-outer-aurora-c1a, 0.5);
+  --sw-outer-aurora-blob-rgb: var(--sw-outer-aurora-c1, 52, 59, 237);
+  --sw-oa-dx: 22%;
+  --sw-oa-dy: 16%;
+  --sw-oa-ds: 1.16;
+  width: calc(58% * var(--sw-outer-aurora-scale, 1));
+  left: -14%;
+  top: -18%;
+}
+
+.sw-cards__outer-aurora-blob--2 {
+  --sw-outer-aurora-stamp-alpha: var(--sw-outer-aurora-c2a, 0.45);
+  --sw-outer-aurora-blob-rgb: var(--sw-outer-aurora-c2, 225, 107, 255);
+  --sw-oa-dx: -38%;
+  --sw-oa-dy: 22%;
+  --sw-oa-ds: 1.16;
+  width: calc(54% * var(--sw-outer-aurora-scale, 1));
+  right: -16%;
+  top: -8%;
+}
+
+.sw-cards__outer-aurora-blob--3 {
+  --sw-outer-aurora-stamp-alpha: var(--sw-outer-aurora-c3a, 0.4);
+  --sw-outer-aurora-blob-rgb: var(--sw-outer-aurora-c3, 220, 187, 155);
+  --sw-oa-dx: 20%;
+  --sw-oa-dy: -22%;
+  --sw-oa-ds: 1.2;
+  width: calc(62% * var(--sw-outer-aurora-scale, 1));
+  left: 20%;
+  bottom: -26%;
+}
+
+.sw-cards__outer-aurora.is-aurora-motion .sw-cards__outer-aurora-blob--1,
+.sw-cards__inner-aurora.is-aurora-motion .sw-cards__outer-aurora-blob--1 {
+  animation: sw-cards-oa-drift-x var(--sw-outer-aurora-duration, 8s) ease-in-out infinite alternate;
+}
+
+.sw-cards__outer-aurora.is-aurora-motion .sw-cards__outer-aurora-blob--1 .sw-cards__outer-aurora-stamp,
+.sw-cards__inner-aurora.is-aurora-motion .sw-cards__outer-aurora-blob--1 .sw-cards__outer-aurora-stamp {
+  animation: sw-cards-oa-drift-y calc(var(--sw-outer-aurora-duration, 8s) * 1.37) ease-in-out infinite alternate;
+}
+
+.sw-cards__outer-aurora.is-aurora-motion .sw-cards__outer-aurora-blob--2,
+.sw-cards__inner-aurora.is-aurora-motion .sw-cards__outer-aurora-blob--2 {
+  animation: sw-cards-oa-drift-x calc(var(--sw-outer-aurora-duration, 8s) * 1.12) ease-in-out infinite alternate;
+}
+
+.sw-cards__outer-aurora.is-aurora-motion .sw-cards__outer-aurora-blob--2 .sw-cards__outer-aurora-stamp,
+.sw-cards__inner-aurora.is-aurora-motion .sw-cards__outer-aurora-blob--2 .sw-cards__outer-aurora-stamp {
+  animation: sw-cards-oa-drift-y calc(var(--sw-outer-aurora-duration, 8s) * 1.55) ease-in-out infinite alternate;
+}
+
+.sw-cards__outer-aurora.is-aurora-motion .sw-cards__outer-aurora-blob--3,
+.sw-cards__inner-aurora.is-aurora-motion .sw-cards__outer-aurora-blob--3 {
+  animation: sw-cards-oa-drift-x calc(var(--sw-outer-aurora-duration, 8s) * 0.88) ease-in-out infinite alternate;
+}
+
+.sw-cards__outer-aurora.is-aurora-motion .sw-cards__outer-aurora-blob--3 .sw-cards__outer-aurora-stamp,
+.sw-cards__inner-aurora.is-aurora-motion .sw-cards__outer-aurora-blob--3 .sw-cards__outer-aurora-stamp {
+  animation: sw-cards-oa-drift-y calc(var(--sw-outer-aurora-duration, 8s) * 1.31) ease-in-out infinite alternate;
+}
+
+@keyframes sw-cards-oa-drift-x {
+  from {
+    transform: translateX(0) scale(1);
+  }
+  to {
+    transform: translateX(var(--sw-oa-dx, 22%)) scale(var(--sw-oa-ds, 1.16));
+  }
+}
+
+@keyframes sw-cards-oa-drift-y {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(var(--sw-oa-dy, 16%));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sw-cards__outer-aurora.is-aurora-motion .sw-cards__outer-aurora-blob,
+  .sw-cards__outer-aurora.is-aurora-motion .sw-cards__outer-aurora-stamp,
+  .sw-cards__inner-aurora.is-aurora-motion .sw-cards__outer-aurora-blob,
+  .sw-cards__inner-aurora.is-aurora-motion .sw-cards__outer-aurora-stamp {
+    animation: none !important;
+    will-change: auto;
+  }
+}
+
+
+
+
+/* Module Inner Effect = Glass */
+.sw-cards.sw-cards--inner-effect-glass,
+.sw-cards__container.sw-cards--inner-effect-glass {
+  background-image: none;
+  background-color: var(--sw-cards-inner-effect-bg, rgba(255, 255, 255, 0.35));
+  -webkit-backdrop-filter: blur(var(--sw-glass-blur, 20px)) saturate(var(--sw-glass-saturate, 160%));
+  backdrop-filter: blur(var(--sw-glass-blur, 20px)) saturate(var(--sw-glass-saturate, 160%));
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sw-cards.sw-cards--inner-effect-glass,
+  .sw-cards__container.sw-cards--inner-effect-glass {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .sw-cards.sw-cards--inner-effect-glass,
+  .sw-cards__container.sw-cards--inner-effect-glass {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Module Inner Effect = Grain base */
+.sw-cards.sw-cards--inner-effect-grain,
+.sw-cards__container.sw-cards--inner-effect-grain {
+  background-image: none;
+  background-color: var(--sw-cards-inner-effect-bg, transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+.sw-cards .sw-cards__card.sw-cards__card--effect-grain {
+  position: relative;
+  overflow: hidden;
+}
+
+.sw-cards.sw-cards--inner-grain-sparse, .sw-cards__container.sw-cards--inner-grain-sparse,
+.sw-cards .sw-cards__card.sw-cards__card--grain-sparse,
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--grain-sparse {
+  --sw-grain-svg: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20256%22%3E%3Cg%20fill%3D%22%23fff%22%3E%3Ccircle%20cx%3D%22244.9%22%20cy%3D%22164.7%22%20r%3D%220.5%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22131.1%22%20cy%3D%22140.9%22%20r%3D%220.8%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22164.9%22%20cy%3D%2235.0%22%20r%3D%220.9%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22230.6%22%20cy%3D%22114.8%22%20r%3D%220.3%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%22197.5%22%20cy%3D%22246.5%22%20r%3D%220.6%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%2275.1%22%20cy%3D%222.6%22%20r%3D%220.8%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2218.8%22%20cy%3D%22190.9%22%20r%3D%220.5%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22148.7%22%20cy%3D%2244.3%22%20r%3D%220.3%22%20opacity%3D%220.56%22%2F%3E%3Ccircle%20cx%3D%22156.6%22%20cy%3D%22238.9%22%20r%3D%220.6%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22124.1%22%20cy%3D%2274.6%22%20r%3D%220.7%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22230.0%22%20cy%3D%22124.9%22%20r%3D%220.5%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2234.9%22%20cy%3D%2236.9%22%20r%3D%221.0%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%2294.1%22%20cy%3D%22149.5%22%20r%3D%220.5%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%22112.6%22%20cy%3D%22200.3%22%20r%3D%220.8%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2284.0%22%20cy%3D%22160.2%22%20r%3D%220.3%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22232.5%22%20cy%3D%22138.0%22%20r%3D%221.0%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22111.2%22%20cy%3D%22214.8%22%20r%3D%220.7%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22207.9%22%20cy%3D%2216.6%22%20r%3D%220.9%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%22171.4%22%20cy%3D%22152.1%22%20r%3D%220.5%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%22242.2%22%20cy%3D%22231.7%22%20r%3D%221.0%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%22138.8%22%20cy%3D%22138.7%22%20r%3D%220.6%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22178.6%22%20cy%3D%2246.5%22%20r%3D%220.6%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%2262.4%22%20cy%3D%2221.8%22%20r%3D%220.8%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%2255.7%22%20cy%3D%22236.0%22%20r%3D%221.0%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2239.3%22%20cy%3D%2211.4%22%20r%3D%220.5%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22154.4%22%20cy%3D%22123.5%22%20r%3D%220.8%22%20opacity%3D%220.36%22%2F%3E%3Ccircle%20cx%3D%2230.0%22%20cy%3D%22249.0%22%20r%3D%220.7%22%20opacity%3D%220.82%22%2F%3E%3Ccircle%20cx%3D%2243.0%22%20cy%3D%2245.2%22%20r%3D%221.0%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2267.8%22%20cy%3D%22142.1%22%20r%3D%220.8%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22234.2%22%20cy%3D%22209.1%22%20r%3D%220.8%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%2241.8%22%20cy%3D%22146.0%22%20r%3D%221.0%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22198.2%22%20cy%3D%22159.9%22%20r%3D%220.8%22%20opacity%3D%220.69%22%2F%3E%3Ccircle%20cx%3D%22139.2%22%20cy%3D%2269.1%22%20r%3D%220.7%22%20opacity%3D%220.93%22%2F%3E%3Ccircle%20cx%3D%2268.7%22%20cy%3D%2273.1%22%20r%3D%220.8%22%20opacity%3D%220.33%22%2F%3E%3Ccircle%20cx%3D%2245.4%22%20cy%3D%22247.3%22%20r%3D%220.9%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22168.1%22%20cy%3D%22208.9%22%20r%3D%220.6%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%2256.8%22%20cy%3D%22253.7%22%20r%3D%220.7%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%22173.1%22%20cy%3D%22111.2%22%20r%3D%220.8%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%2271.4%22%20cy%3D%2276.1%22%20r%3D%220.9%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%2245.2%22%20cy%3D%22121.1%22%20r%3D%220.4%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%22252.1%22%20cy%3D%2277.3%22%20r%3D%220.9%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%2285.0%22%20cy%3D%2271.7%22%20r%3D%220.8%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%2227.6%22%20cy%3D%22248.7%22%20r%3D%220.3%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22176.3%22%20cy%3D%22179.0%22%20r%3D%220.7%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22246.2%22%20cy%3D%22211.9%22%20r%3D%220.6%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22122.3%22%20cy%3D%2248.6%22%20r%3D%220.9%22%20opacity%3D%220.62%22%2F%3E%3Ccircle%20cx%3D%2244.9%22%20cy%3D%22168.6%22%20r%3D%220.9%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22203.4%22%20cy%3D%22223.2%22%20r%3D%220.6%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22210.0%22%20cy%3D%22205.8%22%20r%3D%220.7%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22212.3%22%20cy%3D%22242.5%22%20r%3D%220.6%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22249.5%22%20cy%3D%22172.5%22%20r%3D%220.9%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%22181.9%22%20cy%3D%2229.9%22%20r%3D%220.9%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%2228.2%22%20cy%3D%22234.0%22%20r%3D%220.7%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2258.3%22%20cy%3D%22110.6%22%20r%3D%220.7%22%20opacity%3D%220.62%22%2F%3E%3Ccircle%20cx%3D%2257.7%22%20cy%3D%2263.8%22%20r%3D%220.6%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22241.1%22%20cy%3D%22223.7%22%20r%3D%220.5%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%22217.9%22%20cy%3D%2248.9%22%20r%3D%220.7%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%2237.5%22%20cy%3D%22235.5%22%20r%3D%220.6%22%20opacity%3D%220.60%22%2F%3E%3Ccircle%20cx%3D%22231.6%22%20cy%3D%22211.8%22%20r%3D%220.3%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22245.4%22%20cy%3D%2245.5%22%20r%3D%220.8%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22234.1%22%20cy%3D%22186.6%22%20r%3D%220.3%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%2268.6%22%20cy%3D%2225.9%22%20r%3D%220.7%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%22223.5%22%20cy%3D%22140.6%22%20r%3D%220.7%22%20opacity%3D%221.00%22%2F%3E%3Ccircle%20cx%3D%229.9%22%20cy%3D%2244.3%22%20r%3D%220.8%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%2217.3%22%20cy%3D%22203.2%22%20r%3D%220.8%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%2218.1%22%20cy%3D%22165.8%22%20r%3D%221.0%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%2283.8%22%20cy%3D%22139.6%22%20r%3D%220.5%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%2230.0%22%20cy%3D%22212.3%22%20r%3D%220.4%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%22160.7%22%20cy%3D%2249.3%22%20r%3D%220.7%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22237.0%22%20cy%3D%22219.2%22%20r%3D%220.8%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%2246.1%22%20cy%3D%22120.2%22%20r%3D%220.7%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22246.0%22%20cy%3D%2246.4%22%20r%3D%220.7%22%20opacity%3D%220.06%22%2F%3E%3Ccircle%20cx%3D%22191.2%22%20cy%3D%2247.4%22%20r%3D%220.7%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22201.8%22%20cy%3D%22142.9%22%20r%3D%220.5%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%22187.9%22%20cy%3D%22158.2%22%20r%3D%220.3%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22198.9%22%20cy%3D%2293.0%22%20r%3D%220.3%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%2232.1%22%20cy%3D%22212.2%22%20r%3D%220.5%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%2264.5%22%20cy%3D%226.3%22%20r%3D%220.8%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%2280.2%22%20cy%3D%2233.2%22%20r%3D%220.3%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2231.2%22%20cy%3D%2274.0%22%20r%3D%220.8%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%2242.8%22%20cy%3D%22247.0%22%20r%3D%220.8%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%22149.0%22%20cy%3D%2227.1%22%20r%3D%220.4%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%22202.1%22%20cy%3D%22209.0%22%20r%3D%220.7%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%224.1%22%20cy%3D%22178.0%22%20r%3D%220.9%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%220.4%22%20cy%3D%22245.6%22%20r%3D%220.3%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%2232.7%22%20cy%3D%2220.0%22%20r%3D%220.8%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22218.2%22%20cy%3D%226.7%22%20r%3D%220.9%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%2271.1%22%20cy%3D%22135.4%22%20r%3D%220.4%22%20opacity%3D%220.22%22%2F%3E%3Ccircle%20cx%3D%22187.1%22%20cy%3D%22105.5%22%20r%3D%220.8%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22168.0%22%20cy%3D%22105.7%22%20r%3D%220.8%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2273.4%22%20cy%3D%22202.6%22%20r%3D%220.8%22%20opacity%3D%220.60%22%2F%3E%3Ccircle%20cx%3D%22217.1%22%20cy%3D%22217.0%22%20r%3D%220.5%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22162.1%22%20cy%3D%2223.9%22%20r%3D%220.3%22%20opacity%3D%220.83%22%2F%3E%3Ccircle%20cx%3D%22179.8%22%20cy%3D%22187.7%22%20r%3D%221.0%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%22193.7%22%20cy%3D%22142.2%22%20r%3D%221.0%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%22116.3%22%20cy%3D%22140.1%22%20r%3D%220.9%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22250.2%22%20cy%3D%2279.5%22%20r%3D%220.8%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%2216.1%22%20cy%3D%22245.1%22%20r%3D%220.6%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%2286.5%22%20cy%3D%22144.7%22%20r%3D%220.3%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22123.0%22%20cy%3D%2231.9%22%20r%3D%220.4%22%20opacity%3D%220.87%22%2F%3E%3Ccircle%20cx%3D%2253.6%22%20cy%3D%2288.5%22%20r%3D%220.8%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%22175.2%22%20cy%3D%22203.8%22%20r%3D%221.0%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22183.8%22%20cy%3D%22159.1%22%20r%3D%220.4%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22217.8%22%20cy%3D%22103.4%22%20r%3D%221.0%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%22141.9%22%20cy%3D%22213.4%22%20r%3D%220.3%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%22200.5%22%20cy%3D%22154.6%22%20r%3D%220.5%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%22207.4%22%20cy%3D%22222.4%22%20r%3D%220.3%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%22116.2%22%20cy%3D%22216.4%22%20r%3D%220.4%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22229.6%22%20cy%3D%2238.5%22%20r%3D%221.0%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22202.8%22%20cy%3D%2219.2%22%20r%3D%220.7%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%2261.8%22%20cy%3D%22222.2%22%20r%3D%221.0%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%2225.3%22%20cy%3D%2280.4%22%20r%3D%220.7%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%2256.5%22%20cy%3D%2287.6%22%20r%3D%220.7%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22255.1%22%20cy%3D%22167.4%22%20r%3D%220.3%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%2275.5%22%20cy%3D%22107.0%22%20r%3D%220.5%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%22217.8%22%20cy%3D%2228.0%22%20r%3D%220.5%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22221.4%22%20cy%3D%22224.0%22%20r%3D%220.6%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%2272.9%22%20cy%3D%2295.1%22%20r%3D%220.5%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%2218.5%22%20cy%3D%22125.1%22%20r%3D%220.4%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%22174.9%22%20cy%3D%22160.7%22%20r%3D%220.4%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%2255.7%22%20cy%3D%2217.3%22%20r%3D%220.8%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22195.2%22%20cy%3D%22122.6%22%20r%3D%221.0%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22179.3%22%20cy%3D%22216.0%22%20r%3D%220.4%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2238.0%22%20cy%3D%22217.7%22%20r%3D%220.4%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22220.0%22%20cy%3D%2249.6%22%20r%3D%220.9%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%2279.7%22%20cy%3D%2287.0%22%20r%3D%220.5%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22122.8%22%20cy%3D%22125.9%22%20r%3D%220.6%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%2230.2%22%20cy%3D%22183.4%22%20r%3D%220.7%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22212.8%22%20cy%3D%22170.1%22%20r%3D%221.0%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%22214.2%22%20cy%3D%22252.0%22%20r%3D%220.5%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%2287.8%22%20cy%3D%22235.0%22%20r%3D%220.7%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22232.1%22%20cy%3D%22241.0%22%20r%3D%220.7%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22112.7%22%20cy%3D%22248.8%22%20r%3D%220.3%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22231.4%22%20cy%3D%2286.6%22%20r%3D%220.3%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%2294.4%22%20cy%3D%2285.2%22%20r%3D%220.6%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22103.3%22%20cy%3D%22254.0%22%20r%3D%220.5%22%20opacity%3D%221.00%22%2F%3E%3Ccircle%20cx%3D%22141.0%22%20cy%3D%2297.6%22%20r%3D%221.0%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%226.9%22%20cy%3D%22171.8%22%20r%3D%220.8%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%2232.0%22%20cy%3D%22183.4%22%20r%3D%220.9%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2246.4%22%20cy%3D%2263.8%22%20r%3D%220.5%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%2292.9%22%20cy%3D%22159.9%22%20r%3D%220.7%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22250.7%22%20cy%3D%2281.8%22%20r%3D%221.0%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%2274.5%22%20cy%3D%22183.6%22%20r%3D%220.5%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%2243.5%22%20cy%3D%22200.7%22%20r%3D%220.6%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%2241.4%22%20cy%3D%22133.0%22%20r%3D%220.9%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%222.9%22%20cy%3D%22131.4%22%20r%3D%220.9%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%2270.3%22%20cy%3D%22244.8%22%20r%3D%220.3%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%22167.6%22%20cy%3D%22210.6%22%20r%3D%220.9%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22105.9%22%20cy%3D%2229.0%22%20r%3D%220.9%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22181.8%22%20cy%3D%22163.6%22%20r%3D%220.8%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22133.9%22%20cy%3D%22221.1%22%20r%3D%221.0%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22146.8%22%20cy%3D%22204.5%22%20r%3D%220.4%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%22216.2%22%20cy%3D%224.2%22%20r%3D%220.8%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%22211.1%22%20cy%3D%222.1%22%20r%3D%220.9%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%22131.5%22%20cy%3D%22154.7%22%20r%3D%220.7%22%20opacity%3D%220.83%22%2F%3E%3Ccircle%20cx%3D%22193.7%22%20cy%3D%22223.2%22%20r%3D%220.7%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22207.7%22%20cy%3D%22135.4%22%20r%3D%220.8%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%2232.7%22%20cy%3D%22135.3%22%20r%3D%220.6%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22250.1%22%20cy%3D%22113.5%22%20r%3D%220.4%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%2212.0%22%20cy%3D%2295.6%22%20r%3D%220.9%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22102.3%22%20cy%3D%22212.9%22%20r%3D%220.3%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%2295.4%22%20cy%3D%2293.5%22%20r%3D%221.0%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%2237.1%22%20cy%3D%22221.2%22%20r%3D%220.4%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%2294.0%22%20cy%3D%22255.6%22%20r%3D%220.3%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%2270.6%22%20cy%3D%2243.3%22%20r%3D%220.6%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22126.1%22%20cy%3D%2292.0%22%20r%3D%220.9%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%22181.4%22%20cy%3D%22244.5%22%20r%3D%220.4%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22122.1%22%20cy%3D%22161.9%22%20r%3D%220.4%22%20opacity%3D%220.81%22%2F%3E%3Ccircle%20cx%3D%22233.0%22%20cy%3D%2252.6%22%20r%3D%220.7%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22251.2%22%20cy%3D%22195.9%22%20r%3D%220.7%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22237.3%22%20cy%3D%2223.1%22%20r%3D%220.9%22%20opacity%3D%220.06%22%2F%3E%3Ccircle%20cx%3D%225.3%22%20cy%3D%22229.8%22%20r%3D%220.7%22%20opacity%3D%220.98%22%2F%3E%3Ccircle%20cx%3D%22198.9%22%20cy%3D%22131.8%22%20r%3D%220.9%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%2214.4%22%20cy%3D%2228.2%22%20r%3D%220.3%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%22170.6%22%20cy%3D%22252.7%22%20r%3D%220.8%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%2287.6%22%20cy%3D%22245.5%22%20r%3D%221.0%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%221.4%22%20cy%3D%22172.9%22%20r%3D%220.6%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22142.1%22%20cy%3D%2216.4%22%20r%3D%220.4%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%22151.7%22%20cy%3D%2215.6%22%20r%3D%220.5%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22114.6%22%20cy%3D%22180.8%22%20r%3D%220.6%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2275.4%22%20cy%3D%22147.9%22%20r%3D%220.5%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%2224.6%22%20cy%3D%22242.8%22%20r%3D%220.9%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%2216.5%22%20cy%3D%227.7%22%20r%3D%221.0%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%22207.3%22%20cy%3D%2235.9%22%20r%3D%220.3%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%22199.1%22%20cy%3D%22163.6%22%20r%3D%220.8%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%2265.8%22%20cy%3D%221.7%22%20r%3D%220.3%22%20opacity%3D%220.69%22%2F%3E%3Ccircle%20cx%3D%22244.2%22%20cy%3D%22145.3%22%20r%3D%220.8%22%20opacity%3D%220.07%22%2F%3E%3Ccircle%20cx%3D%2274.8%22%20cy%3D%22204.6%22%20r%3D%220.7%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%22138.4%22%20cy%3D%22124.6%22%20r%3D%220.7%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%2264.8%22%20cy%3D%22175.6%22%20r%3D%220.4%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22178.6%22%20cy%3D%22126.8%22%20r%3D%220.7%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22218.6%22%20cy%3D%22236.9%22%20r%3D%220.6%22%20opacity%3D%220.78%22%2F%3E%3Ccircle%20cx%3D%22184.9%22%20cy%3D%22110.7%22%20r%3D%220.5%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%22180.5%22%20cy%3D%2266.2%22%20r%3D%221.0%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%22145.6%22%20cy%3D%22255.0%22%20r%3D%220.8%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22134.9%22%20cy%3D%22200.2%22%20r%3D%220.4%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%22170.2%22%20cy%3D%220.3%22%20r%3D%220.5%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2241.9%22%20cy%3D%22177.9%22%20r%3D%220.3%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%2235.4%22%20cy%3D%220.4%22%20r%3D%221.0%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%224.7%22%20cy%3D%2260.7%22%20r%3D%220.9%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%22255.3%22%20cy%3D%2257.9%22%20r%3D%220.4%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22188.2%22%20cy%3D%2276.2%22%20r%3D%220.6%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%2287.9%22%20cy%3D%22199.4%22%20r%3D%220.5%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22163.8%22%20cy%3D%22159.3%22%20r%3D%220.3%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22202.6%22%20cy%3D%2286.6%22%20r%3D%220.3%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22227.2%22%20cy%3D%2239.8%22%20r%3D%220.8%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22239.4%22%20cy%3D%22249.8%22%20r%3D%220.3%22%20opacity%3D%220.86%22%2F%3E%3Ccircle%20cx%3D%2249.8%22%20cy%3D%2255.1%22%20r%3D%220.6%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%2233.0%22%20cy%3D%2246.9%22%20r%3D%220.5%22%20opacity%3D%220.36%22%2F%3E%3Ccircle%20cx%3D%225.0%22%20cy%3D%22122.0%22%20r%3D%220.5%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%22115.1%22%20cy%3D%22178.8%22%20r%3D%220.6%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22115.3%22%20cy%3D%2269.6%22%20r%3D%220.3%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22131.3%22%20cy%3D%22202.8%22%20r%3D%220.4%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%22141.8%22%20cy%3D%2219.3%22%20r%3D%220.4%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%22215.3%22%20cy%3D%22160.6%22%20r%3D%220.4%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%22123.2%22%20cy%3D%2225.5%22%20r%3D%220.6%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%223.2%22%20cy%3D%220.4%22%20r%3D%220.9%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22160.1%22%20cy%3D%22174.3%22%20r%3D%221.0%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%223.9%22%20cy%3D%2243.1%22%20r%3D%220.8%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2252.5%22%20cy%3D%2247.5%22%20r%3D%220.3%22%20opacity%3D%220.30%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+.sw-cards.sw-cards--inner-grain-default, .sw-cards__container.sw-cards--inner-grain-default,
+.sw-cards .sw-cards__card.sw-cards__card--grain-default,
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--grain-default {
+  --sw-grain-svg: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20256%22%3E%3Cg%20fill%3D%22%23fff%22%3E%3Ccircle%20cx%3D%22244.9%22%20cy%3D%22164.7%22%20r%3D%220.5%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22131.1%22%20cy%3D%22140.9%22%20r%3D%220.8%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22164.9%22%20cy%3D%2235.0%22%20r%3D%220.9%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22230.6%22%20cy%3D%22114.8%22%20r%3D%220.3%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%22197.5%22%20cy%3D%22246.5%22%20r%3D%220.6%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%2275.1%22%20cy%3D%222.6%22%20r%3D%220.8%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2218.8%22%20cy%3D%22190.9%22%20r%3D%220.5%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22148.7%22%20cy%3D%2244.3%22%20r%3D%220.3%22%20opacity%3D%220.56%22%2F%3E%3Ccircle%20cx%3D%22156.6%22%20cy%3D%22238.9%22%20r%3D%220.6%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22124.1%22%20cy%3D%2274.6%22%20r%3D%220.7%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22230.0%22%20cy%3D%22124.9%22%20r%3D%220.5%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2234.9%22%20cy%3D%2236.9%22%20r%3D%221.0%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%2294.1%22%20cy%3D%22149.5%22%20r%3D%220.5%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%22112.6%22%20cy%3D%22200.3%22%20r%3D%220.8%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2284.0%22%20cy%3D%22160.2%22%20r%3D%220.3%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22232.5%22%20cy%3D%22138.0%22%20r%3D%221.0%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22111.2%22%20cy%3D%22214.8%22%20r%3D%220.7%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22207.9%22%20cy%3D%2216.6%22%20r%3D%220.9%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%22171.4%22%20cy%3D%22152.1%22%20r%3D%220.5%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%22242.2%22%20cy%3D%22231.7%22%20r%3D%221.0%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%22138.8%22%20cy%3D%22138.7%22%20r%3D%220.6%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22178.6%22%20cy%3D%2246.5%22%20r%3D%220.6%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%2262.4%22%20cy%3D%2221.8%22%20r%3D%220.8%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%2255.7%22%20cy%3D%22236.0%22%20r%3D%221.0%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2239.3%22%20cy%3D%2211.4%22%20r%3D%220.5%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22154.4%22%20cy%3D%22123.5%22%20r%3D%220.8%22%20opacity%3D%220.36%22%2F%3E%3Ccircle%20cx%3D%2230.0%22%20cy%3D%22249.0%22%20r%3D%220.7%22%20opacity%3D%220.82%22%2F%3E%3Ccircle%20cx%3D%2243.0%22%20cy%3D%2245.2%22%20r%3D%221.0%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2267.8%22%20cy%3D%22142.1%22%20r%3D%220.8%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22234.2%22%20cy%3D%22209.1%22%20r%3D%220.8%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%2241.8%22%20cy%3D%22146.0%22%20r%3D%221.0%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22198.2%22%20cy%3D%22159.9%22%20r%3D%220.8%22%20opacity%3D%220.69%22%2F%3E%3Ccircle%20cx%3D%22139.2%22%20cy%3D%2269.1%22%20r%3D%220.7%22%20opacity%3D%220.93%22%2F%3E%3Ccircle%20cx%3D%2268.7%22%20cy%3D%2273.1%22%20r%3D%220.8%22%20opacity%3D%220.33%22%2F%3E%3Ccircle%20cx%3D%2245.4%22%20cy%3D%22247.3%22%20r%3D%220.9%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22168.1%22%20cy%3D%22208.9%22%20r%3D%220.6%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%2256.8%22%20cy%3D%22253.7%22%20r%3D%220.7%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%22173.1%22%20cy%3D%22111.2%22%20r%3D%220.8%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%2271.4%22%20cy%3D%2276.1%22%20r%3D%220.9%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%2245.2%22%20cy%3D%22121.1%22%20r%3D%220.4%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%22252.1%22%20cy%3D%2277.3%22%20r%3D%220.9%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%2285.0%22%20cy%3D%2271.7%22%20r%3D%220.8%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%2227.6%22%20cy%3D%22248.7%22%20r%3D%220.3%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22176.3%22%20cy%3D%22179.0%22%20r%3D%220.7%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22246.2%22%20cy%3D%22211.9%22%20r%3D%220.6%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22122.3%22%20cy%3D%2248.6%22%20r%3D%220.9%22%20opacity%3D%220.62%22%2F%3E%3Ccircle%20cx%3D%2244.9%22%20cy%3D%22168.6%22%20r%3D%220.9%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22203.4%22%20cy%3D%22223.2%22%20r%3D%220.6%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22210.0%22%20cy%3D%22205.8%22%20r%3D%220.7%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22212.3%22%20cy%3D%22242.5%22%20r%3D%220.6%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22249.5%22%20cy%3D%22172.5%22%20r%3D%220.9%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%22181.9%22%20cy%3D%2229.9%22%20r%3D%220.9%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%2228.2%22%20cy%3D%22234.0%22%20r%3D%220.7%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2258.3%22%20cy%3D%22110.6%22%20r%3D%220.7%22%20opacity%3D%220.62%22%2F%3E%3Ccircle%20cx%3D%2257.7%22%20cy%3D%2263.8%22%20r%3D%220.6%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22241.1%22%20cy%3D%22223.7%22%20r%3D%220.5%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%22217.9%22%20cy%3D%2248.9%22%20r%3D%220.7%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%2237.5%22%20cy%3D%22235.5%22%20r%3D%220.6%22%20opacity%3D%220.60%22%2F%3E%3Ccircle%20cx%3D%22231.6%22%20cy%3D%22211.8%22%20r%3D%220.3%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22245.4%22%20cy%3D%2245.5%22%20r%3D%220.8%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22234.1%22%20cy%3D%22186.6%22%20r%3D%220.3%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%2268.6%22%20cy%3D%2225.9%22%20r%3D%220.7%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%22223.5%22%20cy%3D%22140.6%22%20r%3D%220.7%22%20opacity%3D%221.00%22%2F%3E%3Ccircle%20cx%3D%229.9%22%20cy%3D%2244.3%22%20r%3D%220.8%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%2217.3%22%20cy%3D%22203.2%22%20r%3D%220.8%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%2218.1%22%20cy%3D%22165.8%22%20r%3D%221.0%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%2283.8%22%20cy%3D%22139.6%22%20r%3D%220.5%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%2230.0%22%20cy%3D%22212.3%22%20r%3D%220.4%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%22160.7%22%20cy%3D%2249.3%22%20r%3D%220.7%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22237.0%22%20cy%3D%22219.2%22%20r%3D%220.8%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%2246.1%22%20cy%3D%22120.2%22%20r%3D%220.7%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22246.0%22%20cy%3D%2246.4%22%20r%3D%220.7%22%20opacity%3D%220.06%22%2F%3E%3Ccircle%20cx%3D%22191.2%22%20cy%3D%2247.4%22%20r%3D%220.7%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22201.8%22%20cy%3D%22142.9%22%20r%3D%220.5%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%22187.9%22%20cy%3D%22158.2%22%20r%3D%220.3%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22198.9%22%20cy%3D%2293.0%22%20r%3D%220.3%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%2232.1%22%20cy%3D%22212.2%22%20r%3D%220.5%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%2264.5%22%20cy%3D%226.3%22%20r%3D%220.8%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%2280.2%22%20cy%3D%2233.2%22%20r%3D%220.3%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2231.2%22%20cy%3D%2274.0%22%20r%3D%220.8%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%2242.8%22%20cy%3D%22247.0%22%20r%3D%220.8%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%22149.0%22%20cy%3D%2227.1%22%20r%3D%220.4%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%22202.1%22%20cy%3D%22209.0%22%20r%3D%220.7%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%224.1%22%20cy%3D%22178.0%22%20r%3D%220.9%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%220.4%22%20cy%3D%22245.6%22%20r%3D%220.3%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%2232.7%22%20cy%3D%2220.0%22%20r%3D%220.8%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22218.2%22%20cy%3D%226.7%22%20r%3D%220.9%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%2271.1%22%20cy%3D%22135.4%22%20r%3D%220.4%22%20opacity%3D%220.22%22%2F%3E%3Ccircle%20cx%3D%22187.1%22%20cy%3D%22105.5%22%20r%3D%220.8%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22168.0%22%20cy%3D%22105.7%22%20r%3D%220.8%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2273.4%22%20cy%3D%22202.6%22%20r%3D%220.8%22%20opacity%3D%220.60%22%2F%3E%3Ccircle%20cx%3D%22217.1%22%20cy%3D%22217.0%22%20r%3D%220.5%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22162.1%22%20cy%3D%2223.9%22%20r%3D%220.3%22%20opacity%3D%220.83%22%2F%3E%3Ccircle%20cx%3D%22179.8%22%20cy%3D%22187.7%22%20r%3D%221.0%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%22193.7%22%20cy%3D%22142.2%22%20r%3D%221.0%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%22116.3%22%20cy%3D%22140.1%22%20r%3D%220.9%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22250.2%22%20cy%3D%2279.5%22%20r%3D%220.8%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%2216.1%22%20cy%3D%22245.1%22%20r%3D%220.6%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%2286.5%22%20cy%3D%22144.7%22%20r%3D%220.3%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22123.0%22%20cy%3D%2231.9%22%20r%3D%220.4%22%20opacity%3D%220.87%22%2F%3E%3Ccircle%20cx%3D%2253.6%22%20cy%3D%2288.5%22%20r%3D%220.8%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%22175.2%22%20cy%3D%22203.8%22%20r%3D%221.0%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22183.8%22%20cy%3D%22159.1%22%20r%3D%220.4%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22217.8%22%20cy%3D%22103.4%22%20r%3D%221.0%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%22141.9%22%20cy%3D%22213.4%22%20r%3D%220.3%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%22200.5%22%20cy%3D%22154.6%22%20r%3D%220.5%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%22207.4%22%20cy%3D%22222.4%22%20r%3D%220.3%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%22116.2%22%20cy%3D%22216.4%22%20r%3D%220.4%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22229.6%22%20cy%3D%2238.5%22%20r%3D%221.0%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22202.8%22%20cy%3D%2219.2%22%20r%3D%220.7%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%2261.8%22%20cy%3D%22222.2%22%20r%3D%221.0%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%2225.3%22%20cy%3D%2280.4%22%20r%3D%220.7%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%2256.5%22%20cy%3D%2287.6%22%20r%3D%220.7%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22255.1%22%20cy%3D%22167.4%22%20r%3D%220.3%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%2275.5%22%20cy%3D%22107.0%22%20r%3D%220.5%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%22217.8%22%20cy%3D%2228.0%22%20r%3D%220.5%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22221.4%22%20cy%3D%22224.0%22%20r%3D%220.6%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%2272.9%22%20cy%3D%2295.1%22%20r%3D%220.5%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%2218.5%22%20cy%3D%22125.1%22%20r%3D%220.4%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%22174.9%22%20cy%3D%22160.7%22%20r%3D%220.4%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%2255.7%22%20cy%3D%2217.3%22%20r%3D%220.8%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22195.2%22%20cy%3D%22122.6%22%20r%3D%221.0%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22179.3%22%20cy%3D%22216.0%22%20r%3D%220.4%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2238.0%22%20cy%3D%22217.7%22%20r%3D%220.4%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22220.0%22%20cy%3D%2249.6%22%20r%3D%220.9%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%2279.7%22%20cy%3D%2287.0%22%20r%3D%220.5%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22122.8%22%20cy%3D%22125.9%22%20r%3D%220.6%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%2230.2%22%20cy%3D%22183.4%22%20r%3D%220.7%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22212.8%22%20cy%3D%22170.1%22%20r%3D%221.0%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%22214.2%22%20cy%3D%22252.0%22%20r%3D%220.5%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%2287.8%22%20cy%3D%22235.0%22%20r%3D%220.7%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22232.1%22%20cy%3D%22241.0%22%20r%3D%220.7%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22112.7%22%20cy%3D%22248.8%22%20r%3D%220.3%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22231.4%22%20cy%3D%2286.6%22%20r%3D%220.3%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%2294.4%22%20cy%3D%2285.2%22%20r%3D%220.6%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22103.3%22%20cy%3D%22254.0%22%20r%3D%220.5%22%20opacity%3D%221.00%22%2F%3E%3Ccircle%20cx%3D%22141.0%22%20cy%3D%2297.6%22%20r%3D%221.0%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%226.9%22%20cy%3D%22171.8%22%20r%3D%220.8%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%2232.0%22%20cy%3D%22183.4%22%20r%3D%220.9%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2246.4%22%20cy%3D%2263.8%22%20r%3D%220.5%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%2292.9%22%20cy%3D%22159.9%22%20r%3D%220.7%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22250.7%22%20cy%3D%2281.8%22%20r%3D%221.0%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%2274.5%22%20cy%3D%22183.6%22%20r%3D%220.5%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%2243.5%22%20cy%3D%22200.7%22%20r%3D%220.6%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%2241.4%22%20cy%3D%22133.0%22%20r%3D%220.9%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%222.9%22%20cy%3D%22131.4%22%20r%3D%220.9%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%2270.3%22%20cy%3D%22244.8%22%20r%3D%220.3%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%22167.6%22%20cy%3D%22210.6%22%20r%3D%220.9%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22105.9%22%20cy%3D%2229.0%22%20r%3D%220.9%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22181.8%22%20cy%3D%22163.6%22%20r%3D%220.8%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22133.9%22%20cy%3D%22221.1%22%20r%3D%221.0%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22146.8%22%20cy%3D%22204.5%22%20r%3D%220.4%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%22216.2%22%20cy%3D%224.2%22%20r%3D%220.8%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%22211.1%22%20cy%3D%222.1%22%20r%3D%220.9%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%22131.5%22%20cy%3D%22154.7%22%20r%3D%220.7%22%20opacity%3D%220.83%22%2F%3E%3Ccircle%20cx%3D%22193.7%22%20cy%3D%22223.2%22%20r%3D%220.7%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22207.7%22%20cy%3D%22135.4%22%20r%3D%220.8%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%2232.7%22%20cy%3D%22135.3%22%20r%3D%220.6%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22250.1%22%20cy%3D%22113.5%22%20r%3D%220.4%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%2212.0%22%20cy%3D%2295.6%22%20r%3D%220.9%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22102.3%22%20cy%3D%22212.9%22%20r%3D%220.3%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%2295.4%22%20cy%3D%2293.5%22%20r%3D%221.0%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%2237.1%22%20cy%3D%22221.2%22%20r%3D%220.4%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%2294.0%22%20cy%3D%22255.6%22%20r%3D%220.3%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%2270.6%22%20cy%3D%2243.3%22%20r%3D%220.6%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22126.1%22%20cy%3D%2292.0%22%20r%3D%220.9%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%22181.4%22%20cy%3D%22244.5%22%20r%3D%220.4%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22122.1%22%20cy%3D%22161.9%22%20r%3D%220.4%22%20opacity%3D%220.81%22%2F%3E%3Ccircle%20cx%3D%22233.0%22%20cy%3D%2252.6%22%20r%3D%220.7%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22251.2%22%20cy%3D%22195.9%22%20r%3D%220.7%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22237.3%22%20cy%3D%2223.1%22%20r%3D%220.9%22%20opacity%3D%220.06%22%2F%3E%3Ccircle%20cx%3D%225.3%22%20cy%3D%22229.8%22%20r%3D%220.7%22%20opacity%3D%220.98%22%2F%3E%3Ccircle%20cx%3D%22198.9%22%20cy%3D%22131.8%22%20r%3D%220.9%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%2214.4%22%20cy%3D%2228.2%22%20r%3D%220.3%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%22170.6%22%20cy%3D%22252.7%22%20r%3D%220.8%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%2287.6%22%20cy%3D%22245.5%22%20r%3D%221.0%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%221.4%22%20cy%3D%22172.9%22%20r%3D%220.6%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22142.1%22%20cy%3D%2216.4%22%20r%3D%220.4%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%22151.7%22%20cy%3D%2215.6%22%20r%3D%220.5%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22114.6%22%20cy%3D%22180.8%22%20r%3D%220.6%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2275.4%22%20cy%3D%22147.9%22%20r%3D%220.5%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%2224.6%22%20cy%3D%22242.8%22%20r%3D%220.9%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%2216.5%22%20cy%3D%227.7%22%20r%3D%221.0%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%22207.3%22%20cy%3D%2235.9%22%20r%3D%220.3%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%22199.1%22%20cy%3D%22163.6%22%20r%3D%220.8%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%2265.8%22%20cy%3D%221.7%22%20r%3D%220.3%22%20opacity%3D%220.69%22%2F%3E%3Ccircle%20cx%3D%22244.2%22%20cy%3D%22145.3%22%20r%3D%220.8%22%20opacity%3D%220.07%22%2F%3E%3Ccircle%20cx%3D%2274.8%22%20cy%3D%22204.6%22%20r%3D%220.7%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%22138.4%22%20cy%3D%22124.6%22%20r%3D%220.7%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%2264.8%22%20cy%3D%22175.6%22%20r%3D%220.4%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22178.6%22%20cy%3D%22126.8%22%20r%3D%220.7%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22218.6%22%20cy%3D%22236.9%22%20r%3D%220.6%22%20opacity%3D%220.78%22%2F%3E%3Ccircle%20cx%3D%22184.9%22%20cy%3D%22110.7%22%20r%3D%220.5%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%22180.5%22%20cy%3D%2266.2%22%20r%3D%221.0%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%22145.6%22%20cy%3D%22255.0%22%20r%3D%220.8%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22134.9%22%20cy%3D%22200.2%22%20r%3D%220.4%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%22170.2%22%20cy%3D%220.3%22%20r%3D%220.5%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2241.9%22%20cy%3D%22177.9%22%20r%3D%220.3%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%2235.4%22%20cy%3D%220.4%22%20r%3D%221.0%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%224.7%22%20cy%3D%2260.7%22%20r%3D%220.9%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%22255.3%22%20cy%3D%2257.9%22%20r%3D%220.4%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22188.2%22%20cy%3D%2276.2%22%20r%3D%220.6%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%2287.9%22%20cy%3D%22199.4%22%20r%3D%220.5%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22163.8%22%20cy%3D%22159.3%22%20r%3D%220.3%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22202.6%22%20cy%3D%2286.6%22%20r%3D%220.3%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22227.2%22%20cy%3D%2239.8%22%20r%3D%220.8%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22239.4%22%20cy%3D%22249.8%22%20r%3D%220.3%22%20opacity%3D%220.86%22%2F%3E%3Ccircle%20cx%3D%2249.8%22%20cy%3D%2255.1%22%20r%3D%220.6%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%2233.0%22%20cy%3D%2246.9%22%20r%3D%220.5%22%20opacity%3D%220.36%22%2F%3E%3Ccircle%20cx%3D%225.0%22%20cy%3D%22122.0%22%20r%3D%220.5%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%22115.1%22%20cy%3D%22178.8%22%20r%3D%220.6%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22115.3%22%20cy%3D%2269.6%22%20r%3D%220.3%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22131.3%22%20cy%3D%22202.8%22%20r%3D%220.4%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%22141.8%22%20cy%3D%2219.3%22%20r%3D%220.4%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%22215.3%22%20cy%3D%22160.6%22%20r%3D%220.4%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%22123.2%22%20cy%3D%2225.5%22%20r%3D%220.6%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%223.2%22%20cy%3D%220.4%22%20r%3D%220.9%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22160.1%22%20cy%3D%22174.3%22%20r%3D%221.0%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%223.9%22%20cy%3D%2243.1%22%20r%3D%220.8%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2252.5%22%20cy%3D%2247.5%22%20r%3D%220.3%22%20opacity%3D%220.30%22%2F%3E%3Ccircle%20cx%3D%22119.1%22%20cy%3D%220.0%22%20r%3D%220.8%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22252.3%22%20cy%3D%2250.6%22%20r%3D%220.7%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%22153.8%22%20cy%3D%22191.7%22%20r%3D%220.9%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%22164.1%22%20cy%3D%22170.4%22%20r%3D%220.8%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%2261.4%22%20cy%3D%22196.3%22%20r%3D%220.7%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22109.6%22%20cy%3D%2216.1%22%20r%3D%220.8%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%2278.9%22%20cy%3D%2276.9%22%20r%3D%220.6%22%20opacity%3D%220.98%22%2F%3E%3Ccircle%20cx%3D%22166.1%22%20cy%3D%22137.1%22%20r%3D%220.8%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%2265.7%22%20cy%3D%2264.3%22%20r%3D%221.0%22%20opacity%3D%220.77%22%2F%3E%3Ccircle%20cx%3D%2232.4%22%20cy%3D%22208.8%22%20r%3D%220.8%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%2273.2%22%20cy%3D%2291.8%22%20r%3D%220.3%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%2284.6%22%20cy%3D%22101.4%22%20r%3D%220.6%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2299.3%22%20cy%3D%22173.3%22%20r%3D%220.9%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22244.4%22%20cy%3D%22115.1%22%20r%3D%220.5%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%22145.5%22%20cy%3D%22253.6%22%20r%3D%220.9%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22101.9%22%20cy%3D%22231.8%22%20r%3D%221.0%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22254.9%22%20cy%3D%22168.2%22%20r%3D%220.3%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%222.8%22%20cy%3D%22199.5%22%20r%3D%220.8%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%227.6%22%20cy%3D%22248.1%22%20r%3D%220.3%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22144.7%22%20cy%3D%22131.2%22%20r%3D%220.8%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%224.6%22%20cy%3D%2213.5%22%20r%3D%220.4%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%2251.5%22%20cy%3D%22228.4%22%20r%3D%220.8%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%2264.5%22%20cy%3D%22186.4%22%20r%3D%221.0%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22124.7%22%20cy%3D%2265.5%22%20r%3D%220.3%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22243.9%22%20cy%3D%22115.7%22%20r%3D%220.6%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22140.4%22%20cy%3D%2260.7%22%20r%3D%220.8%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2260.5%22%20cy%3D%221.2%22%20r%3D%220.4%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%22204.4%22%20cy%3D%22205.7%22%20r%3D%220.4%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22109.2%22%20cy%3D%22103.6%22%20r%3D%220.3%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22210.6%22%20cy%3D%22214.6%22%20r%3D%220.3%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22241.1%22%20cy%3D%22234.4%22%20r%3D%220.3%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2274.2%22%20cy%3D%22152.7%22%20r%3D%221.0%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%22235.7%22%20cy%3D%2266.4%22%20r%3D%220.7%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%2278.8%22%20cy%3D%22186.8%22%20r%3D%220.8%22%20opacity%3D%220.93%22%2F%3E%3Ccircle%20cx%3D%2247.6%22%20cy%3D%22237.7%22%20r%3D%220.8%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22211.8%22%20cy%3D%2288.3%22%20r%3D%220.8%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%22253.0%22%20cy%3D%2268.5%22%20r%3D%220.5%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%2274.9%22%20cy%3D%22147.9%22%20r%3D%220.6%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22250.9%22%20cy%3D%22215.5%22%20r%3D%220.3%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%2233.2%22%20cy%3D%22213.6%22%20r%3D%220.3%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%22204.8%22%20cy%3D%2249.2%22%20r%3D%220.5%22%20opacity%3D%220.06%22%2F%3E%3Ccircle%20cx%3D%22105.6%22%20cy%3D%2272.5%22%20r%3D%220.4%22%20opacity%3D%220.77%22%2F%3E%3Ccircle%20cx%3D%22102.6%22%20cy%3D%22157.7%22%20r%3D%220.3%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%22133.6%22%20cy%3D%22157.5%22%20r%3D%220.9%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%22161.5%22%20cy%3D%22156.0%22%20r%3D%220.3%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%2264.4%22%20cy%3D%22105.3%22%20r%3D%220.3%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%22105.0%22%20cy%3D%22161.7%22%20r%3D%220.6%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22162.5%22%20cy%3D%22100.0%22%20r%3D%220.5%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22108.7%22%20cy%3D%22246.2%22%20r%3D%221.0%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%22198.1%22%20cy%3D%22231.4%22%20r%3D%220.8%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%22109.5%22%20cy%3D%2245.6%22%20r%3D%221.0%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22147.9%22%20cy%3D%22198.2%22%20r%3D%220.7%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%2238.1%22%20cy%3D%22201.6%22%20r%3D%220.8%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%2292.0%22%20cy%3D%22140.2%22%20r%3D%220.7%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2212.5%22%20cy%3D%22180.8%22%20r%3D%220.3%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%2264.9%22%20cy%3D%2223.3%22%20r%3D%220.6%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%22251.4%22%20cy%3D%22146.7%22%20r%3D%221.0%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2255.0%22%20cy%3D%22119.5%22%20r%3D%220.8%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%2281.1%22%20cy%3D%2239.9%22%20r%3D%221.0%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%22139.6%22%20cy%3D%2229.2%22%20r%3D%220.9%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22250.2%22%20cy%3D%22183.5%22%20r%3D%220.9%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%22214.5%22%20cy%3D%2287.7%22%20r%3D%220.9%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%22148.4%22%20cy%3D%2235.7%22%20r%3D%221.0%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%22228.3%22%20cy%3D%22114.8%22%20r%3D%220.4%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22165.3%22%20cy%3D%22174.5%22%20r%3D%220.3%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22143.6%22%20cy%3D%2255.6%22%20r%3D%220.9%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%2280.1%22%20cy%3D%2289.1%22%20r%3D%220.3%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%22193.8%22%20cy%3D%22252.3%22%20r%3D%220.3%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%22226.1%22%20cy%3D%22128.7%22%20r%3D%220.7%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22124.3%22%20cy%3D%22175.9%22%20r%3D%220.9%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%22208.8%22%20cy%3D%22221.8%22%20r%3D%220.3%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%2242.4%22%20cy%3D%2295.9%22%20r%3D%220.3%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%22204.1%22%20cy%3D%2262.5%22%20r%3D%221.0%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22121.4%22%20cy%3D%2262.5%22%20r%3D%220.7%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%22155.7%22%20cy%3D%225.3%22%20r%3D%220.8%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%22108.7%22%20cy%3D%22105.5%22%20r%3D%220.9%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22205.0%22%20cy%3D%22121.6%22%20r%3D%220.9%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%22222.2%22%20cy%3D%22158.2%22%20r%3D%220.7%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%2219.5%22%20cy%3D%2244.5%22%20r%3D%220.5%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22103.6%22%20cy%3D%22214.4%22%20r%3D%220.5%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22222.4%22%20cy%3D%22175.4%22%20r%3D%220.3%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%22177.2%22%20cy%3D%2290.2%22%20r%3D%220.7%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%2210.3%22%20cy%3D%22148.3%22%20r%3D%220.7%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22242.6%22%20cy%3D%229.0%22%20r%3D%220.8%22%20opacity%3D%220.07%22%2F%3E%3Ccircle%20cx%3D%2253.6%22%20cy%3D%2237.8%22%20r%3D%221.0%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22122.6%22%20cy%3D%22237.2%22%20r%3D%220.7%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%22246.9%22%20cy%3D%22136.7%22%20r%3D%220.4%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%22174.5%22%20cy%3D%2290.7%22%20r%3D%220.5%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%22127.5%22%20cy%3D%2283.3%22%20r%3D%220.6%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22121.9%22%20cy%3D%22106.7%22%20r%3D%220.6%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%22173.3%22%20cy%3D%2279.3%22%20r%3D%220.8%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%22134.2%22%20cy%3D%2258.7%22%20r%3D%220.5%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%2266.2%22%20cy%3D%22149.7%22%20r%3D%220.7%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22163.7%22%20cy%3D%2262.6%22%20r%3D%221.0%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%22141.2%22%20cy%3D%22109.6%22%20r%3D%220.3%22%20opacity%3D%220.86%22%2F%3E%3Ccircle%20cx%3D%2256.3%22%20cy%3D%22137.6%22%20r%3D%220.7%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%22227.2%22%20cy%3D%22219.3%22%20r%3D%220.6%22%20opacity%3D%220.07%22%2F%3E%3Ccircle%20cx%3D%22125.9%22%20cy%3D%22178.4%22%20r%3D%221.0%22%20opacity%3D%220.62%22%2F%3E%3Ccircle%20cx%3D%22167.4%22%20cy%3D%22222.5%22%20r%3D%220.3%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%2272.1%22%20cy%3D%2244.3%22%20r%3D%220.7%22%20opacity%3D%220.82%22%2F%3E%3Ccircle%20cx%3D%2234.3%22%20cy%3D%22111.3%22%20r%3D%220.9%22%20opacity%3D%220.48%22%2F%3E%3Ccircle%20cx%3D%2215.9%22%20cy%3D%2290.9%22%20r%3D%220.3%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%22128.3%22%20cy%3D%22232.1%22%20r%3D%220.6%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%2215.2%22%20cy%3D%2263.6%22%20r%3D%220.9%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22175.7%22%20cy%3D%227.0%22%20r%3D%220.8%22%20opacity%3D%220.77%22%2F%3E%3Ccircle%20cx%3D%2262.9%22%20cy%3D%2295.8%22%20r%3D%220.3%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%2258.6%22%20cy%3D%225.4%22%20r%3D%220.6%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22125.0%22%20cy%3D%22248.6%22%20r%3D%220.8%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2271.0%22%20cy%3D%22238.4%22%20r%3D%221.0%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%22255.8%22%20cy%3D%22205.1%22%20r%3D%220.3%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%2298.3%22%20cy%3D%2247.4%22%20r%3D%220.6%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%2278.1%22%20cy%3D%22119.3%22%20r%3D%220.7%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22248.8%22%20cy%3D%22110.4%22%20r%3D%220.6%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%2258.1%22%20cy%3D%22103.5%22%20r%3D%220.6%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%2216.5%22%20cy%3D%22206.7%22%20r%3D%220.8%22%20opacity%3D%220.51%22%2F%3E%3Ccircle%20cx%3D%22162.0%22%20cy%3D%22117.4%22%20r%3D%220.6%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22194.2%22%20cy%3D%22154.8%22%20r%3D%220.5%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22235.9%22%20cy%3D%2256.6%22%20r%3D%220.9%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%2262.4%22%20cy%3D%2281.6%22%20r%3D%220.8%22%20opacity%3D%220.93%22%2F%3E%3Ccircle%20cx%3D%22233.8%22%20cy%3D%22230.8%22%20r%3D%220.4%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%22158.0%22%20cy%3D%2263.4%22%20r%3D%220.4%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22210.8%22%20cy%3D%22117.8%22%20r%3D%220.8%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%2249.2%22%20cy%3D%22220.0%22%20r%3D%220.7%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%22185.4%22%20cy%3D%22192.7%22%20r%3D%220.4%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22187.1%22%20cy%3D%22153.3%22%20r%3D%220.5%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%22105.5%22%20cy%3D%22243.8%22%20r%3D%220.8%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%22155.0%22%20cy%3D%2214.6%22%20r%3D%220.4%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%2281.8%22%20cy%3D%22105.5%22%20r%3D%220.9%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22236.2%22%20cy%3D%2272.7%22%20r%3D%220.4%22%20opacity%3D%220.36%22%2F%3E%3Ccircle%20cx%3D%22142.6%22%20cy%3D%22188.8%22%20r%3D%220.9%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22168.4%22%20cy%3D%2244.1%22%20r%3D%220.7%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%2221.6%22%20cy%3D%225.8%22%20r%3D%220.8%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%22195.3%22%20cy%3D%2239.2%22%20r%3D%220.8%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%227.1%22%20cy%3D%2280.6%22%20r%3D%220.3%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22200.0%22%20cy%3D%22174.1%22%20r%3D%220.5%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%222.1%22%20cy%3D%22125.6%22%20r%3D%220.3%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%22226.0%22%20cy%3D%2258.0%22%20r%3D%220.9%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2247.5%22%20cy%3D%22179.9%22%20r%3D%220.3%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%22228.1%22%20cy%3D%2294.9%22%20r%3D%220.6%22%20opacity%3D%220.77%22%2F%3E%3Ccircle%20cx%3D%22223.4%22%20cy%3D%22243.1%22%20r%3D%220.7%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%2258.1%22%20cy%3D%22186.3%22%20r%3D%220.3%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%2286.9%22%20cy%3D%22211.0%22%20r%3D%220.9%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2277.6%22%20cy%3D%22251.8%22%20r%3D%220.9%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%226.1%22%20cy%3D%22170.7%22%20r%3D%221.0%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22220.7%22%20cy%3D%22177.2%22%20r%3D%220.5%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%22239.6%22%20cy%3D%22155.6%22%20r%3D%220.9%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%221.7%22%20cy%3D%2235.7%22%20r%3D%220.5%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%22150.3%22%20cy%3D%22246.4%22%20r%3D%220.5%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%2229.9%22%20cy%3D%2257.6%22%20r%3D%220.4%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22127.8%22%20cy%3D%22243.2%22%20r%3D%220.5%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%22232.6%22%20cy%3D%2295.4%22%20r%3D%220.5%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%2284.8%22%20cy%3D%22116.9%22%20r%3D%220.7%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%2213.2%22%20cy%3D%2294.9%22%20r%3D%220.5%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%22239.9%22%20cy%3D%22141.9%22%20r%3D%220.8%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22130.2%22%20cy%3D%22164.4%22%20r%3D%220.6%22%20opacity%3D%220.30%22%2F%3E%3Ccircle%20cx%3D%2252.1%22%20cy%3D%22223.4%22%20r%3D%221.0%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%22239.5%22%20cy%3D%22132.9%22%20r%3D%220.5%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%2253.8%22%20cy%3D%22142.7%22%20r%3D%220.4%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%22247.4%22%20cy%3D%2218.8%22%20r%3D%220.7%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%2295.4%22%20cy%3D%2230.2%22%20r%3D%221.0%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%22199.4%22%20cy%3D%2210.4%22%20r%3D%220.8%22%20opacity%3D%220.82%22%2F%3E%3Ccircle%20cx%3D%22200.8%22%20cy%3D%22247.0%22%20r%3D%220.3%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%22168.6%22%20cy%3D%2289.7%22%20r%3D%220.3%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22118.6%22%20cy%3D%22109.0%22%20r%3D%220.7%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22124.5%22%20cy%3D%22160.3%22%20r%3D%220.7%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2266.4%22%20cy%3D%224.5%22%20r%3D%220.8%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%22248.4%22%20cy%3D%22210.8%22%20r%3D%220.6%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22164.2%22%20cy%3D%2228.0%22%20r%3D%220.6%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%2291.8%22%20cy%3D%22182.4%22%20r%3D%221.0%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2223.9%22%20cy%3D%22209.1%22%20r%3D%220.3%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%22140.1%22%20cy%3D%22157.7%22%20r%3D%220.7%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22109.3%22%20cy%3D%22117.0%22%20r%3D%221.0%22%20opacity%3D%220.78%22%2F%3E%3Ccircle%20cx%3D%22111.7%22%20cy%3D%2219.4%22%20r%3D%220.5%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22224.4%22%20cy%3D%22147.2%22%20r%3D%220.6%22%20opacity%3D%220.07%22%2F%3E%3Ccircle%20cx%3D%22176.5%22%20cy%3D%22188.6%22%20r%3D%221.0%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22228.1%22%20cy%3D%22135.2%22%20r%3D%220.7%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22173.2%22%20cy%3D%22250.0%22%20r%3D%220.3%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22189.0%22%20cy%3D%22149.9%22%20r%3D%220.3%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%22109.8%22%20cy%3D%22137.5%22%20r%3D%220.8%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%2285.9%22%20cy%3D%22191.1%22%20r%3D%221.0%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%22209.3%22%20cy%3D%22120.5%22%20r%3D%220.9%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%22211.6%22%20cy%3D%22232.1%22%20r%3D%220.9%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22209.5%22%20cy%3D%2247.4%22%20r%3D%220.6%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22252.7%22%20cy%3D%22113.0%22%20r%3D%220.6%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%2252.7%22%20cy%3D%22214.4%22%20r%3D%220.7%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22103.8%22%20cy%3D%2233.0%22%20r%3D%220.7%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22250.2%22%20cy%3D%22176.7%22%20r%3D%220.5%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%22232.3%22%20cy%3D%22124.0%22%20r%3D%220.9%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22156.1%22%20cy%3D%2262.8%22%20r%3D%220.4%22%20opacity%3D%220.31%22%2F%3E%3Ccircle%20cx%3D%22230.4%22%20cy%3D%22233.6%22%20r%3D%220.7%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%2225.1%22%20cy%3D%2264.3%22%20r%3D%220.9%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%2276.7%22%20cy%3D%22159.7%22%20r%3D%220.6%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%22251.9%22%20cy%3D%22234.0%22%20r%3D%220.4%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%2264.5%22%20cy%3D%22238.5%22%20r%3D%220.4%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22183.4%22%20cy%3D%22124.0%22%20r%3D%220.5%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22134.2%22%20cy%3D%22245.8%22%20r%3D%220.5%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%22236.0%22%20cy%3D%221.4%22%20r%3D%220.8%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%2291.9%22%20cy%3D%22133.4%22%20r%3D%221.0%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%2284.0%22%20cy%3D%22213.9%22%20r%3D%221.0%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22122.7%22%20cy%3D%22174.6%22%20r%3D%220.6%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%2284.7%22%20cy%3D%2229.7%22%20r%3D%220.3%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%2227.8%22%20cy%3D%2231.0%22%20r%3D%221.0%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22150.4%22%20cy%3D%224.9%22%20r%3D%221.0%22%20opacity%3D%220.81%22%2F%3E%3Ccircle%20cx%3D%2290.7%22%20cy%3D%2269.6%22%20r%3D%221.0%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22109.3%22%20cy%3D%22104.1%22%20r%3D%220.8%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22112.5%22%20cy%3D%22203.6%22%20r%3D%221.0%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%2226.5%22%20cy%3D%2296.9%22%20r%3D%221.0%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%2287.6%22%20cy%3D%2241.6%22%20r%3D%220.8%22%20opacity%3D%220.78%22%2F%3E%3Ccircle%20cx%3D%2293.2%22%20cy%3D%22242.0%22%20r%3D%221.0%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22236.7%22%20cy%3D%22226.4%22%20r%3D%220.9%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22136.2%22%20cy%3D%22103.4%22%20r%3D%220.6%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%2275.8%22%20cy%3D%22120.6%22%20r%3D%220.9%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22207.4%22%20cy%3D%224.5%22%20r%3D%221.0%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%2296.5%22%20cy%3D%229.0%22%20r%3D%220.9%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%22155.2%22%20cy%3D%2227.6%22%20r%3D%220.8%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%22250.0%22%20cy%3D%22169.4%22%20r%3D%220.3%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%2269.0%22%20cy%3D%22251.7%22%20r%3D%220.6%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%22236.5%22%20cy%3D%2259.3%22%20r%3D%220.3%22%20opacity%3D%220.06%22%2F%3E%3Ccircle%20cx%3D%2251.0%22%20cy%3D%22247.7%22%20r%3D%220.5%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%2237.0%22%20cy%3D%22193.5%22%20r%3D%220.6%22%20opacity%3D%220.82%22%2F%3E%3Ccircle%20cx%3D%2257.1%22%20cy%3D%22125.2%22%20r%3D%220.3%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2248.9%22%20cy%3D%2221.5%22%20r%3D%220.6%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%2230.0%22%20cy%3D%2260.4%22%20r%3D%221.0%22%20opacity%3D%220.51%22%2F%3E%3Ccircle%20cx%3D%2214.1%22%20cy%3D%22216.5%22%20r%3D%220.5%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%2228.7%22%20cy%3D%2217.3%22%20r%3D%220.6%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%22249.5%22%20cy%3D%22216.3%22%20r%3D%220.6%22%20opacity%3D%220.30%22%2F%3E%3Ccircle%20cx%3D%22117.0%22%20cy%3D%22193.4%22%20r%3D%220.4%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%22191.0%22%20cy%3D%22168.0%22%20r%3D%220.9%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%22241.4%22%20cy%3D%22242.9%22%20r%3D%221.0%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%2256.3%22%20cy%3D%22147.8%22%20r%3D%220.9%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22211.9%22%20cy%3D%2281.8%22%20r%3D%220.7%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22207.1%22%20cy%3D%2222.4%22%20r%3D%220.4%22%20opacity%3D%220.51%22%2F%3E%3Ccircle%20cx%3D%22183.8%22%20cy%3D%22176.5%22%20r%3D%220.6%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%22241.9%22%20cy%3D%2241.1%22%20r%3D%220.5%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%2298.9%22%20cy%3D%2231.3%22%20r%3D%220.7%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22160.7%22%20cy%3D%22207.8%22%20r%3D%221.0%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%22177.2%22%20cy%3D%22253.0%22%20r%3D%220.4%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22196.8%22%20cy%3D%22197.2%22%20r%3D%220.8%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%22160.1%22%20cy%3D%22210.9%22%20r%3D%220.8%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%2272.1%22%20cy%3D%2263.0%22%20r%3D%220.5%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%2254.6%22%20cy%3D%22202.5%22%20r%3D%220.7%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2254.5%22%20cy%3D%2241.3%22%20r%3D%220.6%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%22145.1%22%20cy%3D%22154.8%22%20r%3D%220.7%22%20opacity%3D%220.83%22%2F%3E%3Ccircle%20cx%3D%22236.8%22%20cy%3D%22149.8%22%20r%3D%220.8%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22123.9%22%20cy%3D%22189.8%22%20r%3D%220.8%22%20opacity%3D%220.48%22%2F%3E%3Ccircle%20cx%3D%22130.6%22%20cy%3D%22158.9%22%20r%3D%220.6%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%22166.7%22%20cy%3D%22192.3%22%20r%3D%221.0%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%2266.1%22%20cy%3D%22148.3%22%20r%3D%220.9%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22178.9%22%20cy%3D%2251.4%22%20r%3D%220.5%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22202.1%22%20cy%3D%2290.0%22%20r%3D%220.3%22%20opacity%3D%221.00%22%2F%3E%3Ccircle%20cx%3D%22192.7%22%20cy%3D%2289.6%22%20r%3D%220.5%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%22207.3%22%20cy%3D%2259.7%22%20r%3D%220.9%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%2223.9%22%20cy%3D%22169.1%22%20r%3D%220.9%22%20opacity%3D%220.93%22%2F%3E%3Ccircle%20cx%3D%22172.3%22%20cy%3D%22172.8%22%20r%3D%220.8%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%22129.5%22%20cy%3D%22217.4%22%20r%3D%220.4%22%20opacity%3D%220.78%22%2F%3E%3Ccircle%20cx%3D%22216.6%22%20cy%3D%2219.6%22%20r%3D%220.4%22%20opacity%3D%220.82%22%2F%3E%3Ccircle%20cx%3D%2246.7%22%20cy%3D%22228.5%22%20r%3D%220.7%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%22189.4%22%20cy%3D%2293.0%22%20r%3D%221.0%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22168.6%22%20cy%3D%22133.2%22%20r%3D%220.8%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%2210.8%22%20cy%3D%2252.8%22%20r%3D%220.6%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22177.0%22%20cy%3D%2231.8%22%20r%3D%220.9%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%2255.8%22%20cy%3D%22253.1%22%20r%3D%220.7%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22182.5%22%20cy%3D%22173.8%22%20r%3D%220.9%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%22245.1%22%20cy%3D%22246.1%22%20r%3D%220.3%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%2251.8%22%20cy%3D%22223.2%22%20r%3D%220.3%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%22144.9%22%20cy%3D%22102.5%22%20r%3D%220.8%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22192.4%22%20cy%3D%22229.4%22%20r%3D%220.9%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%226.8%22%20cy%3D%2254.8%22%20r%3D%220.9%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%22123.9%22%20cy%3D%2234.4%22%20r%3D%220.8%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%22206.6%22%20cy%3D%22177.1%22%20r%3D%220.8%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%2283.5%22%20cy%3D%22241.0%22%20r%3D%220.4%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%228.3%22%20cy%3D%2219.9%22%20r%3D%220.7%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%22223.1%22%20cy%3D%223.5%22%20r%3D%220.3%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%2223.2%22%20cy%3D%2260.5%22%20r%3D%220.6%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%22198.6%22%20cy%3D%22209.5%22%20r%3D%220.4%22%20opacity%3D%220.83%22%2F%3E%3Ccircle%20cx%3D%22140.7%22%20cy%3D%22251.5%22%20r%3D%220.6%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%2237.0%22%20cy%3D%22170.8%22%20r%3D%221.0%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22110.1%22%20cy%3D%22102.1%22%20r%3D%220.8%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%224.8%22%20cy%3D%2293.2%22%20r%3D%220.9%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22162.7%22%20cy%3D%22143.3%22%20r%3D%220.4%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22201.3%22%20cy%3D%22203.0%22%20r%3D%220.4%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22150.1%22%20cy%3D%2259.3%22%20r%3D%220.5%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%22170.0%22%20cy%3D%2235.1%22%20r%3D%220.7%22%20opacity%3D%220.33%22%2F%3E%3Ccircle%20cx%3D%22205.0%22%20cy%3D%22146.2%22%20r%3D%220.7%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22127.4%22%20cy%3D%22216.2%22%20r%3D%220.4%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22195.4%22%20cy%3D%2264.4%22%20r%3D%220.9%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%2277.5%22%20cy%3D%2222.8%22%20r%3D%220.7%22%20opacity%3D%220.69%22%2F%3E%3Ccircle%20cx%3D%2252.5%22%20cy%3D%2256.0%22%20r%3D%220.9%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22173.4%22%20cy%3D%2289.7%22%20r%3D%220.9%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22144.6%22%20cy%3D%22114.5%22%20r%3D%221.0%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22239.4%22%20cy%3D%22144.6%22%20r%3D%220.3%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%2253.9%22%20cy%3D%22101.5%22%20r%3D%220.7%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22169.5%22%20cy%3D%22240.3%22%20r%3D%221.0%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%2242.8%22%20cy%3D%227.5%22%20r%3D%221.0%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%22100.3%22%20cy%3D%2224.3%22%20r%3D%220.5%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22146.2%22%20cy%3D%2294.0%22%20r%3D%221.0%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%2213.0%22%20cy%3D%2251.5%22%20r%3D%220.3%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22179.9%22%20cy%3D%2297.4%22%20r%3D%220.6%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%22246.2%22%20cy%3D%22103.2%22%20r%3D%221.0%22%20opacity%3D%220.56%22%2F%3E%3Ccircle%20cx%3D%22162.0%22%20cy%3D%22155.5%22%20r%3D%221.0%22%20opacity%3D%220.99%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+.sw-cards.sw-cards--inner-grain-dense, .sw-cards__container.sw-cards--inner-grain-dense,
+.sw-cards .sw-cards__card.sw-cards__card--grain-dense,
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--grain-dense {
+  --sw-grain-svg: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20256%22%3E%3Cg%20fill%3D%22%23fff%22%3E%3Ccircle%20cx%3D%22244.9%22%20cy%3D%22164.7%22%20r%3D%220.5%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22131.1%22%20cy%3D%22140.9%22%20r%3D%220.8%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22164.9%22%20cy%3D%2235.0%22%20r%3D%220.9%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22230.6%22%20cy%3D%22114.8%22%20r%3D%220.3%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%22197.5%22%20cy%3D%22246.5%22%20r%3D%220.6%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%2275.1%22%20cy%3D%222.6%22%20r%3D%220.8%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2218.8%22%20cy%3D%22190.9%22%20r%3D%220.5%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22148.7%22%20cy%3D%2244.3%22%20r%3D%220.3%22%20opacity%3D%220.56%22%2F%3E%3Ccircle%20cx%3D%22156.6%22%20cy%3D%22238.9%22%20r%3D%220.6%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22124.1%22%20cy%3D%2274.6%22%20r%3D%220.7%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22230.0%22%20cy%3D%22124.9%22%20r%3D%220.5%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2234.9%22%20cy%3D%2236.9%22%20r%3D%221.0%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%2294.1%22%20cy%3D%22149.5%22%20r%3D%220.5%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%22112.6%22%20cy%3D%22200.3%22%20r%3D%220.8%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2284.0%22%20cy%3D%22160.2%22%20r%3D%220.3%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22232.5%22%20cy%3D%22138.0%22%20r%3D%221.0%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22111.2%22%20cy%3D%22214.8%22%20r%3D%220.7%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22207.9%22%20cy%3D%2216.6%22%20r%3D%220.9%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%22171.4%22%20cy%3D%22152.1%22%20r%3D%220.5%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%22242.2%22%20cy%3D%22231.7%22%20r%3D%221.0%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%22138.8%22%20cy%3D%22138.7%22%20r%3D%220.6%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22178.6%22%20cy%3D%2246.5%22%20r%3D%220.6%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%2262.4%22%20cy%3D%2221.8%22%20r%3D%220.8%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%2255.7%22%20cy%3D%22236.0%22%20r%3D%221.0%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2239.3%22%20cy%3D%2211.4%22%20r%3D%220.5%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22154.4%22%20cy%3D%22123.5%22%20r%3D%220.8%22%20opacity%3D%220.36%22%2F%3E%3Ccircle%20cx%3D%2230.0%22%20cy%3D%22249.0%22%20r%3D%220.7%22%20opacity%3D%220.82%22%2F%3E%3Ccircle%20cx%3D%2243.0%22%20cy%3D%2245.2%22%20r%3D%221.0%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2267.8%22%20cy%3D%22142.1%22%20r%3D%220.8%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22234.2%22%20cy%3D%22209.1%22%20r%3D%220.8%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%2241.8%22%20cy%3D%22146.0%22%20r%3D%221.0%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22198.2%22%20cy%3D%22159.9%22%20r%3D%220.8%22%20opacity%3D%220.69%22%2F%3E%3Ccircle%20cx%3D%22139.2%22%20cy%3D%2269.1%22%20r%3D%220.7%22%20opacity%3D%220.93%22%2F%3E%3Ccircle%20cx%3D%2268.7%22%20cy%3D%2273.1%22%20r%3D%220.8%22%20opacity%3D%220.33%22%2F%3E%3Ccircle%20cx%3D%2245.4%22%20cy%3D%22247.3%22%20r%3D%220.9%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22168.1%22%20cy%3D%22208.9%22%20r%3D%220.6%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%2256.8%22%20cy%3D%22253.7%22%20r%3D%220.7%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%22173.1%22%20cy%3D%22111.2%22%20r%3D%220.8%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%2271.4%22%20cy%3D%2276.1%22%20r%3D%220.9%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%2245.2%22%20cy%3D%22121.1%22%20r%3D%220.4%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%22252.1%22%20cy%3D%2277.3%22%20r%3D%220.9%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%2285.0%22%20cy%3D%2271.7%22%20r%3D%220.8%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%2227.6%22%20cy%3D%22248.7%22%20r%3D%220.3%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22176.3%22%20cy%3D%22179.0%22%20r%3D%220.7%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22246.2%22%20cy%3D%22211.9%22%20r%3D%220.6%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22122.3%22%20cy%3D%2248.6%22%20r%3D%220.9%22%20opacity%3D%220.62%22%2F%3E%3Ccircle%20cx%3D%2244.9%22%20cy%3D%22168.6%22%20r%3D%220.9%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22203.4%22%20cy%3D%22223.2%22%20r%3D%220.6%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22210.0%22%20cy%3D%22205.8%22%20r%3D%220.7%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22212.3%22%20cy%3D%22242.5%22%20r%3D%220.6%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22249.5%22%20cy%3D%22172.5%22%20r%3D%220.9%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%22181.9%22%20cy%3D%2229.9%22%20r%3D%220.9%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%2228.2%22%20cy%3D%22234.0%22%20r%3D%220.7%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2258.3%22%20cy%3D%22110.6%22%20r%3D%220.7%22%20opacity%3D%220.62%22%2F%3E%3Ccircle%20cx%3D%2257.7%22%20cy%3D%2263.8%22%20r%3D%220.6%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22241.1%22%20cy%3D%22223.7%22%20r%3D%220.5%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%22217.9%22%20cy%3D%2248.9%22%20r%3D%220.7%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%2237.5%22%20cy%3D%22235.5%22%20r%3D%220.6%22%20opacity%3D%220.60%22%2F%3E%3Ccircle%20cx%3D%22231.6%22%20cy%3D%22211.8%22%20r%3D%220.3%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22245.4%22%20cy%3D%2245.5%22%20r%3D%220.8%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22234.1%22%20cy%3D%22186.6%22%20r%3D%220.3%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%2268.6%22%20cy%3D%2225.9%22%20r%3D%220.7%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%22223.5%22%20cy%3D%22140.6%22%20r%3D%220.7%22%20opacity%3D%221.00%22%2F%3E%3Ccircle%20cx%3D%229.9%22%20cy%3D%2244.3%22%20r%3D%220.8%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%2217.3%22%20cy%3D%22203.2%22%20r%3D%220.8%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%2218.1%22%20cy%3D%22165.8%22%20r%3D%221.0%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%2283.8%22%20cy%3D%22139.6%22%20r%3D%220.5%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%2230.0%22%20cy%3D%22212.3%22%20r%3D%220.4%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%22160.7%22%20cy%3D%2249.3%22%20r%3D%220.7%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22237.0%22%20cy%3D%22219.2%22%20r%3D%220.8%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%2246.1%22%20cy%3D%22120.2%22%20r%3D%220.7%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22246.0%22%20cy%3D%2246.4%22%20r%3D%220.7%22%20opacity%3D%220.06%22%2F%3E%3Ccircle%20cx%3D%22191.2%22%20cy%3D%2247.4%22%20r%3D%220.7%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22201.8%22%20cy%3D%22142.9%22%20r%3D%220.5%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%22187.9%22%20cy%3D%22158.2%22%20r%3D%220.3%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22198.9%22%20cy%3D%2293.0%22%20r%3D%220.3%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%2232.1%22%20cy%3D%22212.2%22%20r%3D%220.5%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%2264.5%22%20cy%3D%226.3%22%20r%3D%220.8%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%2280.2%22%20cy%3D%2233.2%22%20r%3D%220.3%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2231.2%22%20cy%3D%2274.0%22%20r%3D%220.8%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%2242.8%22%20cy%3D%22247.0%22%20r%3D%220.8%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%22149.0%22%20cy%3D%2227.1%22%20r%3D%220.4%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%22202.1%22%20cy%3D%22209.0%22%20r%3D%220.7%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%224.1%22%20cy%3D%22178.0%22%20r%3D%220.9%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%220.4%22%20cy%3D%22245.6%22%20r%3D%220.3%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%2232.7%22%20cy%3D%2220.0%22%20r%3D%220.8%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22218.2%22%20cy%3D%226.7%22%20r%3D%220.9%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%2271.1%22%20cy%3D%22135.4%22%20r%3D%220.4%22%20opacity%3D%220.22%22%2F%3E%3Ccircle%20cx%3D%22187.1%22%20cy%3D%22105.5%22%20r%3D%220.8%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22168.0%22%20cy%3D%22105.7%22%20r%3D%220.8%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2273.4%22%20cy%3D%22202.6%22%20r%3D%220.8%22%20opacity%3D%220.60%22%2F%3E%3Ccircle%20cx%3D%22217.1%22%20cy%3D%22217.0%22%20r%3D%220.5%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22162.1%22%20cy%3D%2223.9%22%20r%3D%220.3%22%20opacity%3D%220.83%22%2F%3E%3Ccircle%20cx%3D%22179.8%22%20cy%3D%22187.7%22%20r%3D%221.0%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%22193.7%22%20cy%3D%22142.2%22%20r%3D%221.0%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%22116.3%22%20cy%3D%22140.1%22%20r%3D%220.9%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22250.2%22%20cy%3D%2279.5%22%20r%3D%220.8%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%2216.1%22%20cy%3D%22245.1%22%20r%3D%220.6%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%2286.5%22%20cy%3D%22144.7%22%20r%3D%220.3%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22123.0%22%20cy%3D%2231.9%22%20r%3D%220.4%22%20opacity%3D%220.87%22%2F%3E%3Ccircle%20cx%3D%2253.6%22%20cy%3D%2288.5%22%20r%3D%220.8%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%22175.2%22%20cy%3D%22203.8%22%20r%3D%221.0%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22183.8%22%20cy%3D%22159.1%22%20r%3D%220.4%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22217.8%22%20cy%3D%22103.4%22%20r%3D%221.0%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%22141.9%22%20cy%3D%22213.4%22%20r%3D%220.3%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%22200.5%22%20cy%3D%22154.6%22%20r%3D%220.5%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%22207.4%22%20cy%3D%22222.4%22%20r%3D%220.3%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%22116.2%22%20cy%3D%22216.4%22%20r%3D%220.4%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22229.6%22%20cy%3D%2238.5%22%20r%3D%221.0%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22202.8%22%20cy%3D%2219.2%22%20r%3D%220.7%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%2261.8%22%20cy%3D%22222.2%22%20r%3D%221.0%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%2225.3%22%20cy%3D%2280.4%22%20r%3D%220.7%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%2256.5%22%20cy%3D%2287.6%22%20r%3D%220.7%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22255.1%22%20cy%3D%22167.4%22%20r%3D%220.3%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%2275.5%22%20cy%3D%22107.0%22%20r%3D%220.5%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%22217.8%22%20cy%3D%2228.0%22%20r%3D%220.5%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22221.4%22%20cy%3D%22224.0%22%20r%3D%220.6%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%2272.9%22%20cy%3D%2295.1%22%20r%3D%220.5%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%2218.5%22%20cy%3D%22125.1%22%20r%3D%220.4%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%22174.9%22%20cy%3D%22160.7%22%20r%3D%220.4%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%2255.7%22%20cy%3D%2217.3%22%20r%3D%220.8%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22195.2%22%20cy%3D%22122.6%22%20r%3D%221.0%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22179.3%22%20cy%3D%22216.0%22%20r%3D%220.4%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2238.0%22%20cy%3D%22217.7%22%20r%3D%220.4%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22220.0%22%20cy%3D%2249.6%22%20r%3D%220.9%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%2279.7%22%20cy%3D%2287.0%22%20r%3D%220.5%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22122.8%22%20cy%3D%22125.9%22%20r%3D%220.6%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%2230.2%22%20cy%3D%22183.4%22%20r%3D%220.7%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22212.8%22%20cy%3D%22170.1%22%20r%3D%221.0%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%22214.2%22%20cy%3D%22252.0%22%20r%3D%220.5%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%2287.8%22%20cy%3D%22235.0%22%20r%3D%220.7%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22232.1%22%20cy%3D%22241.0%22%20r%3D%220.7%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22112.7%22%20cy%3D%22248.8%22%20r%3D%220.3%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22231.4%22%20cy%3D%2286.6%22%20r%3D%220.3%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%2294.4%22%20cy%3D%2285.2%22%20r%3D%220.6%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22103.3%22%20cy%3D%22254.0%22%20r%3D%220.5%22%20opacity%3D%221.00%22%2F%3E%3Ccircle%20cx%3D%22141.0%22%20cy%3D%2297.6%22%20r%3D%221.0%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%226.9%22%20cy%3D%22171.8%22%20r%3D%220.8%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%2232.0%22%20cy%3D%22183.4%22%20r%3D%220.9%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2246.4%22%20cy%3D%2263.8%22%20r%3D%220.5%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%2292.9%22%20cy%3D%22159.9%22%20r%3D%220.7%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22250.7%22%20cy%3D%2281.8%22%20r%3D%221.0%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%2274.5%22%20cy%3D%22183.6%22%20r%3D%220.5%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%2243.5%22%20cy%3D%22200.7%22%20r%3D%220.6%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%2241.4%22%20cy%3D%22133.0%22%20r%3D%220.9%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%222.9%22%20cy%3D%22131.4%22%20r%3D%220.9%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%2270.3%22%20cy%3D%22244.8%22%20r%3D%220.3%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%22167.6%22%20cy%3D%22210.6%22%20r%3D%220.9%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22105.9%22%20cy%3D%2229.0%22%20r%3D%220.9%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22181.8%22%20cy%3D%22163.6%22%20r%3D%220.8%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22133.9%22%20cy%3D%22221.1%22%20r%3D%221.0%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22146.8%22%20cy%3D%22204.5%22%20r%3D%220.4%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%22216.2%22%20cy%3D%224.2%22%20r%3D%220.8%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%22211.1%22%20cy%3D%222.1%22%20r%3D%220.9%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%22131.5%22%20cy%3D%22154.7%22%20r%3D%220.7%22%20opacity%3D%220.83%22%2F%3E%3Ccircle%20cx%3D%22193.7%22%20cy%3D%22223.2%22%20r%3D%220.7%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22207.7%22%20cy%3D%22135.4%22%20r%3D%220.8%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%2232.7%22%20cy%3D%22135.3%22%20r%3D%220.6%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22250.1%22%20cy%3D%22113.5%22%20r%3D%220.4%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%2212.0%22%20cy%3D%2295.6%22%20r%3D%220.9%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22102.3%22%20cy%3D%22212.9%22%20r%3D%220.3%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%2295.4%22%20cy%3D%2293.5%22%20r%3D%221.0%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%2237.1%22%20cy%3D%22221.2%22%20r%3D%220.4%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%2294.0%22%20cy%3D%22255.6%22%20r%3D%220.3%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%2270.6%22%20cy%3D%2243.3%22%20r%3D%220.6%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22126.1%22%20cy%3D%2292.0%22%20r%3D%220.9%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%22181.4%22%20cy%3D%22244.5%22%20r%3D%220.4%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22122.1%22%20cy%3D%22161.9%22%20r%3D%220.4%22%20opacity%3D%220.81%22%2F%3E%3Ccircle%20cx%3D%22233.0%22%20cy%3D%2252.6%22%20r%3D%220.7%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22251.2%22%20cy%3D%22195.9%22%20r%3D%220.7%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22237.3%22%20cy%3D%2223.1%22%20r%3D%220.9%22%20opacity%3D%220.06%22%2F%3E%3Ccircle%20cx%3D%225.3%22%20cy%3D%22229.8%22%20r%3D%220.7%22%20opacity%3D%220.98%22%2F%3E%3Ccircle%20cx%3D%22198.9%22%20cy%3D%22131.8%22%20r%3D%220.9%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%2214.4%22%20cy%3D%2228.2%22%20r%3D%220.3%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%22170.6%22%20cy%3D%22252.7%22%20r%3D%220.8%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%2287.6%22%20cy%3D%22245.5%22%20r%3D%221.0%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%221.4%22%20cy%3D%22172.9%22%20r%3D%220.6%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22142.1%22%20cy%3D%2216.4%22%20r%3D%220.4%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%22151.7%22%20cy%3D%2215.6%22%20r%3D%220.5%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22114.6%22%20cy%3D%22180.8%22%20r%3D%220.6%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2275.4%22%20cy%3D%22147.9%22%20r%3D%220.5%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%2224.6%22%20cy%3D%22242.8%22%20r%3D%220.9%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%2216.5%22%20cy%3D%227.7%22%20r%3D%221.0%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%22207.3%22%20cy%3D%2235.9%22%20r%3D%220.3%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%22199.1%22%20cy%3D%22163.6%22%20r%3D%220.8%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%2265.8%22%20cy%3D%221.7%22%20r%3D%220.3%22%20opacity%3D%220.69%22%2F%3E%3Ccircle%20cx%3D%22244.2%22%20cy%3D%22145.3%22%20r%3D%220.8%22%20opacity%3D%220.07%22%2F%3E%3Ccircle%20cx%3D%2274.8%22%20cy%3D%22204.6%22%20r%3D%220.7%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%22138.4%22%20cy%3D%22124.6%22%20r%3D%220.7%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%2264.8%22%20cy%3D%22175.6%22%20r%3D%220.4%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22178.6%22%20cy%3D%22126.8%22%20r%3D%220.7%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22218.6%22%20cy%3D%22236.9%22%20r%3D%220.6%22%20opacity%3D%220.78%22%2F%3E%3Ccircle%20cx%3D%22184.9%22%20cy%3D%22110.7%22%20r%3D%220.5%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%22180.5%22%20cy%3D%2266.2%22%20r%3D%221.0%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%22145.6%22%20cy%3D%22255.0%22%20r%3D%220.8%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22134.9%22%20cy%3D%22200.2%22%20r%3D%220.4%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%22170.2%22%20cy%3D%220.3%22%20r%3D%220.5%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2241.9%22%20cy%3D%22177.9%22%20r%3D%220.3%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%2235.4%22%20cy%3D%220.4%22%20r%3D%221.0%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%224.7%22%20cy%3D%2260.7%22%20r%3D%220.9%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%22255.3%22%20cy%3D%2257.9%22%20r%3D%220.4%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22188.2%22%20cy%3D%2276.2%22%20r%3D%220.6%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%2287.9%22%20cy%3D%22199.4%22%20r%3D%220.5%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22163.8%22%20cy%3D%22159.3%22%20r%3D%220.3%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22202.6%22%20cy%3D%2286.6%22%20r%3D%220.3%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22227.2%22%20cy%3D%2239.8%22%20r%3D%220.8%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22239.4%22%20cy%3D%22249.8%22%20r%3D%220.3%22%20opacity%3D%220.86%22%2F%3E%3Ccircle%20cx%3D%2249.8%22%20cy%3D%2255.1%22%20r%3D%220.6%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%2233.0%22%20cy%3D%2246.9%22%20r%3D%220.5%22%20opacity%3D%220.36%22%2F%3E%3Ccircle%20cx%3D%225.0%22%20cy%3D%22122.0%22%20r%3D%220.5%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%22115.1%22%20cy%3D%22178.8%22%20r%3D%220.6%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22115.3%22%20cy%3D%2269.6%22%20r%3D%220.3%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22131.3%22%20cy%3D%22202.8%22%20r%3D%220.4%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%22141.8%22%20cy%3D%2219.3%22%20r%3D%220.4%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%22215.3%22%20cy%3D%22160.6%22%20r%3D%220.4%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%22123.2%22%20cy%3D%2225.5%22%20r%3D%220.6%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%223.2%22%20cy%3D%220.4%22%20r%3D%220.9%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22160.1%22%20cy%3D%22174.3%22%20r%3D%221.0%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%223.9%22%20cy%3D%2243.1%22%20r%3D%220.8%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2252.5%22%20cy%3D%2247.5%22%20r%3D%220.3%22%20opacity%3D%220.30%22%2F%3E%3Ccircle%20cx%3D%22119.1%22%20cy%3D%220.0%22%20r%3D%220.8%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22252.3%22%20cy%3D%2250.6%22%20r%3D%220.7%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%22153.8%22%20cy%3D%22191.7%22%20r%3D%220.9%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%22164.1%22%20cy%3D%22170.4%22%20r%3D%220.8%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%2261.4%22%20cy%3D%22196.3%22%20r%3D%220.7%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22109.6%22%20cy%3D%2216.1%22%20r%3D%220.8%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%2278.9%22%20cy%3D%2276.9%22%20r%3D%220.6%22%20opacity%3D%220.98%22%2F%3E%3Ccircle%20cx%3D%22166.1%22%20cy%3D%22137.1%22%20r%3D%220.8%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%2265.7%22%20cy%3D%2264.3%22%20r%3D%221.0%22%20opacity%3D%220.77%22%2F%3E%3Ccircle%20cx%3D%2232.4%22%20cy%3D%22208.8%22%20r%3D%220.8%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%2273.2%22%20cy%3D%2291.8%22%20r%3D%220.3%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%2284.6%22%20cy%3D%22101.4%22%20r%3D%220.6%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2299.3%22%20cy%3D%22173.3%22%20r%3D%220.9%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22244.4%22%20cy%3D%22115.1%22%20r%3D%220.5%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%22145.5%22%20cy%3D%22253.6%22%20r%3D%220.9%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22101.9%22%20cy%3D%22231.8%22%20r%3D%221.0%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22254.9%22%20cy%3D%22168.2%22%20r%3D%220.3%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%222.8%22%20cy%3D%22199.5%22%20r%3D%220.8%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%227.6%22%20cy%3D%22248.1%22%20r%3D%220.3%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22144.7%22%20cy%3D%22131.2%22%20r%3D%220.8%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%224.6%22%20cy%3D%2213.5%22%20r%3D%220.4%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%2251.5%22%20cy%3D%22228.4%22%20r%3D%220.8%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%2264.5%22%20cy%3D%22186.4%22%20r%3D%221.0%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22124.7%22%20cy%3D%2265.5%22%20r%3D%220.3%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22243.9%22%20cy%3D%22115.7%22%20r%3D%220.6%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22140.4%22%20cy%3D%2260.7%22%20r%3D%220.8%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2260.5%22%20cy%3D%221.2%22%20r%3D%220.4%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%22204.4%22%20cy%3D%22205.7%22%20r%3D%220.4%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22109.2%22%20cy%3D%22103.6%22%20r%3D%220.3%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22210.6%22%20cy%3D%22214.6%22%20r%3D%220.3%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22241.1%22%20cy%3D%22234.4%22%20r%3D%220.3%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2274.2%22%20cy%3D%22152.7%22%20r%3D%221.0%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%22235.7%22%20cy%3D%2266.4%22%20r%3D%220.7%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%2278.8%22%20cy%3D%22186.8%22%20r%3D%220.8%22%20opacity%3D%220.93%22%2F%3E%3Ccircle%20cx%3D%2247.6%22%20cy%3D%22237.7%22%20r%3D%220.8%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22211.8%22%20cy%3D%2288.3%22%20r%3D%220.8%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%22253.0%22%20cy%3D%2268.5%22%20r%3D%220.5%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%2274.9%22%20cy%3D%22147.9%22%20r%3D%220.6%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22250.9%22%20cy%3D%22215.5%22%20r%3D%220.3%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%2233.2%22%20cy%3D%22213.6%22%20r%3D%220.3%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%22204.8%22%20cy%3D%2249.2%22%20r%3D%220.5%22%20opacity%3D%220.06%22%2F%3E%3Ccircle%20cx%3D%22105.6%22%20cy%3D%2272.5%22%20r%3D%220.4%22%20opacity%3D%220.77%22%2F%3E%3Ccircle%20cx%3D%22102.6%22%20cy%3D%22157.7%22%20r%3D%220.3%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%22133.6%22%20cy%3D%22157.5%22%20r%3D%220.9%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%22161.5%22%20cy%3D%22156.0%22%20r%3D%220.3%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%2264.4%22%20cy%3D%22105.3%22%20r%3D%220.3%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%22105.0%22%20cy%3D%22161.7%22%20r%3D%220.6%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22162.5%22%20cy%3D%22100.0%22%20r%3D%220.5%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22108.7%22%20cy%3D%22246.2%22%20r%3D%221.0%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%22198.1%22%20cy%3D%22231.4%22%20r%3D%220.8%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%22109.5%22%20cy%3D%2245.6%22%20r%3D%221.0%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22147.9%22%20cy%3D%22198.2%22%20r%3D%220.7%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%2238.1%22%20cy%3D%22201.6%22%20r%3D%220.8%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%2292.0%22%20cy%3D%22140.2%22%20r%3D%220.7%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2212.5%22%20cy%3D%22180.8%22%20r%3D%220.3%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%2264.9%22%20cy%3D%2223.3%22%20r%3D%220.6%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%22251.4%22%20cy%3D%22146.7%22%20r%3D%221.0%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2255.0%22%20cy%3D%22119.5%22%20r%3D%220.8%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%2281.1%22%20cy%3D%2239.9%22%20r%3D%221.0%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%22139.6%22%20cy%3D%2229.2%22%20r%3D%220.9%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22250.2%22%20cy%3D%22183.5%22%20r%3D%220.9%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%22214.5%22%20cy%3D%2287.7%22%20r%3D%220.9%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%22148.4%22%20cy%3D%2235.7%22%20r%3D%221.0%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%22228.3%22%20cy%3D%22114.8%22%20r%3D%220.4%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22165.3%22%20cy%3D%22174.5%22%20r%3D%220.3%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22143.6%22%20cy%3D%2255.6%22%20r%3D%220.9%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%2280.1%22%20cy%3D%2289.1%22%20r%3D%220.3%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%22193.8%22%20cy%3D%22252.3%22%20r%3D%220.3%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%22226.1%22%20cy%3D%22128.7%22%20r%3D%220.7%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22124.3%22%20cy%3D%22175.9%22%20r%3D%220.9%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%22208.8%22%20cy%3D%22221.8%22%20r%3D%220.3%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%2242.4%22%20cy%3D%2295.9%22%20r%3D%220.3%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%22204.1%22%20cy%3D%2262.5%22%20r%3D%221.0%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22121.4%22%20cy%3D%2262.5%22%20r%3D%220.7%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%22155.7%22%20cy%3D%225.3%22%20r%3D%220.8%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%22108.7%22%20cy%3D%22105.5%22%20r%3D%220.9%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22205.0%22%20cy%3D%22121.6%22%20r%3D%220.9%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%22222.2%22%20cy%3D%22158.2%22%20r%3D%220.7%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%2219.5%22%20cy%3D%2244.5%22%20r%3D%220.5%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22103.6%22%20cy%3D%22214.4%22%20r%3D%220.5%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22222.4%22%20cy%3D%22175.4%22%20r%3D%220.3%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%22177.2%22%20cy%3D%2290.2%22%20r%3D%220.7%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%2210.3%22%20cy%3D%22148.3%22%20r%3D%220.7%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22242.6%22%20cy%3D%229.0%22%20r%3D%220.8%22%20opacity%3D%220.07%22%2F%3E%3Ccircle%20cx%3D%2253.6%22%20cy%3D%2237.8%22%20r%3D%221.0%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22122.6%22%20cy%3D%22237.2%22%20r%3D%220.7%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%22246.9%22%20cy%3D%22136.7%22%20r%3D%220.4%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%22174.5%22%20cy%3D%2290.7%22%20r%3D%220.5%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%22127.5%22%20cy%3D%2283.3%22%20r%3D%220.6%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22121.9%22%20cy%3D%22106.7%22%20r%3D%220.6%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%22173.3%22%20cy%3D%2279.3%22%20r%3D%220.8%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%22134.2%22%20cy%3D%2258.7%22%20r%3D%220.5%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%2266.2%22%20cy%3D%22149.7%22%20r%3D%220.7%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22163.7%22%20cy%3D%2262.6%22%20r%3D%221.0%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%22141.2%22%20cy%3D%22109.6%22%20r%3D%220.3%22%20opacity%3D%220.86%22%2F%3E%3Ccircle%20cx%3D%2256.3%22%20cy%3D%22137.6%22%20r%3D%220.7%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%22227.2%22%20cy%3D%22219.3%22%20r%3D%220.6%22%20opacity%3D%220.07%22%2F%3E%3Ccircle%20cx%3D%22125.9%22%20cy%3D%22178.4%22%20r%3D%221.0%22%20opacity%3D%220.62%22%2F%3E%3Ccircle%20cx%3D%22167.4%22%20cy%3D%22222.5%22%20r%3D%220.3%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%2272.1%22%20cy%3D%2244.3%22%20r%3D%220.7%22%20opacity%3D%220.82%22%2F%3E%3Ccircle%20cx%3D%2234.3%22%20cy%3D%22111.3%22%20r%3D%220.9%22%20opacity%3D%220.48%22%2F%3E%3Ccircle%20cx%3D%2215.9%22%20cy%3D%2290.9%22%20r%3D%220.3%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%22128.3%22%20cy%3D%22232.1%22%20r%3D%220.6%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%2215.2%22%20cy%3D%2263.6%22%20r%3D%220.9%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22175.7%22%20cy%3D%227.0%22%20r%3D%220.8%22%20opacity%3D%220.77%22%2F%3E%3Ccircle%20cx%3D%2262.9%22%20cy%3D%2295.8%22%20r%3D%220.3%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%2258.6%22%20cy%3D%225.4%22%20r%3D%220.6%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22125.0%22%20cy%3D%22248.6%22%20r%3D%220.8%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2271.0%22%20cy%3D%22238.4%22%20r%3D%221.0%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%22255.8%22%20cy%3D%22205.1%22%20r%3D%220.3%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%2298.3%22%20cy%3D%2247.4%22%20r%3D%220.6%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%2278.1%22%20cy%3D%22119.3%22%20r%3D%220.7%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22248.8%22%20cy%3D%22110.4%22%20r%3D%220.6%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%2258.1%22%20cy%3D%22103.5%22%20r%3D%220.6%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%2216.5%22%20cy%3D%22206.7%22%20r%3D%220.8%22%20opacity%3D%220.51%22%2F%3E%3Ccircle%20cx%3D%22162.0%22%20cy%3D%22117.4%22%20r%3D%220.6%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22194.2%22%20cy%3D%22154.8%22%20r%3D%220.5%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22235.9%22%20cy%3D%2256.6%22%20r%3D%220.9%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%2262.4%22%20cy%3D%2281.6%22%20r%3D%220.8%22%20opacity%3D%220.93%22%2F%3E%3Ccircle%20cx%3D%22233.8%22%20cy%3D%22230.8%22%20r%3D%220.4%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%22158.0%22%20cy%3D%2263.4%22%20r%3D%220.4%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22210.8%22%20cy%3D%22117.8%22%20r%3D%220.8%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%2249.2%22%20cy%3D%22220.0%22%20r%3D%220.7%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%22185.4%22%20cy%3D%22192.7%22%20r%3D%220.4%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22187.1%22%20cy%3D%22153.3%22%20r%3D%220.5%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%22105.5%22%20cy%3D%22243.8%22%20r%3D%220.8%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%22155.0%22%20cy%3D%2214.6%22%20r%3D%220.4%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%2281.8%22%20cy%3D%22105.5%22%20r%3D%220.9%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22236.2%22%20cy%3D%2272.7%22%20r%3D%220.4%22%20opacity%3D%220.36%22%2F%3E%3Ccircle%20cx%3D%22142.6%22%20cy%3D%22188.8%22%20r%3D%220.9%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22168.4%22%20cy%3D%2244.1%22%20r%3D%220.7%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%2221.6%22%20cy%3D%225.8%22%20r%3D%220.8%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%22195.3%22%20cy%3D%2239.2%22%20r%3D%220.8%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%227.1%22%20cy%3D%2280.6%22%20r%3D%220.3%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22200.0%22%20cy%3D%22174.1%22%20r%3D%220.5%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%222.1%22%20cy%3D%22125.6%22%20r%3D%220.3%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%22226.0%22%20cy%3D%2258.0%22%20r%3D%220.9%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2247.5%22%20cy%3D%22179.9%22%20r%3D%220.3%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%22228.1%22%20cy%3D%2294.9%22%20r%3D%220.6%22%20opacity%3D%220.77%22%2F%3E%3Ccircle%20cx%3D%22223.4%22%20cy%3D%22243.1%22%20r%3D%220.7%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%2258.1%22%20cy%3D%22186.3%22%20r%3D%220.3%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%2286.9%22%20cy%3D%22211.0%22%20r%3D%220.9%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2277.6%22%20cy%3D%22251.8%22%20r%3D%220.9%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%226.1%22%20cy%3D%22170.7%22%20r%3D%221.0%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22220.7%22%20cy%3D%22177.2%22%20r%3D%220.5%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%22239.6%22%20cy%3D%22155.6%22%20r%3D%220.9%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%221.7%22%20cy%3D%2235.7%22%20r%3D%220.5%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%22150.3%22%20cy%3D%22246.4%22%20r%3D%220.5%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%2229.9%22%20cy%3D%2257.6%22%20r%3D%220.4%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22127.8%22%20cy%3D%22243.2%22%20r%3D%220.5%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%22232.6%22%20cy%3D%2295.4%22%20r%3D%220.5%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%2284.8%22%20cy%3D%22116.9%22%20r%3D%220.7%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%2213.2%22%20cy%3D%2294.9%22%20r%3D%220.5%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%22239.9%22%20cy%3D%22141.9%22%20r%3D%220.8%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22130.2%22%20cy%3D%22164.4%22%20r%3D%220.6%22%20opacity%3D%220.30%22%2F%3E%3Ccircle%20cx%3D%2252.1%22%20cy%3D%22223.4%22%20r%3D%221.0%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%22239.5%22%20cy%3D%22132.9%22%20r%3D%220.5%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%2253.8%22%20cy%3D%22142.7%22%20r%3D%220.4%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%22247.4%22%20cy%3D%2218.8%22%20r%3D%220.7%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%2295.4%22%20cy%3D%2230.2%22%20r%3D%221.0%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%22199.4%22%20cy%3D%2210.4%22%20r%3D%220.8%22%20opacity%3D%220.82%22%2F%3E%3Ccircle%20cx%3D%22200.8%22%20cy%3D%22247.0%22%20r%3D%220.3%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%22168.6%22%20cy%3D%2289.7%22%20r%3D%220.3%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22118.6%22%20cy%3D%22109.0%22%20r%3D%220.7%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22124.5%22%20cy%3D%22160.3%22%20r%3D%220.7%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2266.4%22%20cy%3D%224.5%22%20r%3D%220.8%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%22248.4%22%20cy%3D%22210.8%22%20r%3D%220.6%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22164.2%22%20cy%3D%2228.0%22%20r%3D%220.6%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%2291.8%22%20cy%3D%22182.4%22%20r%3D%221.0%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2223.9%22%20cy%3D%22209.1%22%20r%3D%220.3%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%22140.1%22%20cy%3D%22157.7%22%20r%3D%220.7%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22109.3%22%20cy%3D%22117.0%22%20r%3D%221.0%22%20opacity%3D%220.78%22%2F%3E%3Ccircle%20cx%3D%22111.7%22%20cy%3D%2219.4%22%20r%3D%220.5%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22224.4%22%20cy%3D%22147.2%22%20r%3D%220.6%22%20opacity%3D%220.07%22%2F%3E%3Ccircle%20cx%3D%22176.5%22%20cy%3D%22188.6%22%20r%3D%221.0%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22228.1%22%20cy%3D%22135.2%22%20r%3D%220.7%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22173.2%22%20cy%3D%22250.0%22%20r%3D%220.3%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22189.0%22%20cy%3D%22149.9%22%20r%3D%220.3%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%22109.8%22%20cy%3D%22137.5%22%20r%3D%220.8%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%2285.9%22%20cy%3D%22191.1%22%20r%3D%221.0%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%22209.3%22%20cy%3D%22120.5%22%20r%3D%220.9%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%22211.6%22%20cy%3D%22232.1%22%20r%3D%220.9%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22209.5%22%20cy%3D%2247.4%22%20r%3D%220.6%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22252.7%22%20cy%3D%22113.0%22%20r%3D%220.6%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%2252.7%22%20cy%3D%22214.4%22%20r%3D%220.7%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22103.8%22%20cy%3D%2233.0%22%20r%3D%220.7%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22250.2%22%20cy%3D%22176.7%22%20r%3D%220.5%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%22232.3%22%20cy%3D%22124.0%22%20r%3D%220.9%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22156.1%22%20cy%3D%2262.8%22%20r%3D%220.4%22%20opacity%3D%220.31%22%2F%3E%3Ccircle%20cx%3D%22230.4%22%20cy%3D%22233.6%22%20r%3D%220.7%22%20opacity%3D%220.53%22%2F%3E%3Ccircle%20cx%3D%2225.1%22%20cy%3D%2264.3%22%20r%3D%220.9%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%2276.7%22%20cy%3D%22159.7%22%20r%3D%220.6%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%22251.9%22%20cy%3D%22234.0%22%20r%3D%220.4%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%2264.5%22%20cy%3D%22238.5%22%20r%3D%220.4%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22183.4%22%20cy%3D%22124.0%22%20r%3D%220.5%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22134.2%22%20cy%3D%22245.8%22%20r%3D%220.5%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%22236.0%22%20cy%3D%221.4%22%20r%3D%220.8%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%2291.9%22%20cy%3D%22133.4%22%20r%3D%221.0%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%2284.0%22%20cy%3D%22213.9%22%20r%3D%221.0%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22122.7%22%20cy%3D%22174.6%22%20r%3D%220.6%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%2284.7%22%20cy%3D%2229.7%22%20r%3D%220.3%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%2227.8%22%20cy%3D%2231.0%22%20r%3D%221.0%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22150.4%22%20cy%3D%224.9%22%20r%3D%221.0%22%20opacity%3D%220.81%22%2F%3E%3Ccircle%20cx%3D%2290.7%22%20cy%3D%2269.6%22%20r%3D%221.0%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22109.3%22%20cy%3D%22104.1%22%20r%3D%220.8%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22112.5%22%20cy%3D%22203.6%22%20r%3D%221.0%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%2226.5%22%20cy%3D%2296.9%22%20r%3D%221.0%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%2287.6%22%20cy%3D%2241.6%22%20r%3D%220.8%22%20opacity%3D%220.78%22%2F%3E%3Ccircle%20cx%3D%2293.2%22%20cy%3D%22242.0%22%20r%3D%221.0%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22236.7%22%20cy%3D%22226.4%22%20r%3D%220.9%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22136.2%22%20cy%3D%22103.4%22%20r%3D%220.6%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%2275.8%22%20cy%3D%22120.6%22%20r%3D%220.9%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22207.4%22%20cy%3D%224.5%22%20r%3D%221.0%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%2296.5%22%20cy%3D%229.0%22%20r%3D%220.9%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%22155.2%22%20cy%3D%2227.6%22%20r%3D%220.8%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%22250.0%22%20cy%3D%22169.4%22%20r%3D%220.3%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%2269.0%22%20cy%3D%22251.7%22%20r%3D%220.6%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%22236.5%22%20cy%3D%2259.3%22%20r%3D%220.3%22%20opacity%3D%220.06%22%2F%3E%3Ccircle%20cx%3D%2251.0%22%20cy%3D%22247.7%22%20r%3D%220.5%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%2237.0%22%20cy%3D%22193.5%22%20r%3D%220.6%22%20opacity%3D%220.82%22%2F%3E%3Ccircle%20cx%3D%2257.1%22%20cy%3D%22125.2%22%20r%3D%220.3%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2248.9%22%20cy%3D%2221.5%22%20r%3D%220.6%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%2230.0%22%20cy%3D%2260.4%22%20r%3D%221.0%22%20opacity%3D%220.51%22%2F%3E%3Ccircle%20cx%3D%2214.1%22%20cy%3D%22216.5%22%20r%3D%220.5%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%2228.7%22%20cy%3D%2217.3%22%20r%3D%220.6%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%22249.5%22%20cy%3D%22216.3%22%20r%3D%220.6%22%20opacity%3D%220.30%22%2F%3E%3Ccircle%20cx%3D%22117.0%22%20cy%3D%22193.4%22%20r%3D%220.4%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%22191.0%22%20cy%3D%22168.0%22%20r%3D%220.9%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%22241.4%22%20cy%3D%22242.9%22%20r%3D%221.0%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%2256.3%22%20cy%3D%22147.8%22%20r%3D%220.9%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22211.9%22%20cy%3D%2281.8%22%20r%3D%220.7%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22207.1%22%20cy%3D%2222.4%22%20r%3D%220.4%22%20opacity%3D%220.51%22%2F%3E%3Ccircle%20cx%3D%22183.8%22%20cy%3D%22176.5%22%20r%3D%220.6%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%22241.9%22%20cy%3D%2241.1%22%20r%3D%220.5%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%2298.9%22%20cy%3D%2231.3%22%20r%3D%220.7%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22160.7%22%20cy%3D%22207.8%22%20r%3D%221.0%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%22177.2%22%20cy%3D%22253.0%22%20r%3D%220.4%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22196.8%22%20cy%3D%22197.2%22%20r%3D%220.8%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%22160.1%22%20cy%3D%22210.9%22%20r%3D%220.8%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%2272.1%22%20cy%3D%2263.0%22%20r%3D%220.5%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%2254.6%22%20cy%3D%22202.5%22%20r%3D%220.7%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2254.5%22%20cy%3D%2241.3%22%20r%3D%220.6%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%22145.1%22%20cy%3D%22154.8%22%20r%3D%220.7%22%20opacity%3D%220.83%22%2F%3E%3Ccircle%20cx%3D%22236.8%22%20cy%3D%22149.8%22%20r%3D%220.8%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22123.9%22%20cy%3D%22189.8%22%20r%3D%220.8%22%20opacity%3D%220.48%22%2F%3E%3Ccircle%20cx%3D%22130.6%22%20cy%3D%22158.9%22%20r%3D%220.6%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%22166.7%22%20cy%3D%22192.3%22%20r%3D%221.0%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%2266.1%22%20cy%3D%22148.3%22%20r%3D%220.9%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22178.9%22%20cy%3D%2251.4%22%20r%3D%220.5%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22202.1%22%20cy%3D%2290.0%22%20r%3D%220.3%22%20opacity%3D%221.00%22%2F%3E%3Ccircle%20cx%3D%22192.7%22%20cy%3D%2289.6%22%20r%3D%220.5%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%22207.3%22%20cy%3D%2259.7%22%20r%3D%220.9%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%2223.9%22%20cy%3D%22169.1%22%20r%3D%220.9%22%20opacity%3D%220.93%22%2F%3E%3Ccircle%20cx%3D%22172.3%22%20cy%3D%22172.8%22%20r%3D%220.8%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%22129.5%22%20cy%3D%22217.4%22%20r%3D%220.4%22%20opacity%3D%220.78%22%2F%3E%3Ccircle%20cx%3D%22216.6%22%20cy%3D%2219.6%22%20r%3D%220.4%22%20opacity%3D%220.82%22%2F%3E%3Ccircle%20cx%3D%2246.7%22%20cy%3D%22228.5%22%20r%3D%220.7%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%22189.4%22%20cy%3D%2293.0%22%20r%3D%221.0%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22168.6%22%20cy%3D%22133.2%22%20r%3D%220.8%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%2210.8%22%20cy%3D%2252.8%22%20r%3D%220.6%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22177.0%22%20cy%3D%2231.8%22%20r%3D%220.9%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%2255.8%22%20cy%3D%22253.1%22%20r%3D%220.7%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22182.5%22%20cy%3D%22173.8%22%20r%3D%220.9%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%22245.1%22%20cy%3D%22246.1%22%20r%3D%220.3%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%2251.8%22%20cy%3D%22223.2%22%20r%3D%220.3%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%22144.9%22%20cy%3D%22102.5%22%20r%3D%220.8%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22192.4%22%20cy%3D%22229.4%22%20r%3D%220.9%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%226.8%22%20cy%3D%2254.8%22%20r%3D%220.9%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%22123.9%22%20cy%3D%2234.4%22%20r%3D%220.8%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%22206.6%22%20cy%3D%22177.1%22%20r%3D%220.8%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%2283.5%22%20cy%3D%22241.0%22%20r%3D%220.4%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%228.3%22%20cy%3D%2219.9%22%20r%3D%220.7%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%22223.1%22%20cy%3D%223.5%22%20r%3D%220.3%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%2223.2%22%20cy%3D%2260.5%22%20r%3D%220.6%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%22198.6%22%20cy%3D%22209.5%22%20r%3D%220.4%22%20opacity%3D%220.83%22%2F%3E%3Ccircle%20cx%3D%22140.7%22%20cy%3D%22251.5%22%20r%3D%220.6%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%2237.0%22%20cy%3D%22170.8%22%20r%3D%221.0%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22110.1%22%20cy%3D%22102.1%22%20r%3D%220.8%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%224.8%22%20cy%3D%2293.2%22%20r%3D%220.9%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22162.7%22%20cy%3D%22143.3%22%20r%3D%220.4%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22201.3%22%20cy%3D%22203.0%22%20r%3D%220.4%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22150.1%22%20cy%3D%2259.3%22%20r%3D%220.5%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%22170.0%22%20cy%3D%2235.1%22%20r%3D%220.7%22%20opacity%3D%220.33%22%2F%3E%3Ccircle%20cx%3D%22205.0%22%20cy%3D%22146.2%22%20r%3D%220.7%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22127.4%22%20cy%3D%22216.2%22%20r%3D%220.4%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22195.4%22%20cy%3D%2264.4%22%20r%3D%220.9%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%2277.5%22%20cy%3D%2222.8%22%20r%3D%220.7%22%20opacity%3D%220.69%22%2F%3E%3Ccircle%20cx%3D%2252.5%22%20cy%3D%2256.0%22%20r%3D%220.9%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22173.4%22%20cy%3D%2289.7%22%20r%3D%220.9%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22144.6%22%20cy%3D%22114.5%22%20r%3D%221.0%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22239.4%22%20cy%3D%22144.6%22%20r%3D%220.3%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%2253.9%22%20cy%3D%22101.5%22%20r%3D%220.7%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22169.5%22%20cy%3D%22240.3%22%20r%3D%221.0%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%2242.8%22%20cy%3D%227.5%22%20r%3D%221.0%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%22100.3%22%20cy%3D%2224.3%22%20r%3D%220.5%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22146.2%22%20cy%3D%2294.0%22%20r%3D%221.0%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%2213.0%22%20cy%3D%2251.5%22%20r%3D%220.3%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22179.9%22%20cy%3D%2297.4%22%20r%3D%220.6%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%22246.2%22%20cy%3D%22103.2%22%20r%3D%221.0%22%20opacity%3D%220.56%22%2F%3E%3Ccircle%20cx%3D%22162.0%22%20cy%3D%22155.5%22%20r%3D%221.0%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%22203.2%22%20cy%3D%22121.7%22%20r%3D%220.4%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%22123.2%22%20cy%3D%2243.3%22%20r%3D%220.4%22%20opacity%3D%220.87%22%2F%3E%3Ccircle%20cx%3D%22240.1%22%20cy%3D%2219.8%22%20r%3D%220.6%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22153.3%22%20cy%3D%2285.3%22%20r%3D%221.0%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22142.0%22%20cy%3D%22251.4%22%20r%3D%221.0%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22245.7%22%20cy%3D%2275.6%22%20r%3D%220.8%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22220.6%22%20cy%3D%22230.6%22%20r%3D%220.9%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%2259.5%22%20cy%3D%2257.8%22%20r%3D%221.0%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%2232.8%22%20cy%3D%22204.0%22%20r%3D%220.3%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%2214.6%22%20cy%3D%2267.7%22%20r%3D%220.3%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%22153.7%22%20cy%3D%22241.9%22%20r%3D%220.9%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%22106.6%22%20cy%3D%22244.6%22%20r%3D%220.4%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22233.3%22%20cy%3D%22118.4%22%20r%3D%221.0%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22143.1%22%20cy%3D%2220.4%22%20r%3D%220.3%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%22226.3%22%20cy%3D%22174.0%22%20r%3D%221.0%22%20opacity%3D%220.51%22%2F%3E%3Ccircle%20cx%3D%2256.6%22%20cy%3D%22127.4%22%20r%3D%220.7%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%220.2%22%20cy%3D%22184.7%22%20r%3D%221.0%22%20opacity%3D%221.00%22%2F%3E%3Ccircle%20cx%3D%2242.6%22%20cy%3D%22253.2%22%20r%3D%220.4%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%220.3%22%20cy%3D%22199.3%22%20r%3D%220.9%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%2217.9%22%20cy%3D%22250.6%22%20r%3D%220.3%22%20opacity%3D%220.98%22%2F%3E%3Ccircle%20cx%3D%2298.9%22%20cy%3D%22129.6%22%20r%3D%220.6%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%2251.6%22%20cy%3D%2298.8%22%20r%3D%220.9%22%20opacity%3D%220.77%22%2F%3E%3Ccircle%20cx%3D%2224.9%22%20cy%3D%2290.3%22%20r%3D%221.0%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%2274.1%22%20cy%3D%22116.9%22%20r%3D%220.9%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2211.8%22%20cy%3D%22128.0%22%20r%3D%220.3%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%22242.5%22%20cy%3D%22163.4%22%20r%3D%220.5%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%2222.6%22%20cy%3D%22248.3%22%20r%3D%220.7%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%2289.6%22%20cy%3D%2276.3%22%20r%3D%220.7%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22185.0%22%20cy%3D%22208.3%22%20r%3D%220.4%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%224.0%22%20cy%3D%2259.5%22%20r%3D%220.3%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22146.4%22%20cy%3D%22252.4%22%20r%3D%220.8%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%2296.2%22%20cy%3D%22212.3%22%20r%3D%220.7%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%2261.6%22%20cy%3D%22254.1%22%20r%3D%220.4%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22164.7%22%20cy%3D%2260.2%22%20r%3D%220.3%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22161.0%22%20cy%3D%22119.6%22%20r%3D%220.9%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%22216.8%22%20cy%3D%2222.9%22%20r%3D%220.7%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%2291.4%22%20cy%3D%22249.5%22%20r%3D%221.0%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22112.5%22%20cy%3D%22184.3%22%20r%3D%220.3%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%2236.4%22%20cy%3D%22245.9%22%20r%3D%220.5%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%2266.3%22%20cy%3D%22212.2%22%20r%3D%220.9%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22140.2%22%20cy%3D%22106.2%22%20r%3D%220.4%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2282.7%22%20cy%3D%2214.1%22%20r%3D%220.6%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%2257.3%22%20cy%3D%22224.7%22%20r%3D%221.0%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%22142.3%22%20cy%3D%22240.9%22%20r%3D%220.3%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%22171.6%22%20cy%3D%22115.7%22%20r%3D%220.9%22%20opacity%3D%220.23%22%2F%3E%3Ccircle%20cx%3D%22201.1%22%20cy%3D%2234.7%22%20r%3D%220.7%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22227.6%22%20cy%3D%22135.8%22%20r%3D%220.4%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%2274.6%22%20cy%3D%2239.2%22%20r%3D%220.3%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%2270.0%22%20cy%3D%2257.2%22%20r%3D%220.8%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%22135.8%22%20cy%3D%22193.1%22%20r%3D%220.3%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%2287.2%22%20cy%3D%22219.3%22%20r%3D%221.0%22%20opacity%3D%220.87%22%2F%3E%3Ccircle%20cx%3D%2287.4%22%20cy%3D%22215.5%22%20r%3D%220.6%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22112.4%22%20cy%3D%2293.3%22%20r%3D%220.4%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%2239.1%22%20cy%3D%221.9%22%20r%3D%220.6%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%2265.7%22%20cy%3D%22157.6%22%20r%3D%221.0%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%2266.9%22%20cy%3D%22233.0%22%20r%3D%220.7%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%22183.0%22%20cy%3D%22184.0%22%20r%3D%220.6%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22152.9%22%20cy%3D%2261.0%22%20r%3D%221.0%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%2216.2%22%20cy%3D%22203.4%22%20r%3D%220.8%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22210.4%22%20cy%3D%22122.9%22%20r%3D%220.3%22%20opacity%3D%220.33%22%2F%3E%3Ccircle%20cx%3D%221.5%22%20cy%3D%22110.1%22%20r%3D%220.6%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%22246.2%22%20cy%3D%2238.8%22%20r%3D%220.6%22%20opacity%3D%220.81%22%2F%3E%3Ccircle%20cx%3D%2217.3%22%20cy%3D%225.9%22%20r%3D%220.8%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%2269.8%22%20cy%3D%22219.3%22%20r%3D%220.9%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%2259.5%22%20cy%3D%2275.8%22%20r%3D%220.8%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%22172.5%22%20cy%3D%2230.7%22%20r%3D%220.4%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22163.2%22%20cy%3D%22130.0%22%20r%3D%220.8%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22169.4%22%20cy%3D%2222.9%22%20r%3D%220.7%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%2273.2%22%20cy%3D%22234.1%22%20r%3D%220.7%22%20opacity%3D%220.98%22%2F%3E%3Ccircle%20cx%3D%22217.5%22%20cy%3D%22177.0%22%20r%3D%220.3%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22231.0%22%20cy%3D%22119.5%22%20r%3D%220.5%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%2212.8%22%20cy%3D%22113.6%22%20r%3D%220.7%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%2228.6%22%20cy%3D%22236.0%22%20r%3D%220.7%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22128.2%22%20cy%3D%2286.6%22%20r%3D%220.4%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22208.5%22%20cy%3D%2270.3%22%20r%3D%221.0%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%2215.0%22%20cy%3D%22190.0%22%20r%3D%221.0%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%2280.7%22%20cy%3D%22210.6%22%20r%3D%220.3%22%20opacity%3D%220.30%22%2F%3E%3Ccircle%20cx%3D%22130.3%22%20cy%3D%2292.7%22%20r%3D%220.3%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%2236.3%22%20cy%3D%22111.3%22%20r%3D%220.6%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22161.4%22%20cy%3D%2237.2%22%20r%3D%220.3%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%2278.1%22%20cy%3D%222.3%22%20r%3D%220.3%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2283.6%22%20cy%3D%22227.5%22%20r%3D%221.0%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%22167.4%22%20cy%3D%22178.3%22%20r%3D%220.3%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%22100.3%22%20cy%3D%2267.0%22%20r%3D%220.4%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%22215.9%22%20cy%3D%22199.7%22%20r%3D%220.4%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%22182.3%22%20cy%3D%22225.7%22%20r%3D%220.6%22%20opacity%3D%220.83%22%2F%3E%3Ccircle%20cx%3D%22174.9%22%20cy%3D%2228.9%22%20r%3D%220.6%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%2298.1%22%20cy%3D%22240.5%22%20r%3D%220.5%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%22198.9%22%20cy%3D%22228.5%22%20r%3D%220.6%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%228.3%22%20cy%3D%22148.2%22%20r%3D%220.4%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%2288.0%22%20cy%3D%2290.8%22%20r%3D%220.8%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22212.4%22%20cy%3D%22167.6%22%20r%3D%220.7%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%2271.5%22%20cy%3D%22221.8%22%20r%3D%220.3%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%220.3%22%20cy%3D%2221.9%22%20r%3D%220.8%22%20opacity%3D%221.00%22%2F%3E%3Ccircle%20cx%3D%2251.5%22%20cy%3D%22167.3%22%20r%3D%221.0%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%22229.9%22%20cy%3D%22137.1%22%20r%3D%220.3%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22209.4%22%20cy%3D%22106.3%22%20r%3D%221.0%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%22178.9%22%20cy%3D%2262.9%22%20r%3D%220.6%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%2285.2%22%20cy%3D%22158.4%22%20r%3D%220.9%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%22180.1%22%20cy%3D%22249.8%22%20r%3D%220.8%22%20opacity%3D%220.60%22%2F%3E%3Ccircle%20cx%3D%2266.9%22%20cy%3D%22110.4%22%20r%3D%220.7%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%220.2%22%20cy%3D%22106.1%22%20r%3D%221.0%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%22199.1%22%20cy%3D%22102.9%22%20r%3D%220.9%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%2225.6%22%20cy%3D%22243.0%22%20r%3D%220.8%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22120.9%22%20cy%3D%22235.2%22%20r%3D%221.0%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%22104.2%22%20cy%3D%22253.9%22%20r%3D%220.9%22%20opacity%3D%220.87%22%2F%3E%3Ccircle%20cx%3D%22152.3%22%20cy%3D%22100.7%22%20r%3D%220.8%22%20opacity%3D%220.87%22%2F%3E%3Ccircle%20cx%3D%22128.4%22%20cy%3D%22150.2%22%20r%3D%220.9%22%20opacity%3D%220.15%22%2F%3E%3Ccircle%20cx%3D%228.8%22%20cy%3D%22142.5%22%20r%3D%220.9%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2258.6%22%20cy%3D%22126.1%22%20r%3D%221.0%22%20opacity%3D%220.22%22%2F%3E%3Ccircle%20cx%3D%22176.2%22%20cy%3D%22182.3%22%20r%3D%220.5%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2240.8%22%20cy%3D%2293.6%22%20r%3D%220.7%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%22169.0%22%20cy%3D%22228.9%22%20r%3D%220.7%22%20opacity%3D%220.48%22%2F%3E%3Ccircle%20cx%3D%2221.8%22%20cy%3D%22102.1%22%20r%3D%220.7%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%2218.2%22%20cy%3D%22149.2%22%20r%3D%220.5%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%2236.8%22%20cy%3D%22120.2%22%20r%3D%220.3%22%20opacity%3D%220.60%22%2F%3E%3Ccircle%20cx%3D%22220.1%22%20cy%3D%2212.5%22%20r%3D%220.4%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22123.5%22%20cy%3D%2252.9%22%20r%3D%221.0%22%20opacity%3D%220.56%22%2F%3E%3Ccircle%20cx%3D%22230.9%22%20cy%3D%22201.9%22%20r%3D%220.7%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2229.0%22%20cy%3D%22244.9%22%20r%3D%221.0%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22140.5%22%20cy%3D%22182.2%22%20r%3D%220.9%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%2247.4%22%20cy%3D%2236.6%22%20r%3D%220.7%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22202.5%22%20cy%3D%2289.0%22%20r%3D%220.9%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%2252.2%22%20cy%3D%2262.8%22%20r%3D%220.8%22%20opacity%3D%220.07%22%2F%3E%3Ccircle%20cx%3D%22201.4%22%20cy%3D%2292.0%22%20r%3D%220.5%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%22143.8%22%20cy%3D%2270.7%22%20r%3D%220.3%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%2280.0%22%20cy%3D%22146.6%22%20r%3D%220.6%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%22130.9%22%20cy%3D%22186.0%22%20r%3D%220.4%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%22234.1%22%20cy%3D%2230.3%22%20r%3D%220.5%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22254.9%22%20cy%3D%22126.0%22%20r%3D%220.9%22%20opacity%3D%220.77%22%2F%3E%3Ccircle%20cx%3D%2259.5%22%20cy%3D%22223.7%22%20r%3D%220.8%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%22141.9%22%20cy%3D%22127.9%22%20r%3D%220.5%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%22153.7%22%20cy%3D%22145.5%22%20r%3D%220.7%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%2228.0%22%20cy%3D%22131.0%22%20r%3D%220.6%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%2295.0%22%20cy%3D%2235.9%22%20r%3D%220.3%22%20opacity%3D%220.31%22%2F%3E%3Ccircle%20cx%3D%2239.7%22%20cy%3D%22155.0%22%20r%3D%220.9%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22108.4%22%20cy%3D%22193.0%22%20r%3D%220.3%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22252.6%22%20cy%3D%22162.9%22%20r%3D%220.3%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%22105.5%22%20cy%3D%22224.6%22%20r%3D%220.3%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22254.2%22%20cy%3D%22223.0%22%20r%3D%220.8%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22148.1%22%20cy%3D%22236.3%22%20r%3D%220.5%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%2263.8%22%20cy%3D%2287.1%22%20r%3D%220.6%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22173.3%22%20cy%3D%22165.6%22%20r%3D%220.3%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%2229.8%22%20cy%3D%22199.6%22%20r%3D%220.6%22%20opacity%3D%220.56%22%2F%3E%3Ccircle%20cx%3D%2246.1%22%20cy%3D%22206.4%22%20r%3D%220.3%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22125.9%22%20cy%3D%22196.5%22%20r%3D%220.8%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22183.6%22%20cy%3D%22172.6%22%20r%3D%220.9%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%22141.3%22%20cy%3D%2212.1%22%20r%3D%220.6%22%20opacity%3D%220.77%22%2F%3E%3Ccircle%20cx%3D%22224.3%22%20cy%3D%22199.5%22%20r%3D%220.9%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%2264.5%22%20cy%3D%22101.0%22%20r%3D%220.6%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22212.9%22%20cy%3D%22140.3%22%20r%3D%221.0%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22119.5%22%20cy%3D%2239.3%22%20r%3D%220.3%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%22222.5%22%20cy%3D%2218.5%22%20r%3D%220.5%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%22238.3%22%20cy%3D%2235.4%22%20r%3D%221.0%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22225.7%22%20cy%3D%22178.0%22%20r%3D%220.5%22%20opacity%3D%220.31%22%2F%3E%3Ccircle%20cx%3D%22245.0%22%20cy%3D%22250.5%22%20r%3D%220.5%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%22128.0%22%20cy%3D%22243.7%22%20r%3D%220.9%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%2285.5%22%20cy%3D%22165.2%22%20r%3D%220.4%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%22104.2%22%20cy%3D%2237.2%22%20r%3D%220.8%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%2265.3%22%20cy%3D%22219.0%22%20r%3D%220.7%22%20opacity%3D%220.48%22%2F%3E%3Ccircle%20cx%3D%22158.6%22%20cy%3D%22195.2%22%20r%3D%220.8%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%22113.4%22%20cy%3D%2290.7%22%20r%3D%220.5%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22163.4%22%20cy%3D%22212.0%22%20r%3D%220.3%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22236.6%22%20cy%3D%22141.1%22%20r%3D%221.0%22%20opacity%3D%221.00%22%2F%3E%3Ccircle%20cx%3D%2216.6%22%20cy%3D%2299.0%22%20r%3D%220.3%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%2236.1%22%20cy%3D%22117.2%22%20r%3D%220.6%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%227.7%22%20cy%3D%2275.0%22%20r%3D%220.9%22%20opacity%3D%220.66%22%2F%3E%3Ccircle%20cx%3D%22160.8%22%20cy%3D%22225.3%22%20r%3D%220.3%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22134.5%22%20cy%3D%22202.5%22%20r%3D%220.9%22%20opacity%3D%220.80%22%2F%3E%3Ccircle%20cx%3D%22218.2%22%20cy%3D%2219.7%22%20r%3D%220.5%22%20opacity%3D%220.81%22%2F%3E%3Ccircle%20cx%3D%22206.0%22%20cy%3D%22158.7%22%20r%3D%220.4%22%20opacity%3D%220.87%22%2F%3E%3Ccircle%20cx%3D%22255.7%22%20cy%3D%22157.1%22%20r%3D%220.9%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22182.9%22%20cy%3D%22161.6%22%20r%3D%220.3%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22111.0%22%20cy%3D%2269.9%22%20r%3D%220.7%22%20opacity%3D%220.81%22%2F%3E%3Ccircle%20cx%3D%22198.5%22%20cy%3D%2273.4%22%20r%3D%220.6%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%22243.9%22%20cy%3D%22247.2%22%20r%3D%220.6%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%22237.1%22%20cy%3D%22209.2%22%20r%3D%220.6%22%20opacity%3D%220.82%22%2F%3E%3Ccircle%20cx%3D%22228.1%22%20cy%3D%2233.9%22%20r%3D%220.9%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%22218.9%22%20cy%3D%22167.9%22%20r%3D%220.5%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22103.0%22%20cy%3D%22231.4%22%20r%3D%221.0%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%2291.0%22%20cy%3D%22231.9%22%20r%3D%220.7%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%22133.1%22%20cy%3D%22208.3%22%20r%3D%220.9%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22124.6%22%20cy%3D%22110.3%22%20r%3D%220.5%22%20opacity%3D%220.83%22%2F%3E%3Ccircle%20cx%3D%22156.3%22%20cy%3D%226.5%22%20r%3D%220.9%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%22231.8%22%20cy%3D%22150.3%22%20r%3D%220.7%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22186.7%22%20cy%3D%22209.5%22%20r%3D%220.5%22%20opacity%3D%220.78%22%2F%3E%3Ccircle%20cx%3D%22221.3%22%20cy%3D%22184.2%22%20r%3D%221.0%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%2267.1%22%20cy%3D%2244.5%22%20r%3D%220.4%22%20opacity%3D%220.77%22%2F%3E%3Ccircle%20cx%3D%22114.0%22%20cy%3D%22111.3%22%20r%3D%220.7%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22216.7%22%20cy%3D%22148.9%22%20r%3D%220.8%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%2248.9%22%20cy%3D%22245.5%22%20r%3D%220.3%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%2248.6%22%20cy%3D%22172.4%22%20r%3D%221.0%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%2249.8%22%20cy%3D%2243.5%22%20r%3D%220.8%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%22213.4%22%20cy%3D%22216.5%22%20r%3D%220.4%22%20opacity%3D%220.12%22%2F%3E%3Ccircle%20cx%3D%22221.1%22%20cy%3D%22152.4%22%20r%3D%220.6%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22229.6%22%20cy%3D%22104.3%22%20r%3D%220.8%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22163.6%22%20cy%3D%22242.2%22%20r%3D%220.7%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%22113.9%22%20cy%3D%2210.9%22%20r%3D%220.3%22%20opacity%3D%220.21%22%2F%3E%3Ccircle%20cx%3D%22204.3%22%20cy%3D%2247.4%22%20r%3D%220.8%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22113.8%22%20cy%3D%2287.1%22%20r%3D%220.5%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%22234.0%22%20cy%3D%2216.2%22%20r%3D%220.7%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%2247.7%22%20cy%3D%22107.1%22%20r%3D%220.3%22%20opacity%3D%220.78%22%2F%3E%3Ccircle%20cx%3D%22185.5%22%20cy%3D%2243.6%22%20r%3D%220.8%22%20opacity%3D%220.87%22%2F%3E%3Ccircle%20cx%3D%2223.6%22%20cy%3D%22123.5%22%20r%3D%220.7%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22163.2%22%20cy%3D%2221.6%22%20r%3D%220.9%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22238.4%22%20cy%3D%22173.6%22%20r%3D%220.5%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%22209.1%22%20cy%3D%2278.2%22%20r%3D%220.7%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22108.8%22%20cy%3D%22112.6%22%20r%3D%220.4%22%20opacity%3D%220.61%22%2F%3E%3Ccircle%20cx%3D%2241.8%22%20cy%3D%2260.3%22%20r%3D%220.8%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%2260.8%22%20cy%3D%2283.4%22%20r%3D%221.0%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%22127.4%22%20cy%3D%2273.8%22%20r%3D%220.7%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%22235.9%22%20cy%3D%2250.3%22%20r%3D%221.0%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%22223.4%22%20cy%3D%22120.3%22%20r%3D%220.3%22%20opacity%3D%220.07%22%2F%3E%3Ccircle%20cx%3D%2251.6%22%20cy%3D%2239.2%22%20r%3D%220.7%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%2296.1%22%20cy%3D%22147.2%22%20r%3D%220.9%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22122.4%22%20cy%3D%22127.5%22%20r%3D%220.6%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%22120.2%22%20cy%3D%2232.5%22%20r%3D%220.8%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22179.6%22%20cy%3D%22162.0%22%20r%3D%220.7%22%20opacity%3D%220.60%22%2F%3E%3Ccircle%20cx%3D%22152.1%22%20cy%3D%22105.1%22%20r%3D%220.6%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22104.6%22%20cy%3D%22251.5%22%20r%3D%220.3%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%22134.4%22%20cy%3D%22108.9%22%20r%3D%220.3%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22174.1%22%20cy%3D%22174.7%22%20r%3D%220.5%22%20opacity%3D%220.93%22%2F%3E%3Ccircle%20cx%3D%22157.2%22%20cy%3D%2217.5%22%20r%3D%220.5%22%20opacity%3D%220.36%22%2F%3E%3Ccircle%20cx%3D%2294.4%22%20cy%3D%22115.5%22%20r%3D%220.3%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%223.4%22%20cy%3D%2259.1%22%20r%3D%220.8%22%20opacity%3D%220.33%22%2F%3E%3Ccircle%20cx%3D%22134.6%22%20cy%3D%22220.1%22%20r%3D%220.3%22%20opacity%3D%220.82%22%2F%3E%3Ccircle%20cx%3D%22224.4%22%20cy%3D%2284.7%22%20r%3D%220.5%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%2278.8%22%20cy%3D%22240.1%22%20r%3D%220.6%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%2229.2%22%20cy%3D%22157.0%22%20r%3D%220.5%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22136.8%22%20cy%3D%22171.0%22%20r%3D%220.3%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%22192.5%22%20cy%3D%2287.4%22%20r%3D%220.4%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22113.0%22%20cy%3D%22224.2%22%20r%3D%221.0%22%20opacity%3D%220.93%22%2F%3E%3Ccircle%20cx%3D%22157.9%22%20cy%3D%22107.7%22%20r%3D%220.6%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%2299.6%22%20cy%3D%22217.1%22%20r%3D%221.0%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%2285.3%22%20cy%3D%22242.9%22%20r%3D%220.5%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%2219.8%22%20cy%3D%22183.2%22%20r%3D%220.4%22%20opacity%3D%220.13%22%2F%3E%3Ccircle%20cx%3D%22192.0%22%20cy%3D%2244.5%22%20r%3D%221.0%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22114.5%22%20cy%3D%2240.6%22%20r%3D%220.6%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%2290.1%22%20cy%3D%22252.4%22%20r%3D%220.8%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%227.3%22%20cy%3D%22218.9%22%20r%3D%221.0%22%20opacity%3D%220.39%22%2F%3E%3Ccircle%20cx%3D%22243.3%22%20cy%3D%22126.2%22%20r%3D%220.3%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%22106.7%22%20cy%3D%22193.0%22%20r%3D%220.7%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%2251.4%22%20cy%3D%22194.8%22%20r%3D%220.3%22%20opacity%3D%220.99%22%2F%3E%3Ccircle%20cx%3D%22248.7%22%20cy%3D%2211.4%22%20r%3D%220.7%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22138.0%22%20cy%3D%22173.4%22%20r%3D%220.6%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%2298.8%22%20cy%3D%22190.9%22%20r%3D%220.5%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22241.7%22%20cy%3D%22156.2%22%20r%3D%220.6%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22143.8%22%20cy%3D%22241.4%22%20r%3D%220.4%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22170.6%22%20cy%3D%2216.5%22%20r%3D%220.6%22%20opacity%3D%220.87%22%2F%3E%3Ccircle%20cx%3D%2225.4%22%20cy%3D%22245.6%22%20r%3D%220.3%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22252.9%22%20cy%3D%2222.0%22%20r%3D%220.8%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2247.9%22%20cy%3D%229.5%22%20r%3D%221.0%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22247.8%22%20cy%3D%2250.0%22%20r%3D%221.0%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22190.7%22%20cy%3D%22245.7%22%20r%3D%220.7%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%2274.5%22%20cy%3D%22169.4%22%20r%3D%220.4%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%2270.0%22%20cy%3D%2261.0%22%20r%3D%220.4%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22249.6%22%20cy%3D%22139.9%22%20r%3D%220.5%22%20opacity%3D%220.33%22%2F%3E%3Ccircle%20cx%3D%2265.9%22%20cy%3D%2276.1%22%20r%3D%220.7%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%2213.5%22%20cy%3D%2225.1%22%20r%3D%220.7%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%2260.3%22%20cy%3D%226.5%22%20r%3D%220.3%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%22194.3%22%20cy%3D%2291.0%22%20r%3D%221.0%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%2294.2%22%20cy%3D%2220.4%22%20r%3D%220.8%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22107.5%22%20cy%3D%2234.8%22%20r%3D%220.3%22%20opacity%3D%220.89%22%2F%3E%3Ccircle%20cx%3D%2287.8%22%20cy%3D%22251.1%22%20r%3D%220.5%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%2251.2%22%20cy%3D%22210.8%22%20r%3D%220.8%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%2277.4%22%20cy%3D%22157.0%22%20r%3D%220.6%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%22119.2%22%20cy%3D%22139.8%22%20r%3D%220.6%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%2256.1%22%20cy%3D%2250.7%22%20r%3D%220.4%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%2283.8%22%20cy%3D%22130.4%22%20r%3D%220.8%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%2293.0%22%20cy%3D%22126.8%22%20r%3D%220.6%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%22198.3%22%20cy%3D%22175.1%22%20r%3D%220.5%22%20opacity%3D%220.87%22%2F%3E%3Ccircle%20cx%3D%22167.2%22%20cy%3D%22193.9%22%20r%3D%220.8%22%20opacity%3D%220.78%22%2F%3E%3Ccircle%20cx%3D%22227.1%22%20cy%3D%2217.4%22%20r%3D%220.4%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22214.3%22%20cy%3D%22220.5%22%20r%3D%220.7%22%20opacity%3D%220.48%22%2F%3E%3Ccircle%20cx%3D%22206.2%22%20cy%3D%22250.4%22%20r%3D%220.9%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%22231.4%22%20cy%3D%22170.8%22%20r%3D%220.7%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22213.2%22%20cy%3D%22185.9%22%20r%3D%220.7%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%2263.7%22%20cy%3D%2299.3%22%20r%3D%220.3%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%2231.8%22%20cy%3D%227.3%22%20r%3D%220.5%22%20opacity%3D%220.30%22%2F%3E%3Ccircle%20cx%3D%22114.9%22%20cy%3D%22252.8%22%20r%3D%220.6%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%22126.8%22%20cy%3D%22193.3%22%20r%3D%220.9%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%22244.1%22%20cy%3D%22179.4%22%20r%3D%221.0%22%20opacity%3D%220.88%22%2F%3E%3Ccircle%20cx%3D%22176.9%22%20cy%3D%22245.0%22%20r%3D%220.5%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%2254.6%22%20cy%3D%22177.7%22%20r%3D%220.6%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%2254.6%22%20cy%3D%22133.5%22%20r%3D%220.9%22%20opacity%3D%220.78%22%2F%3E%3Ccircle%20cx%3D%22207.0%22%20cy%3D%22229.7%22%20r%3D%220.4%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%22216.4%22%20cy%3D%22101.8%22%20r%3D%220.9%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%2223.1%22%20cy%3D%2211.3%22%20r%3D%220.8%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%22183.6%22%20cy%3D%2255.5%22%20r%3D%220.9%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22195.0%22%20cy%3D%22225.0%22%20r%3D%221.0%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%2240.6%22%20cy%3D%2247.9%22%20r%3D%220.5%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%22202.8%22%20cy%3D%22119.2%22%20r%3D%220.5%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%2299.0%22%20cy%3D%2216.4%22%20r%3D%220.5%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22247.8%22%20cy%3D%2248.6%22%20r%3D%220.3%22%20opacity%3D%220.06%22%2F%3E%3Ccircle%20cx%3D%22130.2%22%20cy%3D%2225.8%22%20r%3D%220.9%22%20opacity%3D%220.29%22%2F%3E%3Ccircle%20cx%3D%2259.8%22%20cy%3D%22190.6%22%20r%3D%220.5%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%22134.8%22%20cy%3D%22158.3%22%20r%3D%220.8%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%22137.3%22%20cy%3D%2287.5%22%20r%3D%220.8%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22168.9%22%20cy%3D%22191.7%22%20r%3D%220.3%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%22107.7%22%20cy%3D%22133.4%22%20r%3D%220.6%22%20opacity%3D%220.22%22%2F%3E%3Ccircle%20cx%3D%22174.7%22%20cy%3D%225.3%22%20r%3D%220.4%22%20opacity%3D%220.30%22%2F%3E%3Ccircle%20cx%3D%22115.5%22%20cy%3D%22235.5%22%20r%3D%220.6%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%22198.0%22%20cy%3D%22210.7%22%20r%3D%220.6%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%2227.7%22%20cy%3D%22110.3%22%20r%3D%220.3%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%2263.0%22%20cy%3D%22142.5%22%20r%3D%220.4%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%225.0%22%20cy%3D%22155.4%22%20r%3D%220.5%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%22248.7%22%20cy%3D%22195.0%22%20r%3D%220.6%22%20opacity%3D%220.37%22%2F%3E%3Ccircle%20cx%3D%2218.7%22%20cy%3D%22166.6%22%20r%3D%220.8%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22230.9%22%20cy%3D%2236.6%22%20r%3D%220.9%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%2220.5%22%20cy%3D%2288.7%22%20r%3D%220.6%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%22168.7%22%20cy%3D%2275.8%22%20r%3D%220.7%22%20opacity%3D%220.86%22%2F%3E%3Ccircle%20cx%3D%22143.1%22%20cy%3D%22178.8%22%20r%3D%220.8%22%20opacity%3D%220.50%22%2F%3E%3Ccircle%20cx%3D%22117.8%22%20cy%3D%22201.5%22%20r%3D%220.3%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%2250.8%22%20cy%3D%22203.7%22%20r%3D%220.3%22%20opacity%3D%220.98%22%2F%3E%3Ccircle%20cx%3D%22117.0%22%20cy%3D%22151.5%22%20r%3D%220.9%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%2276.4%22%20cy%3D%22133.3%22%20r%3D%220.5%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22123.3%22%20cy%3D%22126.3%22%20r%3D%220.4%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%22178.3%22%20cy%3D%2256.7%22%20r%3D%220.6%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22173.0%22%20cy%3D%22240.5%22%20r%3D%220.3%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%2219.7%22%20cy%3D%2220.2%22%20r%3D%220.4%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22147.0%22%20cy%3D%2262.0%22%20r%3D%220.9%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%2227.9%22%20cy%3D%22167.8%22%20r%3D%220.8%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22160.3%22%20cy%3D%22197.9%22%20r%3D%220.3%22%20opacity%3D%220.60%22%2F%3E%3Ccircle%20cx%3D%22205.1%22%20cy%3D%2296.3%22%20r%3D%220.3%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22101.2%22%20cy%3D%2218.4%22%20r%3D%220.7%22%20opacity%3D%220.92%22%2F%3E%3Ccircle%20cx%3D%22216.8%22%20cy%3D%2261.2%22%20r%3D%220.3%22%20opacity%3D%220.07%22%2F%3E%3Ccircle%20cx%3D%2247.4%22%20cy%3D%22202.2%22%20r%3D%221.0%22%20opacity%3D%220.06%22%2F%3E%3Ccircle%20cx%3D%2294.3%22%20cy%3D%22205.9%22%20r%3D%220.6%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%2215.2%22%20cy%3D%229.1%22%20r%3D%220.6%22%20opacity%3D%220.40%22%2F%3E%3Ccircle%20cx%3D%220.2%22%20cy%3D%22137.8%22%20r%3D%220.6%22%20opacity%3D%220.93%22%2F%3E%3Ccircle%20cx%3D%2246.6%22%20cy%3D%2261.8%22%20r%3D%220.9%22%20opacity%3D%220.79%22%2F%3E%3Ccircle%20cx%3D%22116.7%22%20cy%3D%22106.9%22%20r%3D%220.7%22%20opacity%3D%220.28%22%2F%3E%3Ccircle%20cx%3D%22115.2%22%20cy%3D%22172.6%22%20r%3D%220.6%22%20opacity%3D%220.35%22%2F%3E%3Ccircle%20cx%3D%22100.4%22%20cy%3D%22243.3%22%20r%3D%221.0%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22195.7%22%20cy%3D%22203.5%22%20r%3D%220.7%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%2274.9%22%20cy%3D%22129.1%22%20r%3D%220.6%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%2225.6%22%20cy%3D%22116.4%22%20r%3D%220.7%22%20opacity%3D%220.63%22%2F%3E%3Ccircle%20cx%3D%22253.7%22%20cy%3D%2291.9%22%20r%3D%220.8%22%20opacity%3D%220.78%22%2F%3E%3Ccircle%20cx%3D%22181.3%22%20cy%3D%22136.7%22%20r%3D%220.3%22%20opacity%3D%220.24%22%2F%3E%3Ccircle%20cx%3D%22190.4%22%20cy%3D%2255.3%22%20r%3D%220.5%22%20opacity%3D%220.48%22%2F%3E%3Ccircle%20cx%3D%22226.1%22%20cy%3D%2220.2%22%20r%3D%220.3%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22183.7%22%20cy%3D%22234.9%22%20r%3D%220.4%22%20opacity%3D%220.91%22%2F%3E%3Ccircle%20cx%3D%2234.0%22%20cy%3D%2238.1%22%20r%3D%220.3%22%20opacity%3D%220.33%22%2F%3E%3Ccircle%20cx%3D%22251.6%22%20cy%3D%2214.9%22%20r%3D%220.9%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22204.3%22%20cy%3D%22112.5%22%20r%3D%220.9%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%2291.0%22%20cy%3D%2234.0%22%20r%3D%220.8%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%22109.6%22%20cy%3D%22197.9%22%20r%3D%220.7%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%22200.5%22%20cy%3D%226.8%22%20r%3D%220.9%22%20opacity%3D%220.19%22%2F%3E%3Ccircle%20cx%3D%2235.4%22%20cy%3D%2267.7%22%20r%3D%220.8%22%20opacity%3D%220.98%22%2F%3E%3Ccircle%20cx%3D%225.2%22%20cy%3D%2250.2%22%20r%3D%220.4%22%20opacity%3D%220.74%22%2F%3E%3Ccircle%20cx%3D%2238.3%22%20cy%3D%22252.4%22%20r%3D%221.0%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%22112.9%22%20cy%3D%22164.3%22%20r%3D%220.3%22%20opacity%3D%220.42%22%2F%3E%3Ccircle%20cx%3D%2298.7%22%20cy%3D%22142.8%22%20r%3D%220.3%22%20opacity%3D%220.54%22%2F%3E%3Ccircle%20cx%3D%22180.7%22%20cy%3D%2230.5%22%20r%3D%220.8%22%20opacity%3D%220.32%22%2F%3E%3Ccircle%20cx%3D%22237.4%22%20cy%3D%22184.4%22%20r%3D%220.4%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22237.1%22%20cy%3D%2224.7%22%20r%3D%220.3%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22109.1%22%20cy%3D%2284.4%22%20r%3D%220.5%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%22136.1%22%20cy%3D%2292.6%22%20r%3D%221.0%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%2223.9%22%20cy%3D%220.5%22%20r%3D%220.6%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%2222.6%22%20cy%3D%2297.8%22%20r%3D%220.4%22%20opacity%3D%220.85%22%2F%3E%3Ccircle%20cx%3D%2212.0%22%20cy%3D%22249.6%22%20r%3D%220.4%22%20opacity%3D%220.55%22%2F%3E%3Ccircle%20cx%3D%22100.1%22%20cy%3D%2219.4%22%20r%3D%220.3%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22120.5%22%20cy%3D%22184.4%22%20r%3D%220.3%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%22209.6%22%20cy%3D%22228.4%22%20r%3D%220.8%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%22237.1%22%20cy%3D%2291.2%22%20r%3D%220.9%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22203.3%22%20cy%3D%2271.7%22%20r%3D%220.4%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%22144.5%22%20cy%3D%22106.0%22%20r%3D%220.9%22%20opacity%3D%220.62%22%2F%3E%3Ccircle%20cx%3D%22254.4%22%20cy%3D%22122.6%22%20r%3D%220.5%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%22239.4%22%20cy%3D%2278.1%22%20r%3D%220.7%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22225.6%22%20cy%3D%2242.0%22%20r%3D%220.7%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%2275.6%22%20cy%3D%22216.0%22%20r%3D%220.7%22%20opacity%3D%220.31%22%2F%3E%3Ccircle%20cx%3D%22217.4%22%20cy%3D%2217.2%22%20r%3D%220.7%22%20opacity%3D%220.56%22%2F%3E%3Ccircle%20cx%3D%2210.3%22%20cy%3D%22234.2%22%20r%3D%220.5%22%20opacity%3D%220.30%22%2F%3E%3Ccircle%20cx%3D%2270.3%22%20cy%3D%22253.9%22%20r%3D%220.6%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%2288.5%22%20cy%3D%22214.9%22%20r%3D%220.4%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%2290.5%22%20cy%3D%2253.2%22%20r%3D%220.8%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%22146.7%22%20cy%3D%22149.3%22%20r%3D%220.8%22%20opacity%3D%220.96%22%2F%3E%3Ccircle%20cx%3D%2299.1%22%20cy%3D%22185.3%22%20r%3D%220.3%22%20opacity%3D%220.93%22%2F%3E%3Ccircle%20cx%3D%2236.9%22%20cy%3D%22109.5%22%20r%3D%220.4%22%20opacity%3D%220.58%22%2F%3E%3Ccircle%20cx%3D%2231.4%22%20cy%3D%22107.7%22%20r%3D%220.8%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%22229.1%22%20cy%3D%22129.7%22%20r%3D%220.9%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22146.1%22%20cy%3D%22242.4%22%20r%3D%220.7%22%20opacity%3D%220.08%22%2F%3E%3Ccircle%20cx%3D%223.2%22%20cy%3D%22218.1%22%20r%3D%220.3%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22251.0%22%20cy%3D%22103.3%22%20r%3D%220.5%22%20opacity%3D%221.00%22%2F%3E%3Ccircle%20cx%3D%22147.5%22%20cy%3D%22163.5%22%20r%3D%220.8%22%20opacity%3D%220.90%22%2F%3E%3Ccircle%20cx%3D%22239.0%22%20cy%3D%22141.9%22%20r%3D%220.5%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%22169.0%22%20cy%3D%22129.2%22%20r%3D%220.6%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%22148.2%22%20cy%3D%2213.1%22%20r%3D%220.7%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%22100.7%22%20cy%3D%22210.6%22%20r%3D%220.9%22%20opacity%3D%220.59%22%2F%3E%3Ccircle%20cx%3D%22186.0%22%20cy%3D%22145.3%22%20r%3D%220.3%22%20opacity%3D%220.98%22%2F%3E%3Ccircle%20cx%3D%22153.0%22%20cy%3D%2254.7%22%20r%3D%220.8%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22100.7%22%20cy%3D%22149.9%22%20r%3D%220.5%22%20opacity%3D%220.31%22%2F%3E%3Ccircle%20cx%3D%2259.7%22%20cy%3D%2232.1%22%20r%3D%220.4%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%2245.7%22%20cy%3D%2233.4%22%20r%3D%220.3%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%2256.0%22%20cy%3D%22225.9%22%20r%3D%220.6%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%22242.1%22%20cy%3D%22122.6%22%20r%3D%220.9%22%20opacity%3D%220.07%22%2F%3E%3Ccircle%20cx%3D%22187.8%22%20cy%3D%22175.3%22%20r%3D%220.6%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22101.2%22%20cy%3D%22135.9%22%20r%3D%220.4%22%20opacity%3D%220.10%22%2F%3E%3Ccircle%20cx%3D%2259.1%22%20cy%3D%22225.3%22%20r%3D%220.9%22%20opacity%3D%220.09%22%2F%3E%3Ccircle%20cx%3D%22121.7%22%20cy%3D%2256.1%22%20r%3D%220.8%22%20opacity%3D%220.97%22%2F%3E%3Ccircle%20cx%3D%227.9%22%20cy%3D%225.0%22%20r%3D%220.7%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%2297.2%22%20cy%3D%22209.4%22%20r%3D%220.9%22%20opacity%3D%220.84%22%2F%3E%3Ccircle%20cx%3D%22219.9%22%20cy%3D%22161.3%22%20r%3D%220.9%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%22103.8%22%20cy%3D%22192.3%22%20r%3D%220.5%22%20opacity%3D%220.49%22%2F%3E%3Ccircle%20cx%3D%2275.2%22%20cy%3D%2249.5%22%20r%3D%220.8%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%22183.1%22%20cy%3D%2298.3%22%20r%3D%220.8%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%2240.0%22%20cy%3D%22243.4%22%20r%3D%220.4%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%22168.0%22%20cy%3D%2210.2%22%20r%3D%220.6%22%20opacity%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%2222.6%22%20cy%3D%2223.7%22%20r%3D%220.9%22%20opacity%3D%220.60%22%2F%3E%3Ccircle%20cx%3D%2278.5%22%20cy%3D%22149.4%22%20r%3D%220.7%22%20opacity%3D%220.41%22%2F%3E%3Ccircle%20cx%3D%2210.3%22%20cy%3D%2280.7%22%20r%3D%220.3%22%20opacity%3D%220.47%22%2F%3E%3Ccircle%20cx%3D%22125.1%22%20cy%3D%2235.9%22%20r%3D%220.4%22%20opacity%3D%220.71%22%2F%3E%3Ccircle%20cx%3D%22253.7%22%20cy%3D%2288.5%22%20r%3D%221.0%22%20opacity%3D%220.81%22%2F%3E%3Ccircle%20cx%3D%22135.6%22%20cy%3D%2245.6%22%20r%3D%220.3%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%22150.5%22%20cy%3D%22218.5%22%20r%3D%220.6%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%2246.5%22%20cy%3D%2286.5%22%20r%3D%220.8%22%20opacity%3D%220.43%22%2F%3E%3Ccircle%20cx%3D%2241.8%22%20cy%3D%2285.1%22%20r%3D%220.7%22%20opacity%3D%220.52%22%2F%3E%3Ccircle%20cx%3D%2271.3%22%20cy%3D%22147.6%22%20r%3D%220.4%22%20opacity%3D%220.87%22%2F%3E%3Ccircle%20cx%3D%2241.2%22%20cy%3D%22225.3%22%20r%3D%220.6%22%20opacity%3D%220.38%22%2F%3E%3Ccircle%20cx%3D%22147.5%22%20cy%3D%2253.0%22%20r%3D%220.7%22%20opacity%3D%220.81%22%2F%3E%3Ccircle%20cx%3D%2237.1%22%20cy%3D%22173.3%22%20r%3D%221.0%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%223.3%22%20cy%3D%22159.7%22%20r%3D%220.9%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22157.0%22%20cy%3D%229.8%22%20r%3D%220.7%22%20opacity%3D%220.82%22%2F%3E%3Ccircle%20cx%3D%228.2%22%20cy%3D%2210.4%22%20r%3D%220.9%22%20opacity%3D%220.70%22%2F%3E%3Ccircle%20cx%3D%22104.4%22%20cy%3D%2223.6%22%20r%3D%220.3%22%20opacity%3D%220.87%22%2F%3E%3Ccircle%20cx%3D%2210.3%22%20cy%3D%2226.9%22%20r%3D%220.3%22%20opacity%3D%220.57%22%2F%3E%3Ccircle%20cx%3D%2277.0%22%20cy%3D%224.0%22%20r%3D%220.3%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%22232.4%22%20cy%3D%2272.2%22%20r%3D%220.3%22%20opacity%3D%220.30%22%2F%3E%3Ccircle%20cx%3D%22125.0%22%20cy%3D%2262.6%22%20r%3D%220.5%22%20opacity%3D%220.27%22%2F%3E%3Ccircle%20cx%3D%22116.8%22%20cy%3D%2235.1%22%20r%3D%220.7%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%2267.2%22%20cy%3D%2280.4%22%20r%3D%220.9%22%20opacity%3D%220.76%22%2F%3E%3Ccircle%20cx%3D%22170.0%22%20cy%3D%22234.3%22%20r%3D%220.6%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%2231.3%22%20cy%3D%22124.3%22%20r%3D%220.4%22%20opacity%3D%220.77%22%2F%3E%3Ccircle%20cx%3D%22244.4%22%20cy%3D%22236.9%22%20r%3D%220.8%22%20opacity%3D%220.33%22%2F%3E%3Ccircle%20cx%3D%2277.8%22%20cy%3D%22194.5%22%20r%3D%220.6%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22238.9%22%20cy%3D%22128.6%22%20r%3D%220.6%22%20opacity%3D%220.14%22%2F%3E%3Ccircle%20cx%3D%22221.7%22%20cy%3D%22247.8%22%20r%3D%221.0%22%20opacity%3D%220.26%22%2F%3E%3Ccircle%20cx%3D%2246.3%22%20cy%3D%2249.2%22%20r%3D%220.4%22%20opacity%3D%220.45%22%2F%3E%3Ccircle%20cx%3D%22124.9%22%20cy%3D%2272.2%22%20r%3D%220.7%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%22193.4%22%20cy%3D%22225.2%22%20r%3D%220.7%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%2255.1%22%20cy%3D%224.4%22%20r%3D%220.5%22%20opacity%3D%220.73%22%2F%3E%3Ccircle%20cx%3D%22207.8%22%20cy%3D%22171.7%22%20r%3D%220.9%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%22158.7%22%20cy%3D%22175.0%22%20r%3D%220.8%22%20opacity%3D%220.86%22%2F%3E%3Ccircle%20cx%3D%22160.8%22%20cy%3D%2297.6%22%20r%3D%220.5%22%20opacity%3D%220.67%22%2F%3E%3Ccircle%20cx%3D%22110.9%22%20cy%3D%22159.2%22%20r%3D%220.4%22%20opacity%3D%220.34%22%2F%3E%3Ccircle%20cx%3D%22140.4%22%20cy%3D%22178.2%22%20r%3D%220.6%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%22142.2%22%20cy%3D%22233.5%22%20r%3D%221.0%22%20opacity%3D%220.17%22%2F%3E%3Ccircle%20cx%3D%2253.1%22%20cy%3D%22123.9%22%20r%3D%220.9%22%20opacity%3D%220.18%22%2F%3E%3Ccircle%20cx%3D%22211.6%22%20cy%3D%22174.4%22%20r%3D%220.8%22%20opacity%3D%220.44%22%2F%3E%3Ccircle%20cx%3D%2216.8%22%20cy%3D%22194.1%22%20r%3D%220.7%22%20opacity%3D%220.68%22%2F%3E%3Ccircle%20cx%3D%2225.3%22%20cy%3D%22128.9%22%20r%3D%220.6%22%20opacity%3D%220.11%22%2F%3E%3Ccircle%20cx%3D%22125.2%22%20cy%3D%22253.5%22%20r%3D%220.4%22%20opacity%3D%220.16%22%2F%3E%3Ccircle%20cx%3D%22133.8%22%20cy%3D%22124.9%22%20r%3D%220.7%22%20opacity%3D%220.65%22%2F%3E%3Ccircle%20cx%3D%22243.8%22%20cy%3D%22243.0%22%20r%3D%220.4%22%20opacity%3D%220.95%22%2F%3E%3Ccircle%20cx%3D%2234.7%22%20cy%3D%22241.4%22%20r%3D%221.0%22%20opacity%3D%220.20%22%2F%3E%3Ccircle%20cx%3D%226.6%22%20cy%3D%22140.3%22%20r%3D%220.5%22%20opacity%3D%220.94%22%2F%3E%3Ccircle%20cx%3D%2252.1%22%20cy%3D%22153.6%22%20r%3D%220.7%22%20opacity%3D%220.46%22%2F%3E%3Ccircle%20cx%3D%22230.9%22%20cy%3D%2276.0%22%20r%3D%220.4%22%20opacity%3D%220.30%22%2F%3E%3Ccircle%20cx%3D%22251.7%22%20cy%3D%22217.7%22%20r%3D%220.6%22%20opacity%3D%220.64%22%2F%3E%3Ccircle%20cx%3D%22116.5%22%20cy%3D%2285.6%22%20r%3D%220.5%22%20opacity%3D%220.76%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+.sw-cards.sw-cards--inner-effect-grain::after,
+.sw-cards__container.sw-cards--inner-effect-grain::after,
+.sw-cards .sw-cards__card.sw-cards__card--effect-grain::after,
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--effect-grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  border-radius: inherit;
+  background-color: var(--sw-grain-color, rgba(255, 255, 255, 0.85));
+  mix-blend-mode: var(--sw-grain-blend, normal);
+  -webkit-mask-image: var(--sw-grain-svg), var(--sw-grain-svg);
+  mask-image: var(--sw-grain-svg), var(--sw-grain-svg);
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  -webkit-mask-size:
+    calc(256px * var(--sw-grain-scale, 100) / 100) calc(256px * var(--sw-grain-scale, 100) / 100),
+    calc(256px * var(--sw-grain-scale, 100) / 100) calc(256px * var(--sw-grain-scale, 100) / 100);
+  mask-size:
+    calc(256px * var(--sw-grain-scale, 100) / 100) calc(256px * var(--sw-grain-scale, 100) / 100),
+    calc(256px * var(--sw-grain-scale, 100) / 100) calc(256px * var(--sw-grain-scale, 100) / 100);
+  -webkit-mask-position:
+    0 0,
+    calc(97px * var(--sw-grain-scale, 100) / 100) calc(53px * var(--sw-grain-scale, 100) / 100);
+  mask-position:
+    0 0,
+    calc(97px * var(--sw-grain-scale, 100) / 100) calc(53px * var(--sw-grain-scale, 100) / 100);
+}
+
+
+/* Inner Effect = Pattern: repeating CSS tile (dots / grid / lines). No extra DOM. */
+.sw-cards.sw-cards--inner-effect-pattern, .sw-cards__container.sw-cards--inner-effect-pattern {
+  background-image: none;
+  background-color: var(--sw-cards-inner-effect-bg, transparent);
+}
+
+.sw-cards.sw-cards--inner-effect-pattern::after, .sw-cards__container.sw-cards--inner-effect-pattern::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  border-radius: inherit;
+  mix-blend-mode: var(--sw-pattern-blend, normal);
+  background-position: center center;
+}
+
+.sw-cards.sw-cards--inner-pattern-dots::after, .sw-cards__container.sw-cards--inner-pattern-dots::after {
+  background-image: radial-gradient(
+    circle,
+    var(--sw-pattern-color, rgba(255, 255, 255, 0.28)) 18%,
+    transparent 19%
+  );
+  background-size:
+    calc(18px * var(--sw-pattern-scale, 100) / 100)
+    calc(18px * var(--sw-pattern-scale, 100) / 100);
+}
+
+.sw-cards.sw-cards--inner-pattern-grid::after, .sw-cards__container.sw-cards--inner-pattern-grid::after {
+  background-image:
+    linear-gradient(var(--sw-pattern-color, rgba(255, 255, 255, 0.28)) 0, var(--sw-pattern-color, rgba(255, 255, 255, 0.28)) 7%, transparent 7%),
+    linear-gradient(90deg, var(--sw-pattern-color, rgba(255, 255, 255, 0.28)) 0, var(--sw-pattern-color, rgba(255, 255, 255, 0.28)) 7%, transparent 7%);
+  background-size:
+    calc(24px * var(--sw-pattern-scale, 100) / 100)
+    calc(24px * var(--sw-pattern-scale, 100) / 100);
+}
+
+.sw-cards.sw-cards--inner-pattern-lines-horizontal::after, .sw-cards__container.sw-cards--inner-pattern-lines-horizontal::after {
+  background-image: repeating-linear-gradient(
+    0deg,
+    var(--sw-pattern-color, rgba(255, 255, 255, 0.28)) 0,
+    var(--sw-pattern-color, rgba(255, 255, 255, 0.28)) calc(1.5px * var(--sw-pattern-scale, 100) / 100),
+    transparent calc(1.5px * var(--sw-pattern-scale, 100) / 100),
+    transparent calc(12px * var(--sw-pattern-scale, 100) / 100)
+  );
+}
+
+.sw-cards.sw-cards--inner-pattern-lines-vertical::after, .sw-cards__container.sw-cards--inner-pattern-lines-vertical::after {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--sw-pattern-color, rgba(255, 255, 255, 0.28)) 0,
+    var(--sw-pattern-color, rgba(255, 255, 255, 0.28)) calc(1.5px * var(--sw-pattern-scale, 100) / 100),
+    transparent calc(1.5px * var(--sw-pattern-scale, 100) / 100),
+    transparent calc(12px * var(--sw-pattern-scale, 100) / 100)
+  );
+}
+
+.sw-cards.sw-cards--inner-pattern-lines-tl-br::after, .sw-cards__container.sw-cards--inner-pattern-lines-tl-br::after,
+.sw-cards.sw-cards--inner-pattern-lines::after, .sw-cards__container.sw-cards--inner-pattern-lines::after {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--sw-pattern-color, rgba(255, 255, 255, 0.28)) 0,
+    var(--sw-pattern-color, rgba(255, 255, 255, 0.28)) calc(1.5px * var(--sw-pattern-scale, 100) / 100),
+    transparent calc(1.5px * var(--sw-pattern-scale, 100) / 100),
+    transparent calc(12px * var(--sw-pattern-scale, 100) / 100)
+  );
+}
+
+.sw-cards.sw-cards--inner-pattern-lines-bl-tr::after, .sw-cards__container.sw-cards--inner-pattern-lines-bl-tr::after {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--sw-pattern-color, rgba(255, 255, 255, 0.28)) 0,
+    var(--sw-pattern-color, rgba(255, 255, 255, 0.28)) calc(1.5px * var(--sw-pattern-scale, 100) / 100),
+    transparent calc(1.5px * var(--sw-pattern-scale, 100) / 100),
+    transparent calc(12px * var(--sw-pattern-scale, 100) / 100)
+  );
+}
+
+.sw-cards.sw-cards--inner-pattern-custom::after, .sw-cards__container.sw-cards--inner-pattern-custom::after {
+  background-color: var(--sw-pattern-color, rgba(255, 255, 255, 0.28));
+  background-image: none;
+  -webkit-mask-image: var(--sw-pattern-svg);
+  mask-image: var(--sw-pattern-svg);
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  -webkit-mask-position: center center;
+  mask-position: center center;
+  -webkit-mask-size: calc(256px * var(--sw-pattern-scale, 100) / 100) auto;
+  mask-size: calc(256px * var(--sw-pattern-scale, 100) / 100) auto;
+  mask-mode: alpha;
+}
+
+.sw-cards.sw-cards--inner-pattern-custom.sw-cards--inner-pattern-color-svg::after, .sw-cards__container.sw-cards--inner-pattern-custom.sw-cards--inner-pattern-color-svg::after {
+  background-color: transparent;
+  background-image: var(--sw-pattern-svg);
+  background-repeat: repeat;
+  background-position: center center;
+  background-size: calc(256px * var(--sw-pattern-scale, 100) / 100) auto;
+  -webkit-mask-image: none;
+  mask-image: none;
+  opacity: calc(var(--sw-pattern-opacity, 28) / 100);
+}
+
+.sw-cards.sw-cards--inner-pattern-custom.sw-cards--inner-pattern-fit, .sw-cards__container.sw-cards--inner-pattern-custom.sw-cards--inner-pattern-fit {
+  overflow: hidden;
+}
+
+.sw-cards.sw-cards--inner-pattern-custom.sw-cards--inner-pattern-fit::after, .sw-cards__container.sw-cards--inner-pattern-custom.sw-cards--inner-pattern-fit::after {
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center center;
+  mask-position: center center;
+  -webkit-mask-size: calc(100% * var(--sw-pattern-scale, 100) / 100) auto;
+  mask-size: calc(100% * var(--sw-pattern-scale, 100) / 100) auto;
+}
+
+.sw-cards.sw-cards--inner-pattern-custom.sw-cards--inner-pattern-color-svg.sw-cards--inner-pattern-fit::after, .sw-cards__container.sw-cards--inner-pattern-custom.sw-cards--inner-pattern-color-svg.sw-cards--inner-pattern-fit::after {
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: calc(100% * var(--sw-pattern-scale, 100) / 100) auto;
+}
+
+/* Text box Effect = Pattern: repeating CSS on .content-wrapper (paint node). Vars: --sw-tb-pattern-* */
+.sw-cards .sw-cards__card.sw-cards__card--effect-pattern {
+  position: relative;
+  overflow: hidden;
+}
+
+.sw-cards .sw-cards__card.sw-cards__card--effect-pattern::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+  mix-blend-mode: var(--sw-tb-pattern-blend, normal);
+  background-position: center center;
+}
+
+.sw-cards .sw-cards__card.sw-cards__card--pattern-dots::after {
+  background-image: radial-gradient(
+    circle,
+    var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 18%,
+    transparent 19%
+  );
+  background-size:
+    calc(18px * var(--sw-tb-pattern-scale, 100) / 100)
+    calc(18px * var(--sw-tb-pattern-scale, 100) / 100);
+}
+
+.sw-cards .sw-cards__card.sw-cards__card--pattern-grid::after {
+  background-image:
+    linear-gradient(var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 0, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 7%, transparent 7%),
+    linear-gradient(90deg, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 0, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 7%, transparent 7%);
+  background-size:
+    calc(24px * var(--sw-tb-pattern-scale, 100) / 100)
+    calc(24px * var(--sw-tb-pattern-scale, 100) / 100);
+}
+
+.sw-cards .sw-cards__card.sw-cards__card--pattern-lines-horizontal::after {
+  background-image: repeating-linear-gradient(
+    0deg,
+    var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 0,
+    var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100),
+    transparent calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100),
+    transparent calc(12px * var(--sw-tb-pattern-scale, 100) / 100)
+  );
+}
+
+.sw-cards .sw-cards__card.sw-cards__card--pattern-lines-vertical::after {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 0,
+    var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100),
+    transparent calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100),
+    transparent calc(12px * var(--sw-tb-pattern-scale, 100) / 100)
+  );
+}
+
+.sw-cards .sw-cards__card.sw-cards__card--pattern-lines-tl-br::after,
+.sw-cards .sw-cards__card.sw-cards__card--pattern-lines::after {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 0,
+    var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100),
+    transparent calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100),
+    transparent calc(12px * var(--sw-tb-pattern-scale, 100) / 100)
+  );
+}
+
+.sw-cards .sw-cards__card.sw-cards__card--pattern-lines-bl-tr::after {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 0,
+    var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100),
+    transparent calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100),
+    transparent calc(12px * var(--sw-tb-pattern-scale, 100) / 100)
+  );
+}
+
+.sw-cards .sw-cards__card.sw-cards__card--pattern-custom::after {
+  background-color: var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28));
+  background-image: none;
+  -webkit-mask-image: var(--sw-tb-pattern-svg);
+  mask-image: var(--sw-tb-pattern-svg);
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  -webkit-mask-position: center center;
+  mask-position: center center;
+  -webkit-mask-size: calc(256px * var(--sw-tb-pattern-scale, 100) / 100) auto;
+  mask-size: calc(256px * var(--sw-tb-pattern-scale, 100) / 100) auto;
+  mask-mode: alpha;
+}
+
+.sw-cards .sw-cards__card.sw-cards__card--pattern-custom.sw-cards__card--pattern-color-svg::after {
+  background-color: transparent;
+  background-image: var(--sw-tb-pattern-svg);
+  background-repeat: repeat;
+  background-position: center center;
+  background-size: calc(256px * var(--sw-tb-pattern-scale, 100) / 100) auto;
+  -webkit-mask-image: none;
+  mask-image: none;
+  opacity: calc(var(--sw-tb-pattern-opacity, 28) / 100);
+}
+
+.sw-cards .sw-cards__card.sw-cards__card--pattern-custom.sw-cards__card--pattern-fit::after {
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center center;
+  mask-position: center center;
+  -webkit-mask-size: calc(100% * var(--sw-tb-pattern-scale, 100) / 100) auto;
+  mask-size: calc(100% * var(--sw-tb-pattern-scale, 100) / 100) auto;
+}
+
+.sw-cards .sw-cards__card.sw-cards__card--pattern-custom.sw-cards__card--pattern-color-svg.sw-cards__card--pattern-fit::after {
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: calc(100% * var(--sw-tb-pattern-scale, 100) / 100) auto;
+}
+.sw-cards .sw-cards__card.sw-cards__card--effect-glass,
+.sw-cards .sw-cards__card.sw-cards__card--effect-grain,
+.sw-cards .sw-cards__card.sw-cards__card--effect-pattern {
+  background-color: var(--sw-cards-card-bg, transparent);
+}
+
+.sw-cards .sw-cards__card.sw-cards__card--effect-glass {
+  -webkit-backdrop-filter: blur(var(--sw-tb-glass-blur, 20px)) saturate(var(--sw-tb-glass-saturate, 160%));
+  backdrop-filter: blur(var(--sw-tb-glass-blur, 20px)) saturate(var(--sw-tb-glass-saturate, 160%));
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sw-cards .sw-cards__card.sw-cards__card--effect-glass {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .sw-cards .sw-cards__card.sw-cards__card--effect-glass {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Card Effect rim: paint stays on .sw-cards__card; face is the inner panel when rim > 0. Card Spacing padding moves to .sw-cards__card-face (Hero text box / Testimonials quote card parity). */
+.sw-cards .sw-cards__card.sw-cards__card--glass-rim,
+.sw-cards .sw-cards__card.sw-cards__card--effect-rim {
+  padding: var(--sw-cards-card-rim, 0px);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.sw-cards .sw-cards__card.sw-cards__card--glass-rim .sw-cards__card-face,
+.sw-cards .sw-cards__card.sw-cards__card--effect-rim .sw-cards__card-face {
+  position: relative;
+  z-index: 4;
+  background-color: var(--sw-tb-glass-face, #ffffff);
+  border-radius: max(0px, calc(var(--sw-cards-card-border-radius, var(--border_radius, 0px)) - var(--sw-cards-card-rim, 0px)));
+  min-width: 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Header and Footer Panel Effects: full-surface background effects without rim/face layers. */
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--effect-grain,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--effect-grain {
+  position: relative;
+  overflow: hidden;
+}
+
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--effect-glass,
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--effect-grain,
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--effect-pattern,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--effect-glass,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--effect-grain,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--effect-pattern {
+  background-color: var(--sw-cards-card-bg, transparent);
+}
+
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--effect-glass,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--effect-glass {
+  -webkit-backdrop-filter: blur(var(--sw-tb-glass-blur, 20px)) saturate(var(--sw-tb-glass-saturate, 160%));
+  backdrop-filter: blur(var(--sw-tb-glass-blur, 20px)) saturate(var(--sw-tb-glass-saturate, 160%));
+}
+
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--effect-pattern,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--effect-pattern {
+  position: relative;
+  overflow: hidden;
+}
+
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--effect-pattern::after,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--effect-pattern::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+  mix-blend-mode: var(--sw-tb-pattern-blend, normal);
+  background-position: center center;
+}
+
+/* Panel Pattern Effects share the same pattern vocabulary as card surfaces. */
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--pattern-dots::after,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--pattern-dots::after {
+  background-image: radial-gradient(circle, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 18%, transparent 19%);
+  background-size: calc(18px * var(--sw-tb-pattern-scale, 100) / 100) calc(18px * var(--sw-tb-pattern-scale, 100) / 100);
+}
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--pattern-grid::after,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--pattern-grid::after {
+  background-image: linear-gradient(var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 0, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 7%, transparent 7%), linear-gradient(90deg, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 0, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 7%, transparent 7%);
+  background-size: calc(24px * var(--sw-tb-pattern-scale, 100) / 100) calc(24px * var(--sw-tb-pattern-scale, 100) / 100);
+}
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--pattern-lines-horizontal::after,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--pattern-lines-horizontal::after {
+  background-image: repeating-linear-gradient(0deg, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 0, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100), transparent calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100), transparent calc(12px * var(--sw-tb-pattern-scale, 100) / 100));
+}
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--pattern-lines-vertical::after,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--pattern-lines-vertical::after {
+  background-image: repeating-linear-gradient(90deg, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 0, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100), transparent calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100), transparent calc(12px * var(--sw-tb-pattern-scale, 100) / 100));
+}
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--pattern-lines-tl-br::after,
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--pattern-lines::after,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--pattern-lines-tl-br::after,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--pattern-lines::after {
+  background-image: repeating-linear-gradient(45deg, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 0, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100), transparent calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100), transparent calc(12px * var(--sw-tb-pattern-scale, 100) / 100));
+}
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--pattern-lines-bl-tr::after,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--pattern-lines-bl-tr::after {
+  background-image: repeating-linear-gradient(-45deg, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) 0, var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28)) calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100), transparent calc(1.5px * var(--sw-tb-pattern-scale, 100) / 100), transparent calc(12px * var(--sw-tb-pattern-scale, 100) / 100));
+}
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--pattern-custom::after,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--pattern-custom::after {
+  background-color: var(--sw-tb-pattern-color, rgba(255, 255, 255, 0.28));
+  background-image: none;
+  -webkit-mask-image: var(--sw-tb-pattern-svg);
+  mask-image: var(--sw-tb-pattern-svg);
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  -webkit-mask-position: center center;
+  mask-position: center center;
+  -webkit-mask-size: calc(256px * var(--sw-tb-pattern-scale, 100) / 100) auto;
+  mask-size: calc(256px * var(--sw-tb-pattern-scale, 100) / 100) auto;
+  mask-mode: alpha;
+}
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--pattern-custom.sw-cards__heading-panel--pattern-color-svg::after,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--pattern-custom.sw-cards__footer-panel--pattern-color-svg::after {
+  background-color: transparent;
+  background-image: var(--sw-tb-pattern-svg);
+  background-repeat: repeat;
+  background-position: center center;
+  background-size: calc(256px * var(--sw-tb-pattern-scale, 100) / 100) auto;
+  -webkit-mask-image: none;
+  mask-image: none;
+  opacity: calc(var(--sw-tb-pattern-opacity, 28) / 100);
+}
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--pattern-custom.sw-cards__heading-panel--pattern-fit::after,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--pattern-custom.sw-cards__footer-panel--pattern-fit::after {
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center center;
+  mask-position: center center;
+  -webkit-mask-size: calc(100% * var(--sw-tb-pattern-scale, 100) / 100) auto;
+  mask-size: calc(100% * var(--sw-tb-pattern-scale, 100) / 100) auto;
+}
+
+/* Panel effects are background layers; headings, rich text, and buttons stay above them. */
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--effect > .sw-cards__heading-wrapper,
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--effect > .sw-cards__content-area-wrapper,
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--effect > .sw-cards__description,
+.sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--effect > .sw-cards__heading-cta,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--effect > .sw-cards__heading-wrapper,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--effect > .sw-cards__description,
+.sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--effect > .sw-cards__cta {
+  position: relative;
+  z-index: 4;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--effect-glass,
+  .sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--effect-glass {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .sw-cards .sw-cards__heading-panel.sw-cards__heading-panel--effect-glass,
+  .sw-cards .sw-cards__footer-panel.sw-cards__footer-panel--effect-glass {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}

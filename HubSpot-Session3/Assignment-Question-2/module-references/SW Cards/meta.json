@@ -1,0 +1,13 @@
+{
+  "global" : false,
+  "content_types" : [ "LANDING_PAGE", "SITE_PAGE", "BLOG_LISTING", "BLOG_POST" ],
+  "inline_help_text" : "<a href='https://smithworks.marketing/contact'>Support</a> | <a href='https://smithworks.marketing/faqs'>Documentation</a>",
+  "css_render_options" : {
+    "async" : true
+  },
+  "host_template_types" : [ "PAGE", "BLOG_LISTING", "BLOG_POST" ],
+  "module_id" : 208273232530,
+  "label" : "SW Cards",
+  "icon" : "https://22211562.fs1.hubspotusercontent-na1.net/hubfs/22211562/meta-icons/sections.svg",
+  "is_available_for_new_content" : true
+}

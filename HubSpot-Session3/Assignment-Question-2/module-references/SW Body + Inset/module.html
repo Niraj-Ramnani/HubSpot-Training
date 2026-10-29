@@ -1,0 +1,1297 @@
+{# ===============================
+   Smithworks' SW Body + Inset module.html
+   Internal name: SW Body + Inset
+   SW Category: Sections
+   Master version number: 2026.09.17.15.04
+   Changelog: docs/SW-Module-Docs/SW Body + Inset/CHANGELOG.md (repo; not uploaded)
+
+   Fields used:
+   - enable_module, custom_id, custom_classes
+   - heading_items (State 3), body_rich_text, content_style
+   - show_inset, inset (Inset Subheadings / Image / Content / Buttons)
+   - cta_buttons Footer Content (module-level band; not the inset card)
+   - styles.module_settings (outer/inner; no heights)
+   - styles.module_background_settings (outer_* + inner; inner_border_override stroke only; inner_border_radius_override independent, default false)
+   - styles.content_colors (Content Area, Inset Content, Footer Content)
+   - styles.content_area_settings (body) + styles.heading_panel_settings + styles.footer_content_settings + styles.inset_content_area_settings
+   - heading_items wrapped in Header Panel DOM; cta_buttons Footer Content (additive; default empty)
+   - inset.inset_cta_button_items.style (15 Button Styles; override_link_colors for Simple Link)
+   - styles.inset_width_setting (XL / Desktop Inherit / Tablet Inherit)
+   - styles.inset_settings (XL / Desktop / Tablet / Mobile order + valign + gap)
+   - styles.inset_styles (theme/custom bg, theme radius + override)
+   - styles.heading_settings (heading_text_wrap default auto)
+   - background_video_settings
+
+   Layout: true CSS float wrap (not equal-height columns). Floated inset flush outer edge.
+   Middle/bottom valign: padding-top + shape-outside inset(pad) on the float; JS iterates
+   until card bottom (or midpoint) aligns — full-width text above the card, no empty column.
+   =============================== #}
+
+{% import "../../sw-templates/sw-macros.html" as macros %}
+
+{# Carmello §5: outline_* → hyphen CSS. Equals-only so a weird saved style still emits a button. #}
+{% macro sw_bi_btn_css(style, fallback) -%}
+{%- set _fb = fallback if fallback else 'primary' -%}
+{%- if style == 'outline_primary' -%}outline-primary
+{%- elif style == 'outline_secondary' -%}outline-secondary
+{%- elif style == 'outline_tertiary' -%}outline-tertiary
+{%- elif style == 'outline_white' -%}outline-white
+{%- elif style == 'outline_dark' -%}outline-dark
+{%- elif style == 'primary' or style == 'secondary' or style == 'tertiary' or style == 'white' or style == 'light' or style == 'black' or style == 'dark' or style == 'gradient_one' or style == 'gradient_two' or style == 'simple_link' -%}{{ style }}
+{%- else -%}{{ _fb }}
+{%- endif -%}
+{%- endmacro %}
+
+{% set _styles = module.styles|default({}) %}
+{% set _mod = _styles.module_settings|default({}) %}
+{% set _bg = _styles.module_background_settings|default({}) %}
+{% set _col_width = _styles.inset_width_setting|default({}) %}
+{% set _inset_set = _styles.inset_settings|default({}) %}
+{% set _inset_sty = _styles.inset_styles|default({}) %}
+{% set _hsett = _styles.heading_settings|default({}) %}
+{% set _heading_text_wrap = _hsett.heading_text_wrap|default('auto') %}
+{% set _heading_items = module.heading_items if module.heading_items is iterable else [] %}
+{% set _show_inset = module.show_inset|default(true) %}
+{% set _inset_g = module.inset|default({}) %}
+{% set _inset_heading_items = _inset_g.inset_heading_items if _inset_g.inset_heading_items is iterable else [] %}
+{# HubSpot may store one repeater row as a mapping (not a list). #}
+{% set _cta_raw = _inset_g.inset_cta_button_items|default([]) %}
+{% if _cta_raw is mapping and _cta_raw is not string %}
+  {% set _cta_items = [_cta_raw] %}
+{% elif _cta_raw is iterable and _cta_raw is not string %}
+  {% set _cta_items = _cta_raw %}
+{% else %}
+  {% set _cta_items = [] %}
+{% endif %}
+{% set _btn_layout = _inset_g.inset_cta_buttons_layout|default('stacked') %}
+{% set _cta_align = _inset_g.inset_cta_alignment|default('left') %}
+{% set _outer_opt = _bg.outer_background_option|default('none') %}
+{% set _bg_opt = _bg.background_option|default('none') %}
+
+{# --- Aurora Updates: inner image stack, Effect, Aurora, SVG Overlay, Animated --- #}
+{% set _inner_xl = _bg.background_image_xl_group|default({}) %}
+{% set _inner_lg = _bg.background_image_lg_group|default({}) %}
+{% set _inner_md = _bg.background_image_md_group|default({}) %}
+{% set _inner_sm = _bg.background_image_sm_group|default({}) %}
+{% set bg_xl = _inner_xl.background_image_xl|default({}) %}
+{% set bg_lg = _inner_lg.background_image_lg|default({}) %}
+{% set bg_md = _inner_md.background_image_md|default({}) %}
+{% set bg_sm = _inner_sm.background_image_sm|default({}) %}
+{% set _bg_xl_src = (bg_xl.src|default(''))|trim %}
+{% set _bg_lg_src = (bg_lg.src|default(''))|trim %}
+{% set _bg_md_src = (bg_md.src|default(''))|trim %}
+{% set _bg_sm_src = (bg_sm.src|default(''))|trim %}
+{% set override_lg = _inner_lg.override_lg_background_image|default(false) %}
+{% set override_md = _inner_md.override_md_background_image|default(false) %}
+{% set override_sm = _inner_sm.override_sm_background_image|default(false) %}
+{% set _inner_size_xl = _inner_xl.hero_background_size|default('cover') %}
+{% set _inner_pos_xl = _inner_xl.background_position_xl|default('center center') %}
+{% set _inner_repeat_xl = _inner_xl.background_repeat_xl|default('no-repeat') %}
+{% set _inner_overlay_xl = _inner_xl.background_color_overlay_xl|default({'color':'#000000','opacity':0}) %}
+{% set _inner_base_xl = _inner_xl.background_base_color_xl|default({'color':'#ffffff','opacity':100}) %}
+{% set _inner_color_token = _bg.background_color|default('primary') %}
+{% if _inner_color_token == 'none' or not _inner_color_token %}{% set _inner_color_token = '' %}{% endif %}
+{% set _inner_effect_type = _bg.inner_effect_type|default('glass') %}
+{% set _inner_glass = _bg.inner_glass|default({}) %}
+{% set _inner_grain = _bg.inner_grain|default({}) %}
+{% set _inner_pattern = _bg.inner_pattern|default({}) %}
+{% set _inner_effect_active = _bg_opt == 'effect' %}
+{% set _inner_pattern_style = _inner_pattern.style|default('dots') %}
+{% set _inner_aurora = _bg.inner_aurora|default({}) %}
+{% set _inner_aurora_active = _inner_aurora.enable|default(false) and _bg_opt in ['color','custom','gradient','image'] %}
+{% set _outer_aurora = _bg.outer_aurora|default({}) %}
+{% set _outer_aurora_active = _outer_opt in ['color','custom','gradient','image'] and _outer_aurora.enable|default(false) %}
+{% set _outer_svg = _bg.outer_svg_overlay|default({}) %}
+{% set _svo_raw = module.outer_svg_overlay_code|default('') %}
+{% set _svo_code = _svo_raw|replace('<script','')|replace('</script>','')|replace('<SCRIPT','')|replace('</SCRIPT','') %}
+{% set _outer_svg_active = _outer_opt in ['color','custom','gradient','image'] and _outer_svg.enable|default(false) and (_svo_code|trim) %}
+{% set _svo_disable = _outer_svg.disable|default({}) %}
+{% set _svo_hide_cls = '' %}
+{% if _svo_disable.xl|default(false) %}{% set _svo_hide_cls = _svo_hide_cls ~ ' is-svo-hide-xl' %}{% endif %}
+{% if _svo_disable.lg|default(false) %}{% set _svo_hide_cls = _svo_hide_cls ~ ' is-svo-hide-lg' %}{% endif %}
+{% if _svo_disable.md|default(false) %}{% set _svo_hide_cls = _svo_hide_cls ~ ' is-svo-hide-md' %}{% endif %}
+{% if _svo_disable.sm|default(false) %}{% set _svo_hide_cls = _svo_hide_cls ~ ' is-svo-hide-sm' %}{% endif %}
+{% set _svo_pos = _outer_svg.position|default('center center') %}
+{% set _svo_par = 'xMidYMid meet' %}
+{% if _svo_pos == 'left top' %}{% set _svo_par = 'xMinYMin meet' %}
+{% elif _svo_pos == 'center top' %}{% set _svo_par = 'xMidYMin meet' %}
+{% elif _svo_pos == 'right top' %}{% set _svo_par = 'xMaxYMin meet' %}
+{% elif _svo_pos == 'left center' %}{% set _svo_par = 'xMinYMid meet' %}
+{% elif _svo_pos == 'right center' %}{% set _svo_par = 'xMaxYMid meet' %}
+{% elif _svo_pos == 'left bottom' %}{% set _svo_par = 'xMinYMax meet' %}
+{% elif _svo_pos == 'center bottom' %}{% set _svo_par = 'xMidYMax meet' %}
+{% elif _svo_pos == 'right bottom' %}{% set _svo_par = 'xMaxYMax meet' %}
+{% endif %}
+{% set _svo_scale = _outer_svg.scale|default(100) %}
+{% set _svo_opacity = _outer_svg.opacity|default(100) %}
+{% set _svo_style = '--sw-svo-scale: ' ~ _svo_scale ~ '; --sw-svo-opacity: ' ~ _svo_opacity ~ ';' %}
+{% if _outer_svg.color_mode|default('svg') == 'override' %}
+  {% if _outer_svg.override_color_source|default('theme') == 'custom' %}
+    {% set _svo_style = _svo_style ~ ' --sw-svo-color: ' ~ macros.color(_outer_svg.custom_color|default({'color':'#FFFFFF','opacity':85})) ~ ';' %}
+  {% else %}
+    {% set _svo_style = _svo_style ~ ' --sw-svo-color: var(--' ~ (_outer_svg.theme_color|default('primary')) ~ ');' %}
+  {% endif %}
+{% endif %}
+{% if _svo_pos == 'custom' %}
+  {% set _svo_h_edge = _outer_svg.custom_h_edge|default('right') %}
+  {% set _svo_h_off = _outer_svg.custom_h_offset|default(0) %}
+  {% set _svo_h_unit = _outer_svg.custom_h_unit|default('%') %}
+  {% set _svo_v_edge = _outer_svg.custom_v_edge|default('top') %}
+  {% set _svo_v_off = _outer_svg.custom_v_offset|default(0) %}
+  {% set _svo_v_unit = _outer_svg.custom_v_unit|default('%') %}
+  {% if _svo_h_edge == 'right' %}{% set _svo_style = _svo_style ~ ' --sw-svo-right: ' ~ _svo_h_off ~ _svo_h_unit ~ '; --sw-svo-left: auto;' %}
+  {% else %}{% set _svo_style = _svo_style ~ ' --sw-svo-left: ' ~ _svo_h_off ~ _svo_h_unit ~ '; --sw-svo-right: auto;' %}{% endif %}
+  {% if _svo_v_edge == 'bottom' %}{% set _svo_style = _svo_style ~ ' --sw-svo-bottom: ' ~ _svo_v_off ~ _svo_v_unit ~ '; --sw-svo-top: auto;' %}
+  {% else %}{% set _svo_style = _svo_style ~ ' --sw-svo-top: ' ~ _svo_v_off ~ _svo_v_unit ~ '; --sw-svo-bottom: auto;' %}{% endif %}
+{% endif %}
+{% set _cta_margin_top = _inset_g.inset_cta_buttons_margin_top|default(0)|int %}
+{% set _outer_border_style = _bg.outer_border_style|default('none') %}
+{% set _outer_border_position = _bg.outer_border_position|default('both') %}
+{% set _outer_border_width = _bg.outer_border_width|default(1)|int %}
+{% set _outer_border_color = _bg.outer_border_color|default({'color':'#dddddd','opacity':100}) %}
+{% set _outer_border_active = (_outer_border_style != 'none' and _outer_border_style != '') %}
+{% set _outer_border_inline = '' %}
+{% if _outer_border_active %}
+  {% set _outer_border_color_value = macros.color(_outer_border_color) %}
+  {% if _outer_border_position == 'top' %}
+    {% set _outer_border_inline = 'border-top-width: ' ~ _outer_border_width|string ~ 'px; border-top-style: ' ~ _outer_border_style ~ '; border-top-color: ' ~ _outer_border_color_value ~ ';' %}
+  {% elif _outer_border_position == 'bottom' %}
+    {% set _outer_border_inline = 'border-bottom-width: ' ~ _outer_border_width|string ~ 'px; border-bottom-style: ' ~ _outer_border_style ~ '; border-bottom-color: ' ~ _outer_border_color_value ~ ';' %}
+  {% else %}
+    {% set _outer_border_inline = 'border-top-width: ' ~ _outer_border_width|string ~ 'px; border-top-style: ' ~ _outer_border_style ~ '; border-top-color: ' ~ _outer_border_color_value ~ '; border-bottom-width: ' ~ _outer_border_width|string ~ 'px; border-bottom-style: ' ~ _outer_border_style ~ '; border-bottom-color: ' ~ _outer_border_color_value ~ ';' %}
+  {% endif %}
+{% endif %}
+{% set _inner_border_override = _bg.inner_border_override|default(false) %}
+{% set _inner_border_style = _bg.inner_border_style|default('none') %}
+{% set _inner_border_width = (_bg.inner_border_width|default(0))|int %}
+{% set _inner_border_color = _bg.inner_border_color|default({'color':'#dddddd','opacity':100}) %}
+{% set _inner_border_radius_override = _bg.inner_border_radius_override|default(false) %}
+{% set _inner_border_radius_px = (_bg.inner_border_radius|default(3))|int %}
+{% set _inner_border_active = (not _inner_effect_active) and _inner_border_override and (_inner_border_style != 'none' and _inner_border_style != '') %}
+{% set _inner_border_inline = '' %}
+{% if _inner_border_active %}
+  {% set _inner_border_color_value = macros.color(_inner_border_color) %}
+  {% set _inner_border_inline = 'border-width: ' ~ _inner_border_width|string ~ 'px; border-style: ' ~ _inner_border_style ~ '; border-color: ' ~ _inner_border_color_value ~ ';' %}
+{% else %}
+  {% set _inner_border_inline = 'border-style: none; border-width: 0;' %}
+{% endif %}
+{% if _inner_border_radius_override %}
+  {% set _inner_border_radius_css = 'border-radius: ' ~ _inner_border_radius_px|string ~ 'px;' %}
+{% else %}
+  {% set _inner_border_radius_css = 'border-radius: var(--border_radius, 0px);' %}
+{% endif %}
+{% if _inner_border_radius_override and _inner_border_radius_px > 0 %}
+  {% set _inner_border_radius_css = _inner_border_radius_css ~ ' overflow: hidden;' %}
+{% endif %}
+
+{% set _csty = module.content_style|default('default') %}
+{% set _csty_class = '' %}
+{% if _csty == 'large_balanced' %}{% set _csty_class = ' lead' %}
+{% elif _csty == 'large_fullwidth' %}{% set _csty_class = ' lead sw-content-style--no-balance' %}
+{% elif _csty == 'small' %}{% set _csty_class = ' small' %}
+{% elif _csty == 'blockquote' %}{% set _csty_class = ' blockquote' %}
+{% endif %}
+{% set _ccol = _styles.content_colors|default({}) %}
+{% set _cc_tc = _ccol.text_color|default('auto') %}
+{% set _cc_tc_cust = _ccol.text_color_custom|default({}) %}
+{% set _cc_lc = _ccol.link_context|default('theme_defaults') %}
+{% set _msg_tc_class = '' %}
+{% set _msg_tc_style = '' %}
+{% if _cc_tc == 'custom' and _cc_tc_cust and (_cc_tc_cust.color or _cc_tc_cust.rgba) %}
+  {% set _msg_tc_style = 'color: ' ~ macros.color(_cc_tc_cust) ~ ';' %}
+{% elif _cc_tc != 'auto' %}
+  {% set _msg_tc_class = ' text-' ~ _cc_tc %}
+{% endif %}
+{# Banshee §2: Content Area Settings — Auto headings + Content Area alignment/spacing. Not Cards-family: Desktop default left. #}
+{% set _ca_settings = _styles.content_area_settings|default({}) %}
+{% set _ca_text_align = _ca_settings.text_align|default('left') %}
+{% set _ca_override_md_align = _ca_settings.override_md_text_align|default(false) %}
+{% set _ca_text_align_md = _ca_settings.text_align_md|default('left') %}
+{% set _ca_override_sm_align = _ca_settings.override_sm_text_align|default(false) %}
+{% set _ca_text_align_sm = _ca_settings.text_align_sm|default('left') %}
+{% set _ca_align_d = _ca_text_align if _ca_text_align in ['left','center','right'] else 'left' %}
+{% set _ca_align_md = _ca_align_d %}
+{% if _ca_override_md_align %}
+  {% set _ca_align_md = _ca_text_align_md if _ca_text_align_md in ['left','center','right'] else _ca_align_d %}
+{% endif %}
+{% set _ca_align_sm = _ca_align_md %}
+{% if _ca_override_sm_align %}
+  {% set _ca_align_sm = _ca_text_align_sm if _ca_text_align_sm in ['left','center','right'] else _ca_align_md %}
+{% endif %}
+{% set _ca_spacing = _ca_settings.spacing|default({}) %}
+{% set _ca_override_md_spacing = _ca_settings.override_md_spacing|default(false) %}
+{% set _ca_spacing_md = _ca_settings.spacing_md|default({}) %}
+{% set _ca_override_sm_spacing = _ca_settings.override_sm_spacing|default(false) %}
+{% set _ca_spacing_sm = _ca_settings.spacing_sm|default({}) %}
+
+{# Banshee §6: Header/Footer panels. Heading Auto align uses Heading Panel Settings (left). Chrome default none/0. #}
+{% set _hp = _styles.heading_panel_settings|default({}) %}
+{% set _hp_text_align = _hp.text_align|default('left') %}
+{% set _hp_override_md_align = _hp.override_md_text_align|default(false) %}
+{% set _hp_text_align_md = _hp.text_align_md|default('left') %}
+{% set _hp_override_sm_align = _hp.override_sm_text_align|default(false) %}
+{% set _hp_text_align_sm = _hp.text_align_sm|default('left') %}
+{% set _hp_align_d = _hp_text_align if _hp_text_align in ['left','center','right'] else 'left' %}
+{% set _hp_align_md = _hp_align_d %}
+{% if _hp_override_md_align %}
+  {% set _hp_align_md = _hp_text_align_md if _hp_text_align_md in ['left','center','right'] else _hp_align_d %}
+{% endif %}
+{% set _hp_align_sm = _hp_align_md %}
+{% if _hp_override_sm_align %}
+  {% set _hp_align_sm = _hp_text_align_sm if _hp_text_align_sm in ['left','center','right'] else _hp_align_md %}
+{% endif %}
+{% set _show_heading_section = _heading_items is iterable and _heading_items|length > 0 %}
+
+{% set _fp = _styles.footer_content_settings|default({}) %}
+{% set _fp_text_align = _fp.text_align|default('left') %}
+{% set _fp_override_md_align = _fp.override_md_text_align|default(false) %}
+{% set _fp_text_align_md = _fp.text_align_md|default('left') %}
+{% set _fp_override_sm_align = _fp.override_sm_text_align|default(false) %}
+{% set _fp_text_align_sm = _fp.text_align_sm|default('left') %}
+{% set _footer_align = _fp_text_align if _fp_text_align in ['left','center','right'] else 'left' %}
+{% set _footer_align_md = _footer_align %}
+{% if _fp_override_md_align %}
+  {% set _footer_align_md = _fp_text_align_md if _fp_text_align_md in ['left','center','right'] else _footer_align %}
+{% endif %}
+{% set _footer_align_sm = _footer_align_md %}
+{% if _fp_override_sm_align %}
+  {% set _footer_align_sm = _fp_text_align_sm if _fp_text_align_sm in ['left','center','right'] else _footer_align_md %}
+{% endif %}
+{% set _footer_text_color = _ccol.footer_content_text_color|default('auto') %}
+{% set _footer_text_custom = _ccol.footer_content_text_color_custom|default({}) %}
+{% set _footer_link_context = _ccol.footer_content_link_context|default('theme_defaults') %}
+{% set _footer_group = module.cta_buttons|default({}) %}
+{% set _footer_heading_raw = _footer_group.footer_heading_items|default([]) %}
+{% if _footer_heading_raw is mapping and _footer_heading_raw is not string %}
+  {% set _footer_heading_items = [_footer_heading_raw] %}
+{% elif _footer_heading_raw is iterable and _footer_heading_raw is not string %}
+  {% set _footer_heading_items = _footer_heading_raw %}
+{% else %}
+  {% set _footer_heading_items = [] %}
+{% endif %}
+{% set _footer_desc = _footer_group.footer_description|string|trim if _footer_group.footer_description else '' %}
+{% set _has_footer_content_area = _footer_desc|length > 0 %}
+{% set _fc_content_style = _footer_group.footer_content_style|default('default') %}
+{% set _fc_content_style_class = '' %}
+{% if _fc_content_style == 'large_balanced' %}{% set _fc_content_style_class = ' lead' %}
+{% elif _fc_content_style == 'large_fullwidth' %}{% set _fc_content_style_class = ' lead sw-content-style--no-balance' %}
+{% elif _fc_content_style == 'small' %}{% set _fc_content_style_class = ' small' %}
+{% elif _fc_content_style == 'blockquote' %}{% set _fc_content_style_class = ' blockquote' %}
+{% endif %}
+{% set _footer_buttons_raw = _footer_group.cta_button_items|default([]) %}
+{% if _footer_buttons_raw is mapping and _footer_buttons_raw is not string %}
+  {% set _footer_button_items = [_footer_buttons_raw] %}
+{% elif _footer_buttons_raw is iterable and _footer_buttons_raw is not string %}
+  {% set _footer_button_items = _footer_buttons_raw %}
+{% else %}
+  {% set _footer_button_items = [] %}
+{% endif %}
+{% set _show_footer_section = (_footer_heading_items|length > 0) or _has_footer_content_area or (_footer_button_items|length > 0) %}
+
+{% set _hp_bg_option = _hp.background_option|default('none') %}
+{% set _fp_bg_option = _fp.background_option|default('none') %}
+{% set _hp_effect_type = _hp.inner_effect_type|default('glass') %}
+{% set _fp_effect_type = _fp.inner_effect_type|default('glass') %}
+{% set _hp_effect = _hp['inner_' ~ _hp_effect_type]|default({}) %}
+{% set _fp_effect = _fp['inner_' ~ _fp_effect_type]|default({}) %}
+{% set _hp_effect_active = _hp_bg_option == 'effect' %}
+{% set _fp_effect_active = _fp_bg_option == 'effect' %}
+{% set _hp_image_group = _hp.background_image_xl_group|default({}) %}
+{% set _fp_image_group = _fp.background_image_xl_group|default({}) %}
+{% set _hp_image = _hp_image_group.background_image_xl|default({}) %}
+{% set _fp_image = _fp_image_group.background_image_xl|default({}) %}
+{% set _hp_image_src = (_hp_image.src|default(''))|trim %}
+{% set _fp_image_src = (_fp_image.src|default(''))|trim %}
+{% set _hp_style = '' %}{% set _fp_style = '' %}
+{% if _hp_bg_option == 'color' %}{% set _hp_style = 'background-color: var(--' ~ _hp.background_color|default('light') ~ ');' %}
+{% elif _hp_bg_option == 'custom' %}{% set _hp_style = 'background-color: ' ~ macros.color(_hp.background_custom|default({'color':'#ffffff','opacity':100})) ~ ';' %}
+{% elif _hp_bg_option == 'gradient' and _hp.background_gradient.css %}{% set _hp_style = 'background: ' ~ _hp.background_gradient.css ~ ';' %}
+{% elif _hp_bg_option == 'image' and _hp_image_src %}{% set _hp_style = 'background-color: ' ~ macros.color(_hp_image_group.background_base_color_xl|default({'color':'#ffffff','opacity':100})) ~ '; background-image: linear-gradient(' ~ macros.color(_hp_image_group.background_color_overlay_xl|default({'color':'#000000','opacity':0})) ~ ', ' ~ macros.color(_hp_image_group.background_color_overlay_xl|default({'color':'#000000','opacity':0})) ~ '), url(' ~ resize_image_url(_hp_image_src,'2880') ~ '); background-size: ' ~ _hp_image_group.hero_background_size|default('cover') ~ '; background-position: ' ~ ((_hp_image_group.background_position_xl|default('center center'))|lower|replace('_',' ')|replace('middle','center')) ~ '; background-repeat: ' ~ _hp_image_group.background_repeat_xl|default('no-repeat') ~ ';' %}
+{% endif %}
+{% if _fp_bg_option == 'color' %}{% set _fp_style = 'background-color: var(--' ~ _fp.background_color|default('light') ~ ');' %}
+{% elif _fp_bg_option == 'custom' %}{% set _fp_style = 'background-color: ' ~ macros.color(_fp.background_custom|default({'color':'#ffffff','opacity':100})) ~ ';' %}
+{% elif _fp_bg_option == 'gradient' and _fp.background_gradient.css %}{% set _fp_style = 'background: ' ~ _fp.background_gradient.css ~ ';' %}
+{% elif _fp_bg_option == 'image' and _fp_image_src %}{% set _fp_style = 'background-color: ' ~ macros.color(_fp_image_group.background_base_color_xl|default({'color':'#ffffff','opacity':100})) ~ '; background-image: linear-gradient(' ~ macros.color(_fp_image_group.background_color_overlay_xl|default({'color':'#000000','opacity':0})) ~ ', ' ~ macros.color(_fp_image_group.background_color_overlay_xl|default({'color':'#000000','opacity':0})) ~ '), url(' ~ resize_image_url(_fp_image_src,'2880') ~ '); background-size: ' ~ _fp_image_group.hero_background_size|default('cover') ~ '; background-position: ' ~ ((_fp_image_group.background_position_xl|default('center center'))|lower|replace('_',' ')|replace('middle','center')) ~ '; background-repeat: ' ~ _fp_image_group.background_repeat_xl|default('no-repeat') ~ ';' %}
+{% endif %}
+{% set _hp_style = _hp_style ~ ' --bi-panel-fill: ' ~ macros.color(_hp_effect.fill|default({'color':'#ffffff','opacity':35})) ~ '; --bi-panel-border: ' ~ macros.color(_hp_effect.border|default({'color':'#ffffff','opacity':45})) ~ '; --bi-panel-grain: ' ~ macros.color(_hp_effect.grain_color|default({'color':'#ffffff','opacity':85})) ~ '; --bi-panel-pattern: ' ~ macros.color(_hp_effect.pattern_color|default({'color':'#ffffff','opacity':28})) ~ '; --bi-panel-bg: ' ~ macros.color(_hp_effect.background|default({'color':'#000000','opacity':0})) ~ '; --bi-panel-blur: ' ~ _hp_effect.blur|default(20) ~ 'px; ' ~ (_hp.spacing.css|default('')) %}
+{% set _fp_style = _fp_style ~ ' --bi-panel-fill: ' ~ macros.color(_fp_effect.fill|default({'color':'#ffffff','opacity':35})) ~ '; --bi-panel-border: ' ~ macros.color(_fp_effect.border|default({'color':'#ffffff','opacity':45})) ~ '; --bi-panel-grain: ' ~ macros.color(_fp_effect.grain_color|default({'color':'#ffffff','opacity':85})) ~ '; --bi-panel-pattern: ' ~ macros.color(_fp_effect.pattern_color|default({'color':'#ffffff','opacity':28})) ~ '; --bi-panel-bg: ' ~ macros.color(_fp_effect.background|default({'color':'#000000','opacity':0})) ~ '; --bi-panel-blur: ' ~ _fp_effect.blur|default(20) ~ 'px; ' ~ (_fp.spacing.css|default('')) %}
+{% set _hp_max_width_choice = _hp.max_panel_width|default('full') %}{% set _fp_max_width_choice = _fp.max_panel_width|default('full') %}
+{% set _hp_max_width = null %}{% set _fp_max_width = null %}
+{% if _hp_max_width_choice == 'small' %}{% set _hp_max_width = theme.containers.small|default(968) %}{% elif _hp_max_width_choice == 'large' %}{% set _hp_max_width = theme.containers.large|default(1800) %}{% elif _hp_max_width_choice == 'custom' %}{% set _hp_max_width = _hp.max_panel_width_custom|default(1800) %}{% endif %}
+{% if _fp_max_width_choice == 'small' %}{% set _fp_max_width = theme.containers.small|default(968) %}{% elif _fp_max_width_choice == 'large' %}{% set _fp_max_width = theme.containers.large|default(1800) %}{% elif _fp_max_width_choice == 'custom' %}{% set _fp_max_width = _fp.max_panel_width_custom|default(1800) %}{% endif %}
+{% if _hp_max_width %}{% set _hp_style = _hp_style ~ ' max-width: ' ~ _hp_max_width ~ 'px; margin-left: auto; margin-right: auto;' %}{% endif %}
+{% if _fp_max_width %}{% set _fp_style = _fp_style ~ ' max-width: ' ~ _fp_max_width ~ 'px; margin-left: auto; margin-right: auto;' %}{% endif %}
+{% if _hp.panel_border_override|default(false) and _hp.panel_border_style|default('none') != 'none' %}{% set _hp_style = _hp_style ~ ' border: ' ~ _hp.panel_border_width|default(1) ~ 'px ' ~ _hp.panel_border_style|default('solid') ~ ' ' ~ macros.color(_hp.panel_border_color|default({'color':'#dddddd','opacity':100})) ~ ';' %}{% endif %}
+{% if _fp.panel_border_override|default(false) and _fp.panel_border_style|default('none') != 'none' %}{% set _fp_style = _fp_style ~ ' border: ' ~ _fp.panel_border_width|default(1) ~ 'px ' ~ _fp.panel_border_style|default('solid') ~ ' ' ~ macros.color(_fp.panel_border_color|default({'color':'#dddddd','opacity':100})) ~ ';' %}{% endif %}
+{% if _hp.panel_border_radius is defined %}{% set _hp_style = _hp_style ~ ' border-radius: ' ~ _hp.panel_border_radius|default(0) ~ 'px;' %}{% endif %}
+{% if _fp.panel_border_radius is defined %}{% set _fp_style = _fp_style ~ ' border-radius: ' ~ _fp.panel_border_radius|default(0) ~ 'px;' %}{% endif %}
+
+{% set _ica_settings = _styles.inset_content_area_settings|default({}) %}
+{% set _ica_text_align = _ica_settings.text_align|default('left') %}
+{% set _ica_override_md_align = _ica_settings.override_md_text_align|default(false) %}
+{% set _ica_text_align_md = _ica_settings.text_align_md|default('left') %}
+{% set _ica_override_sm_align = _ica_settings.override_sm_text_align|default(false) %}
+{% set _ica_text_align_sm = _ica_settings.text_align_sm|default('left') %}
+{% set _ica_align_d = _ica_text_align if _ica_text_align in ['left','center','right'] else 'left' %}
+{% set _ica_align_md = _ica_align_d %}
+{% if _ica_override_md_align %}
+  {% set _ica_align_md = _ica_text_align_md if _ica_text_align_md in ['left','center','right'] else _ica_align_d %}
+{% endif %}
+{% set _ica_align_sm = _ica_align_md %}
+{% if _ica_override_sm_align %}
+  {% set _ica_align_sm = _ica_text_align_sm if _ica_text_align_sm in ['left','center','right'] else _ica_align_md %}
+{% endif %}
+{% set _ica_spacing = _ica_settings.spacing|default({}) %}
+{% set _ica_override_md_spacing = _ica_settings.override_md_spacing|default(false) %}
+{% set _ica_spacing_md = _ica_settings.spacing_md|default({}) %}
+{% set _ica_override_sm_spacing = _ica_settings.override_sm_spacing|default(false) %}
+{% set _ica_spacing_sm = _ica_settings.spacing_sm|default({}) %}
+
+{# Inset width/order — XL + Desktop/Tablet Inherit (Pillar labels; XL restored) #}
+{% set _cols_xl_raw = (_col_width.inset_cols_xl|default('4'))|string %}
+{% set _cols_lg_raw = (_col_width.inset_cols_lg|default('3'))|string %}
+{% set _cols_md_raw = (_col_width.inset_cols_md|default('3'))|string %}
+{% set _w_xl = _cols_xl_raw %}
+{% set _w_lg = _w_xl if _cols_lg_raw == 'inherit' else _cols_lg_raw %}
+{% set _w_md = _w_lg if _cols_md_raw == 'inherit' else _cols_md_raw %}
+{% set _xl_pos = _inset_set.xl_inset_position|default('inset_right') %}
+{% set _desk_pos_raw = _inset_set.desktop_inset_position|default('inherit') %}
+{% set _desk_pos = _xl_pos if _desk_pos_raw == 'inherit' else _desk_pos_raw %}
+{% set _tab_pos_raw = _inset_set.tablet_inset_position|default('inherit') %}
+{% set _tab_pos = _desk_pos if _tab_pos_raw == 'inherit' else _tab_pos_raw %}
+{% set _side_xl = 'left' if _xl_pos == 'inset_left' else 'right' %}
+{% set _side_lg = 'left' if _desk_pos == 'inset_left' else 'right' %}
+{% set _side_md = 'left' if _tab_pos == 'inset_left' else 'right' %}
+{% set _stack_order = _inset_set.mobile_inset_position|default('inset_bottom') %}
+{% set _valign = _inset_set.inset_vertical_align|default('top') %}
+{% set _gap = (_inset_set.inset_gap|default(24))|int %}
+
+{# Inset card styles #}
+{% set _isp = _inset_sty.inset_spacing|default({}) %}
+{% set _inset_spacing_css = (_isp.css if _isp and _isp.css else '')|default('')|trim %}
+{% if not _inset_spacing_css and _isp.padding %}
+  {% set _ipt = _isp.padding.top|default({"value":24,"units":"px"}) %}
+  {% set _ipr = _isp.padding.right|default({"value":24,"units":"px"}) %}
+  {% set _ipb = _isp.padding.bottom|default({"value":24,"units":"px"}) %}
+  {% set _ipl = _isp.padding.left|default({"value":24,"units":"px"}) %}
+  {% set _inset_spacing_css = 'padding: ' ~ _ipt.value|string ~ _ipt.units ~ ' ' ~ _ipr.value|string ~ _ipr.units ~ ' ' ~ _ipb.value|string ~ _ipb.units ~ ' ' ~ _ipl.value|string ~ _ipl.units ~ ';' %}
+{% endif %}
+{% set _inset_bg_opt = _inset_sty.inset_background_option|default('color') %}
+{% set _inset_bg_css = '' %}
+{% set _inset_bg_class = '' %}
+{% if _inset_bg_opt == 'color' %}
+  {% set _inset_theme_bg = _inset_sty.inset_background_theme_color|default('light') %}
+  {% set _inset_bg_css = 'background-color: var(--' ~ _inset_theme_bg ~ ', var(--light, #f7f8fa));' %}
+  {% set _inset_bg_class = ' bg-' ~ _inset_theme_bg %}
+{% elif _inset_bg_opt == 'custom' %}
+  {% set _inset_bg_hex = _inset_sty.inset_background_custom|default(_inset_sty.inset_background_color|default({'color':'#f7f8fa','opacity':100})) %}
+  {% if _inset_bg_hex and (_inset_bg_hex.color or _inset_bg_hex.rgba) %}
+    {% set _inset_bg_css = 'background-color: ' ~ macros.color(_inset_bg_hex) ~ ';' %}
+  {% endif %}
+{% endif %}
+{% set _inset_bstyle = _inset_sty.inset_border_style|default('solid') %}
+{% set _inset_border_css = '' %}
+{% if _inset_bstyle and _inset_bstyle != 'none' %}
+  {% set _inset_border_css = 'border-width: ' ~ (_inset_sty.inset_border_width|default(1))|int|string ~ 'px; border-style: ' ~ _inset_bstyle ~ '; border-color: ' ~ macros.color(_inset_sty.inset_border_color|default({'color':'#dedede','opacity':100})) ~ ';' %}
+{% else %}
+  {% set _inset_border_css = 'border-style: none; border-width: 0;' %}
+{% endif %}
+{% set _override_inset_radius = _inset_sty.override_inset_border_radius|default(false) %}
+{% if _override_inset_radius %}
+  {% set _inset_radius = (_inset_sty.inset_border_radius|default(0))|int %}
+{% else %}
+  {% set _inset_radius = theme.misc.border_radius|default(0) %}
+  {% if _inset_radius == null or _inset_radius == '' %}{% set _inset_radius = 0 %}{% endif %}
+  {% set _inset_radius = _inset_radius|int %}
+{% endif %}
+{% set _inset_radius_css = 'border-radius: ' ~ _inset_radius|string ~ 'px;' %}
+{# Inset text/link colors: Content Colors → Inset Content (aliases from styles.inset_styles.*) #}
+{% set _inset_cc = _ccol.inset_content_colors|default({}) %}
+{% set _inset_tc = _inset_cc.text_color|default(_inset_sty.inset_text_color|default('auto')) %}
+{% set _inset_tc_cust = _inset_cc.text_color_custom|default(_inset_sty.inset_text_color_custom|default({})) %}
+{% set _inset_lc = _inset_cc.link_context|default(_inset_sty.inset_link_context|default('theme_defaults')) %}
+{% set _inset_tc_class = '' %}
+{% set _inset_tc_style = '' %}
+{% if _inset_tc == 'custom' and _inset_tc_cust and (_inset_tc_cust.color or _inset_tc_cust.rgba) %}
+  {% set _inset_tc_style = 'color: ' ~ macros.color(_inset_tc_cust) ~ ';' %}
+{% elif _inset_tc != 'auto' and _inset_tc %}
+  {% set _inset_tc_class = ' text-' ~ _inset_tc %}
+{% endif %}
+{% set _inset_card_style = (_inset_spacing_css ~ ' ' ~ _inset_bg_css ~ ' ' ~ _inset_border_css ~ ' ' ~ _inset_radius_css ~ ' ' ~ _inset_tc_style)|trim %}
+
+{# 4-tier inset image #}
+{% set _img_grp = _inset_g.inset_image_group|default({}) %}
+{% set img_xl_obj = _img_grp.image_xl|default({}) %}
+{% set img_lg_obj = _img_grp.image_lg|default({}) %}
+{% set img_md_obj = _img_grp.image_md|default({}) %}
+{% set img_sm_obj = _img_grp.image_sm|default({}) %}
+{% set img_xl = (img_xl_obj.src|default(''))|trim %}
+{% set _ov_lg = _img_grp.override_lg_image|default(false) %}
+{% set _ov_md = _img_grp.override_md_image|default(false) %}
+{% set _ov_sm = _img_grp.override_sm_image|default(false) %}
+{% set img_lg = ((img_lg_obj.src|default(''))|trim) if _ov_lg else img_xl %}
+{% set img_md = ((img_md_obj.src|default(''))|trim) if _ov_md else img_lg %}
+{% set img_sm = ((img_sm_obj.src|default(''))|trim) if _ov_sm else img_md %}
+{% set _has_inset_img = img_xl or img_lg or img_md or img_sm %}
+
+{% set _bi_outer_placeholder = 'https://smithworks.marketing/hubfs/module-placeholders/subtle-background.png' %}
+{# Module Settings spacing: same pattern as SW Pillar Section — one spacing_css string on <section> #}
+{% set _spacing = _mod.spacing|default({}) %}
+{% set spacing_css = (_spacing.css if _spacing and _spacing.css else '')|default('')|trim %}
+{% if not spacing_css %}
+  {% set _fallback_margin = 'margin: 0;' %}
+  {% if _spacing.margin %}
+    {% set _mt = _spacing.margin.top|default({"value":0,"units":"px"}) %}
+    {% set _mr = _spacing.margin.right|default({"value":0,"units":"px"}) %}
+    {% set _mb = _spacing.margin.bottom|default({"value":0,"units":"px"}) %}
+    {% set _ml = _spacing.margin.left|default({"value":0,"units":"px"}) %}
+    {% set _fallback_margin = 'margin: ' ~ _mt.value|string ~ _mt.units ~ ' ' ~ _mr.value|string ~ _mr.units ~ ' ' ~ _mb.value|string ~ _mb.units ~ ' ' ~ _ml.value|string ~ _ml.units ~ ';' %}
+  {% endif %}
+  {% set _fallback_padding = '' %}
+  {% if _spacing.padding %}
+    {% set _pt = _spacing.padding.top|default({"value":0,"units":"px"}) %}
+    {% set _pr = _spacing.padding.right|default({"value":0,"units":"px"}) %}
+    {% set _pb = _spacing.padding.bottom|default({"value":0,"units":"px"}) %}
+    {% set _pl = _spacing.padding.left|default({"value":0,"units":"px"}) %}
+    {% set _fallback_padding = 'padding: ' ~ _pt.value|string ~ _pt.units ~ ' ' ~ _pr.value|string ~ _pr.units ~ ' ' ~ _pb.value|string ~ _pb.units ~ ' ' ~ _pl.value|string ~ _pl.units ~ ';' %}
+  {% endif %}
+  {% set spacing_css = _fallback_margin ~ _fallback_padding %}
+{% endif %}
+{% if not spacing_css %}
+  {% set spacing_css = 'margin: 0;' %}
+{% endif %}
+{# Module Inner Spacing: on .sw-body-inset__inner (inside max inner width; border/radius on .sw-body-inset__container). #}
+{% set _inner_sp = _mod.inner_spacing|default({}) %}
+{% set inner_spacing_css = (_inner_sp.css if _inner_sp and _inner_sp.css else '')|default('')|trim %}
+{% if not inner_spacing_css %}
+  {# Do not emit margin: 0 shorthand here — it overrides .sw-body-inset__container { margin: 0 auto } and breaks centering when --max-width caps width. #}
+  {% set _im = '' %}
+  {% if _inner_sp.margin %}
+    {% set _imt = _inner_sp.margin.top|default({"value":0,"units":"px"}) %}
+    {% set _imr = _inner_sp.margin.right|default({"value":0,"units":"px"}) %}
+    {% set _imb = _inner_sp.margin.bottom|default({"value":0,"units":"px"}) %}
+    {% set _iml = _inner_sp.margin.left|default({"value":0,"units":"px"}) %}
+    {% set _im = 'margin: ' ~ _imt.value|string ~ _imt.units ~ ' ' ~ _imr.value|string ~ _imr.units ~ ' ' ~ _imb.value|string ~ _imb.units ~ ' ' ~ _iml.value|string ~ _iml.units ~ ';' %}
+  {% endif %}
+  {% set _ip = '' %}
+  {% if _inner_sp.padding %}
+    {% set _ipt = _inner_sp.padding.top|default({"value":0,"units":"px"}) %}
+    {% set _ipr = _inner_sp.padding.right|default({"value":0,"units":"px"}) %}
+    {% set _ipb = _inner_sp.padding.bottom|default({"value":0,"units":"px"}) %}
+    {% set _ipl = _inner_sp.padding.left|default({"value":0,"units":"px"}) %}
+    {% set _ip = 'padding: ' ~ _ipt.value|string ~ _ipt.units ~ ' ' ~ _ipr.value|string ~ _ipr.units ~ ' ' ~ _ipb.value|string ~ _ipb.units ~ ' ' ~ _ipl.value|string ~ _ipl.units ~ ';' %}
+  {% endif %}
+  {% set inner_spacing_css = _im ~ _ip %}
+{% endif %}
+{% if not inner_spacing_css %}
+  {% set inner_spacing_css = '' %}
+{% endif %}
+{% set _outer_active = (_outer_opt != 'none' and _outer_opt != '') %}
+{% set _outer_shell_active = _outer_active or _outer_border_active %}
+{# Outer / content max width — same rules as SW Pillar Section #}
+{% set _outer_width_choice = _mod.outer_background_width|default('full') %}
+{% set _outer_max_width_px = null %}
+{% if _outer_width_choice == 'default' %}
+  {% set _outer_max_width_px = theme.containers.default|default(1800) %}
+{% elif _outer_width_choice == 'small' %}
+  {% set _outer_max_width_px = theme.containers.small|default(968) %}
+{% elif _outer_width_choice == 'large' %}
+  {% set _outer_max_width_px = theme.containers.large|default(theme.containers_large|default(1800)) %}
+{% elif _outer_width_choice == 'custom' %}
+  {% set _outer_cust = _mod.outer_background_width_custom|default(1800) %}
+  {% set _outer_max_width_px = (_outer_cust >= 600 and _outer_cust <= 2400) ? _outer_cust : 1800 %}
+{% endif %}
+{% set _max_width_choice = _mod.max_module_width|default('default') %}
+{% if _max_width_choice == 'default' %}
+  {% set _max_width_px = theme.containers.default|default(1800) %}
+{% elif _max_width_choice == 'small' %}
+  {% set _max_width_px = theme.containers.small|default(968) %}
+{% elif _max_width_choice == 'large' %}
+  {% set _max_width_px = theme.containers.large|default(theme.containers_large|default(1800)) %}
+{% elif _max_width_choice == 'custom' %}
+  {% set _custom_val = _mod.max_module_width_custom|default(1800) %}
+  {% set _max_width_px = (_custom_val >= 600 and _custom_val <= 2400) ? _custom_val : 1800 %}
+{% else %}
+  {% set _max_width_px = null %}
+{% endif %}
+{% set _content_max_width_px = _max_width_px %}
+{% if _outer_shell_active and _outer_max_width_px %}
+  {% if _max_width_px %}
+    {% set _content_max_width_px = (_max_width_px < _outer_max_width_px) ? _max_width_px : _outer_max_width_px %}
+  {% else %}
+    {% set _content_max_width_px = _outer_max_width_px %}
+  {% endif %}
+{% endif %}
+
+{% set _inner_shell_style = inner_spacing_css|trim %}
+{% set _inner_shell_style = _inner_shell_style|replace(';;', ';')|replace('; ;', ';')|trim %}
+
+{% macro _pos_css(val) %}{{ (val|default('MIDDLE_CENTER'))|lower|replace("_", " ")|replace("middle", "center") }}{% endmacro %}
+{% set _bi_outer_placeholder_xl = 'https://smithworks.marketing/hubfs/module-placeholders/subtle-background.png' %}
+{% set _og_xl_grp = _bg.outer_background_image_xl_group|default({}) %}
+{% set _og_lg_grp = _bg.outer_background_image_lg_group|default({}) %}
+{% set _og_md_grp = _bg.outer_background_image_md_group|default({}) %}
+{% set _og_sm_grp = _bg.outer_background_image_sm_group|default({}) %}
+{% set og_xl = _og_xl_grp.background_image_xl|default({}) %}
+{% set og_lg = _og_lg_grp.background_image_lg|default({}) %}
+{% set og_md = _og_md_grp.background_image_md|default({}) %}
+{% set og_sm = _og_sm_grp.background_image_sm|default({}) %}
+{% set _og_xl_src = (og_xl.src|default(''))|trim if og_xl else '' %}
+{% set _og_xl_src_resolved = _og_xl_src or (_bi_outer_placeholder_xl if _outer_opt == 'image' else '') %}
+{% set _og_override_lg = _og_lg_grp.override_lg_background_image|default(false) %}
+{% set _og_override_md = _og_md_grp.override_md_background_image|default(false) %}
+{% set _og_override_sm = _og_sm_grp.override_sm_background_image|default(false) %}
+{% set _og_pos_xl_raw = _og_xl_grp.background_position_xl|default(og_xl.background_position)|default('MIDDLE_CENTER') %}
+{% set _og_pos_lg_raw = _og_lg_grp.background_position_lg|default(og_lg.background_position) if _og_override_lg else _og_pos_xl_raw %}
+{% set _og_pos_md_raw = _og_md_grp.background_position_md|default(og_md.background_position) if _og_override_md else _og_pos_lg_raw %}
+{% set _og_pos_sm_raw = _og_sm_grp.background_position_sm|default(og_sm.background_position) if _og_override_sm else _og_pos_md_raw %}
+{% set _og_repeat_xl = _og_xl_grp.background_repeat_xl|default(og_xl.background_repeat)|default('no-repeat') %}
+{% set _og_repeat_lg = (_og_lg_grp.background_repeat_lg|default(_og_repeat_xl)) if _og_override_lg else _og_repeat_xl %}
+{% set _og_repeat_md = (_og_md_grp.background_repeat_md|default(_og_repeat_lg)) if _og_override_md else _og_repeat_lg %}
+{% set _og_repeat_sm = (_og_sm_grp.background_repeat_sm|default(_og_repeat_md)) if _og_override_sm else _og_repeat_md %}
+{% set _og_overlay_xl = _og_xl_grp.background_color_overlay_xl|default({'color':'#000000','opacity':0}) %}
+{% set _og_overlay_lg = _og_lg_grp.background_color_overlay_lg if _og_override_lg else _og_overlay_xl %}
+{% set _og_overlay_md = _og_md_grp.background_color_overlay_md if _og_override_md else _og_overlay_lg %}
+{% set _og_overlay_sm = _og_sm_grp.background_color_overlay_sm if _og_override_sm else _og_overlay_md %}
+{% set _og_base_xl = _og_xl_grp.background_base_color_xl|default({'color':'#ffffff','opacity':100}) %}
+{% set _og_base_lg = (_og_lg_grp.background_base_color_lg|default(_og_base_xl)) if _og_override_lg else _og_base_xl %}
+{% set _og_base_md = (_og_md_grp.background_base_color_md|default(_og_base_lg)) if _og_override_md else _og_base_lg %}
+{% set _og_base_sm = (_og_sm_grp.background_base_color_sm|default(_og_base_md)) if _og_override_sm else _og_base_md %}
+{% set _og_xl_size = _og_xl_grp.hero_background_size|default('cover') %}
+{% set _og_lg_src_raw = (_og_lg_grp.background_image_lg.src|default(''))|trim %}
+{% set _og_md_src_raw = (_og_md_grp.background_image_md.src|default(''))|trim %}
+{% set _og_sm_src_raw = (_og_sm_grp.background_image_sm.src|default(''))|trim %}
+{% set _ourl_xl = (resize_image_url(_og_xl_src, '2880') if _og_xl_src else '') or (_bi_outer_placeholder_xl if _outer_opt == 'image' and not _og_xl_src else '') %}
+{% if _og_override_lg %}
+  {% set _ourl_lg = resize_image_url(_og_lg_src_raw, '2400') if _og_lg_src_raw else '' %}
+{% else %}
+  {% set _ourl_lg = _ourl_xl %}
+{% endif %}
+{% if _og_override_md %}
+  {% set _ourl_md = resize_image_url(_og_md_src_raw, '2000') if _og_md_src_raw else '' %}
+{% else %}
+  {% set _ourl_md = _ourl_lg %}
+{% endif %}
+{% if _og_override_sm %}
+  {% set _ourl_sm = resize_image_url(_og_sm_src_raw, '1600') if _og_sm_src_raw else '' %}
+{% else %}
+  {% set _ourl_sm = _ourl_md %}
+{% endif %}
+{% set _has_outer_bg_image = (_outer_opt == 'image') and (_og_xl_src_resolved or (_og_override_lg and og_lg.src) or (_og_override_md and og_md.src) or (_og_override_sm and og_sm.src)) %}
+{% set _og_color_choice = _bg.outer_background_color|default('primary') %}
+{% set _og_color_custom = _bg.outer_background_color_custom|default({}) %}
+{% set _og_custom = _bg.outer_background_custom|default({}) %}
+{% set _og_gradient = _bg.outer_background_gradient|default({}) %}
+{% set _outer_div_left = _bg.module_outer_divider_left_y_percent|default(50) %}
+{% set _outer_div_right = _bg.module_outer_divider_right_y_percent|default(50) %}
+{% set _outer_div_top = _bg.module_outer_divider_color_top|default({'color':'#0C2D4C','opacity':100}) %}
+{% set _outer_div_bottom = _bg.module_outer_divider_color_bottom|default({'color':'#F8FAFC','opacity':100}) %}
+
+{% set _module_bg_css = '' %}
+{% if _bg_opt == 'none' or _bg_opt == 'effect' %}
+  {% set _module_bg_css = 'background-color: transparent;' %}
+{% elif _bg_opt == 'color' %}
+  {% if _inner_color_token %}
+    {% set _module_bg_css = 'background-color: var(--' ~ _inner_color_token ~ ', var(--primary, #0C2D4C));' %}
+  {% else %}
+    {% set _module_bg_css = 'background-color: transparent;' %}
+  {% endif %}
+{% elif _bg_opt == 'custom' and _bg.background_custom %}
+  {% set _module_bg_css = 'background-color: ' ~ macros.color(_bg.background_custom) ~ ';' %}
+{% elif _bg_opt == 'gradient' and _bg.background_gradient and _bg.background_gradient.css %}
+  {% set _module_bg_css = 'background: ' ~ _bg.background_gradient.css ~ ';' %}
+{% elif _bg_opt == 'image' %}
+  {% set _module_bg_css = 'background-color: ' ~ macros.color(_inner_base_xl) ~ ';' %}
+  {% if _bg_xl_src %}
+    {% set _inner_pos_css = (_inner_pos_xl|default('center center'))|lower|replace('_', ' ')|replace('middle', 'center') %}
+    {% set _module_bg_css = _module_bg_css ~ ' background-image: url(' ~ resize_image_url(_bg_xl_src, '2880') ~ '); background-size: ' ~ _inner_size_xl ~ '; background-position: ' ~ _inner_pos_css ~ '; background-repeat: ' ~ _inner_repeat_xl ~ ';' %}
+  {% else %}
+    {% set _module_bg_css = _module_bg_css ~ ' background-image: none;' %}
+  {% endif %}
+{% elif _bg_opt == 'video' %}
+  {% set _module_bg_css = 'background-color: ' ~ macros.color(_bg.background_base_color_video|default({"color":"#ffffff","opacity":100})) ~ ';' %}
+{% endif %}
+
+{% set _video = module.background_video_settings|default({}) %}
+{% set _video_type = _video.video_source_type|default('file') %}
+{% set _show_video = _bg_opt == 'video' %}
+{# Inner background + video on .sw-body-inset__container; full inner border + radius on same layer; inner_spacing_css on .sw-body-inset__inner. Normalize ;; from HubSpot .css trailing semicolons + our joins. #}
+{% set _container_style = _module_bg_css|trim %}
+{% if _inner_border_inline %}
+  {% set _container_style = (_container_style ~ '; ' if _container_style else '') ~ _inner_border_inline %}
+{% endif %}
+{% set _container_style = (_container_style ~ '; ' if _container_style else '') ~ _inner_border_radius_css %}
+{% if _show_video or _container_style %}
+  {% set _container_style = (_container_style ~ '; ' if _container_style else '') ~ 'position: relative' %}
+{% endif %}
+{% set _container_style = _container_style|replace(';;', ';')|replace('; ;', ';')|trim %}
+{% if _outer_shell_active %}
+  {% set _outer_root_style = spacing_css|trim %}
+  {% if _outer_max_width_px %}
+    {% set _outer_root_style = (_outer_root_style ~ ';' if _outer_root_style else '') ~ '--outer-max-width: ' ~ _outer_max_width_px|string ~ 'px' %}
+  {% endif %}
+  {% if _outer_border_inline %}
+    {% set _outer_root_style = (_outer_root_style ~ '; ' if _outer_root_style else '') ~ _outer_border_inline %}
+  {% endif %}
+  {% set _section_style = '' %}
+  {% if _content_max_width_px %}
+    {% set _section_style = '--max-width:' ~ _content_max_width_px|string ~ 'px' %}
+  {% endif %}
+{% else %}
+  {% set _outer_root_style = '' %}
+  {% set _section_style = spacing_css|trim %}
+  {% if _content_max_width_px %}
+    {% set _section_style = (_section_style ~ ';' if _section_style else '') ~ '--max-width:' ~ _content_max_width_px|string ~ 'px' %}
+  {% endif %}
+{% endif %}
+
+{% require_css %}
+{% if _outer_active and _outer_opt == 'image' %}
+  <style>
+    .sw-body-inset__module-outer-root[data-bi-outer-instance="{{ name|escape }}"] .sw-body-inset__module-outer-bg-fill {
+      {% if _ourl_xl and _ourl_xl is string %}
+      background-image: url({{ _ourl_xl }}) !important;
+      background-size: {{ _og_xl_size }};
+      background-position: {{ _pos_css(_og_pos_xl_raw) }};
+      background-repeat: {{ _og_repeat_xl }};
+      {% endif %}
+      --th-outer-overlay: {{ macros.color(_og_overlay_xl|default({'color':'#000000','opacity':0})) }};
+      --th-outer-base: {{ macros.color(_og_base_xl|default({'color':'#ffffff','opacity':100})) }};
+      background-color: {{ macros.color(_og_base_xl|default({'color':'#ffffff','opacity':100})) }} !important;
+    }
+    @media (max-width: 1199px) {
+      .sw-body-inset__module-outer-root[data-bi-outer-instance="{{ name|escape }}"] .sw-body-inset__module-outer-bg-fill {
+        {% if _og_override_lg %}{% if _ourl_lg %}background-image: url({{ _ourl_lg }}) !important; background-size: {{ _og_lg_grp.hero_background_size_lg|default(_og_xl_size) }}; background-position: {{ _pos_css(_og_pos_lg_raw) }}; background-repeat: {{ _og_repeat_lg }};{% else %}background-image: none !important;{% endif %}{% endif %}
+        --th-outer-overlay: {{ macros.color(_og_overlay_lg|default({'color':'#000000','opacity':0})) }};
+        --th-outer-base: {{ macros.color(_og_base_lg|default({'color':'#ffffff','opacity':100})) }};
+        background-color: {{ macros.color(_og_base_lg|default({'color':'#ffffff','opacity':100})) }} !important;
+      }
+    }
+    @media (max-width: 991px) {
+      .sw-body-inset__module-outer-root[data-bi-outer-instance="{{ name|escape }}"] .sw-body-inset__module-outer-bg-fill {
+        {% if _og_override_md %}{% if _ourl_md %}background-image: url({{ _ourl_md }}) !important; background-size: {{ _og_md_grp.hero_background_size_md|default(_og_xl_size) }}; background-position: {{ _pos_css(_og_pos_md_raw) }}; background-repeat: {{ _og_repeat_md }};{% else %}background-image: none !important;{% endif %}{% endif %}
+        --th-outer-overlay: {{ macros.color(_og_overlay_md|default({'color':'#000000','opacity':0})) }};
+        --th-outer-base: {{ macros.color(_og_base_md|default({'color':'#ffffff','opacity':100})) }};
+        background-color: {{ macros.color(_og_base_md|default({'color':'#ffffff','opacity':100})) }} !important;
+      }
+    }
+    @media (max-width: 767px) {
+      .sw-body-inset__module-outer-root[data-bi-outer-instance="{{ name|escape }}"] .sw-body-inset__module-outer-bg-fill {
+        {% if _og_override_sm %}{% if _ourl_sm %}background-image: url({{ _ourl_sm }}) !important; background-size: {{ _og_sm_grp.hero_background_size_sm|default(_og_xl_size) }}; background-position: {{ _pos_css(_og_pos_sm_raw) }}; background-repeat: {{ _og_repeat_sm }};{% else %}background-image: none !important;{% endif %}{% endif %}
+        --th-outer-overlay: {{ macros.color(_og_overlay_sm|default({'color':'#000000','opacity':0})) }};
+        --th-outer-base: {{ macros.color(_og_base_sm|default({'color':'#ffffff','opacity':100})) }};
+        background-color: {{ macros.color(_og_base_sm|default({'color':'#ffffff','opacity':100})) }} !important;
+      }
+    }
+    .sw-body-inset__module-outer-root[data-bi-outer-instance="{{ name|escape }}"] .sw-body-inset__module-outer-bg-fill::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: var(--th-outer-overlay, transparent);
+      pointer-events: none;
+    }
+  </style>
+{% endif %}
+{% if _outer_active and (_outer_opt == 'color' or _outer_opt == 'custom') %}
+  <style>
+    .sw-body-inset__module-outer-root[data-bi-outer-instance="{{ name|escape }}"] .sw-body-inset__module-outer-bg-backdrop {
+      {% if _outer_opt == 'color' %}
+        {% if _og_color_choice == 'custom' and _og_color_custom and (_og_color_custom.color or _og_color_custom.rgba) %}
+      background-color: {{ macros.color(_og_color_custom) }};
+        {% else %}
+      background-color: var(--{{ _og_color_choice }}, var(--primary, #0C2D4C));
+        {% endif %}
+      {% elif _outer_opt == 'custom' and _og_custom and (_og_custom.color or _og_custom.rgba) %}
+      background-color: {{ macros.color(_og_custom) }};
+      {% endif %}
+    }
+  </style>
+{% endif %}
+{% if _outer_active and _outer_opt == 'gradient' and _og_gradient and _og_gradient.css %}
+  <style>
+    .sw-body-inset__module-outer-root[data-bi-outer-instance="{{ name|escape }}"] .sw-body-inset__module-outer-bg-backdrop {
+      background: {{ _og_gradient.css }};
+    }
+  </style>
+{% endif %}
+
+{% if _bg_opt == 'image' %}
+  <style>
+    @media (max-width: 1199px) {
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__container {
+        {% if override_lg %}{% if _bg_lg_src %}background-image: url({{ resize_image_url(_bg_lg_src,'2400') }}) !important; background-size: {{ _inner_lg.hero_background_size_lg|default(_inner_size_xl) }}; background-position: {{ _pos_css(_inner_lg.background_position_lg|default(_inner_pos_xl)) }}; background-repeat: {{ _inner_lg.background_repeat_lg|default(_inner_repeat_xl) }};{% else %}background-image: none !important;{% endif %}{% endif %}
+      }
+    }
+    @media (max-width: 991px) {
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__container {
+        {% if override_md %}{% if _bg_md_src %}background-image: url({{ resize_image_url(_bg_md_src,'2000') }}) !important; background-size: {{ _inner_md.hero_background_size_md|default(_inner_size_xl) }}; background-position: {{ _pos_css(_inner_md.background_position_md|default(_inner_pos_xl)) }}; background-repeat: {{ _inner_md.background_repeat_md|default(_inner_repeat_xl) }};{% else %}background-image: none !important;{% endif %}{% endif %}
+      }
+    }
+    @media (max-width: 767px) {
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__container {
+        {% if override_sm %}{% if _bg_sm_src %}background-image: url({{ resize_image_url(_bg_sm_src,'1600') }}) !important; background-size: {{ _inner_sm.hero_background_size_sm|default(_inner_size_xl) }}; background-position: {{ _pos_css(_inner_sm.background_position_sm|default(_inner_pos_xl)) }}; background-repeat: {{ _inner_sm.background_repeat_sm|default(_inner_repeat_xl) }};{% else %}background-image: none !important;{% endif %}{% endif %}
+      }
+    }
+  </style>
+{% endif %}
+{% if _inner_effect_active and _inner_effect_type == 'glass' %}
+  <style>
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__container.sw-body-inset--inner-effect-glass::after {
+      background: {{ macros.color(_inner_glass.fill|default({'color':'#ffffff','opacity':35})) }};
+      border: {{ _inner_glass.border_width|default(1) }}px solid {{ macros.color(_inner_glass.border|default({'color':'#ffffff','opacity':45})) }};
+      backdrop-filter: blur({{ _inner_glass.blur|default(20) }}px) saturate({{ _inner_glass.saturate|default(160) }}%);
+      -webkit-backdrop-filter: blur({{ _inner_glass.blur|default(20) }}px) saturate({{ _inner_glass.saturate|default(160) }}%);
+    }
+  </style>
+{% elif _inner_effect_active and _inner_effect_type == 'grain' %}
+  <style>
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__container.sw-body-inset--inner-effect-grain::after {
+      background-color: {{ macros.color(_inner_grain.background|default({'color':'#000000','opacity':0})) }};
+      --sw-grain-color: {{ macros.color(_inner_grain.grain_color|default({'color':'#ffffff','opacity':85})) }};
+      --sw-grain-blend: {{ _inner_grain.blend|default('normal') }};
+      --sw-grain-scale: {{ (_inner_grain.scale|default(100))|int }};
+      background-image: radial-gradient(var(--sw-grain-color) 0.8px, transparent 0.8px);
+      background-size: calc(12px * var(--sw-grain-scale, 100) / 100) calc(12px * var(--sw-grain-scale, 100) / 100);
+      mix-blend-mode: var(--sw-grain-blend, normal);
+    }
+  </style>
+{% elif _inner_effect_active and _inner_effect_type == 'pattern' %}
+  <style>
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__container.sw-body-inset--inner-effect-pattern::after {
+      background-color: {{ macros.color(_inner_pattern.background|default({'color':'#000000','opacity':0})) }};
+      --sw-tb-pattern-color: {{ macros.color(_inner_pattern.pattern_color|default({'color':'#ffffff','opacity':28})) }};
+      --sw-tb-pattern-scale: {{ (_inner_pattern.scale|default(100))|int }};
+      --sw-tb-pattern-blend: {{ _inner_pattern.blend|default('normal') }};
+      mix-blend-mode: var(--sw-tb-pattern-blend, normal);
+    }
+  </style>
+{% endif %}
+{% if _inner_aurora_active %}
+  <style>
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__container.sw-body-inset--has-inner-aurora::after {
+      background: radial-gradient(circle at 18% 25%, {{ macros.color(_inner_aurora.color_1|default({'color':'#343bed','opacity':50})) }}, transparent 48%), radial-gradient(circle at 85% 20%, {{ macros.color(_inner_aurora.color_2|default({'color':'#e16bff','opacity':45})) }}, transparent 50%), radial-gradient(circle at 52% 100%, {{ macros.color(_inner_aurora.color_3|default({'color':'#dcbb9b','opacity':40})) }}, transparent 48%);
+      filter: blur({{ _inner_aurora.edge_blur|default(20) }}px);
+      transform: scale({{ _inner_aurora.scale|default(100) / 100 }});
+    }
+  </style>
+{% endif %}
+  <style>
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__body {
+      text-align: {{ _ca_align_d }};
+      {% if _ca_spacing.css %}{{ _ca_spacing.css }}{% endif %}
+    }
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__inset-content {
+      text-align: {{ _ica_align_d }};
+      {% if _ica_spacing.css %}{{ _ica_spacing.css }}{% endif %}
+    }
+    {% if _ca_override_md_align or _ca_override_md_spacing %}
+    @media (min-width: 768px) and (max-width: 991.98px) {
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__body {
+        {% if _ca_override_md_align %}text-align: {{ _ca_align_md }};{% endif %}
+        {% if _ca_override_md_spacing and _ca_spacing_md.css %}{{ _ca_spacing_md.css }}{% endif %}
+      }
+    }
+    {% endif %}
+    {% if _ca_override_sm_align or _ca_override_sm_spacing %}
+    @media (max-width: 767.98px) {
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__body {
+        {% if _ca_override_sm_align %}text-align: {{ _ca_align_sm }};{% endif %}
+        {% if _ca_override_sm_spacing and _ca_spacing_sm.css %}{{ _ca_spacing_sm.css }}{% endif %}
+      }
+    }
+    {% endif %}
+    {% if _ica_override_md_align or _ica_override_md_spacing %}
+    @media (min-width: 768px) and (max-width: 991.98px) {
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__inset-content {
+        {% if _ica_override_md_align %}text-align: {{ _ica_align_md }};{% endif %}
+        {% if _ica_override_md_spacing and _ica_spacing_md.css %}{{ _ica_spacing_md.css }}{% endif %}
+      }
+    }
+    {% endif %}
+    {% if _ica_override_sm_align or _ica_override_sm_spacing %}
+    @media (max-width: 767.98px) {
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__inset-content {
+        {% if _ica_override_sm_align %}text-align: {{ _ica_align_sm }};{% endif %}
+        {% if _ica_override_sm_spacing and _ica_spacing_sm.css %}{{ _ica_spacing_sm.css }}{% endif %}
+      }
+    }
+    {% endif %}
+
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-section,
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-section { width: 100%; box-sizing: border-box; }
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-panel,
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-panel { position: relative; width: 100%; box-sizing: border-box; overflow: hidden; }
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-panel-content,
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-panel-content { position: relative; z-index: 1; width: 100%; box-sizing: border-box; }
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-panel[data-content-align="left"] .sw-body-inset__heading-panel-content,
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-panel[data-content-align="left"] .sw-body-inset__footer-panel-content { text-align: left; }
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-panel[data-content-align="center"] .sw-body-inset__heading-panel-content,
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-panel[data-content-align="center"] .sw-body-inset__footer-panel-content { text-align: center; }
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-panel[data-content-align="right"] .sw-body-inset__heading-panel-content,
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-panel[data-content-align="right"] .sw-body-inset__footer-panel-content { text-align: right; }
+    @media (min-width: 768px) and (max-width: 991.98px) {
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-panel .sw-body-inset__heading-panel-content { text-align: {{ _hp_align_md }}; }
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-panel .sw-body-inset__footer-panel-content { text-align: {{ _footer_align_md }}; }
+    }
+    @media (max-width: 767.98px) {
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-panel .sw-body-inset__heading-panel-content { text-align: {{ _hp_align_sm }}; }
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-panel .sw-body-inset__footer-panel-content { text-align: {{ _footer_align_sm }}; }
+    }
+    {% if _hp.override_md_spacing|default(false) and _hp.spacing_md and _hp.spacing_md.css %}
+    @media (min-width: 768px) and (max-width: 991.98px) {
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-panel { {{ _hp.spacing_md.css }} }
+    }
+    {% endif %}
+    {% if _hp.override_sm_spacing|default(false) and _hp.spacing_sm and _hp.spacing_sm.css %}
+    @media (max-width: 767.98px) {
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-panel { {{ _hp.spacing_sm.css }} }
+    }
+    {% endif %}
+    {% if _fp.override_md_spacing|default(false) and _fp.spacing_md and _fp.spacing_md.css %}
+    @media (min-width: 768px) and (max-width: 991.98px) {
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-panel { {{ _fp.spacing_md.css }} }
+    }
+    {% endif %}
+    {% if _fp.override_sm_spacing|default(false) and _fp.spacing_sm and _fp.spacing_sm.css %}
+    @media (max-width: 767.98px) {
+      .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-panel { {{ _fp.spacing_sm.css }} }
+    }
+    {% endif %}
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-panel--effect::before,
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-panel--effect::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-panel--effect-glass::before { background: var(--bi-panel-fill); border: {{ _hp_effect.border_width|default(1) }}px solid var(--bi-panel-border); backdrop-filter: blur(var(--bi-panel-blur)) saturate({{ _hp_effect.saturate|default(160) }}%); -webkit-backdrop-filter: blur(var(--bi-panel-blur)) saturate({{ _hp_effect.saturate|default(160) }}%); }
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-panel--effect-glass::before { background: var(--bi-panel-fill); border: {{ _fp_effect.border_width|default(1) }}px solid var(--bi-panel-border); backdrop-filter: blur(var(--bi-panel-blur)) saturate({{ _fp_effect.saturate|default(160) }}%); -webkit-backdrop-filter: blur(var(--bi-panel-blur)) saturate({{ _fp_effect.saturate|default(160) }}%); }
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-panel--effect-grain::before { background-color: var(--bi-panel-bg); background-image: radial-gradient(var(--bi-panel-grain) 0.8px, transparent 0.8px); background-size: {{ _hp_effect.scale|default(100) }}px {{ _hp_effect.scale|default(100) }}px; mix-blend-mode: {{ _hp_effect.blend|default('normal') }}; }
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-panel--effect-grain::before { background-color: var(--bi-panel-bg); background-image: radial-gradient(var(--bi-panel-grain) 0.8px, transparent 0.8px); background-size: {{ _fp_effect.scale|default(100) }}px {{ _fp_effect.scale|default(100) }}px; mix-blend-mode: {{ _fp_effect.blend|default('normal') }}; }
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-panel--effect-pattern::before { background-color: var(--bi-panel-bg); background-image: radial-gradient(var(--bi-panel-pattern) 1px, transparent 1px); background-size: {{ _hp_effect.scale|default(100) }}px {{ _hp_effect.scale|default(100) }}px; mix-blend-mode: {{ _hp_effect.blend|default('normal') }}; }
+    .sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-panel--effect-pattern::before { background-color: var(--bi-panel-bg); background-image: radial-gradient(var(--bi-panel-pattern) 1px, transparent 1px); background-size: {{ _fp_effect.scale|default(100) }}px {{ _fp_effect.scale|default(100) }}px; mix-blend-mode: {{ _fp_effect.blend|default('normal') }}; }
+  </style>
+
+{% end_require_css %}
+
+
+{% if _inner_effect_active and _inner_effect_type == 'pattern' and _inner_pattern.style|default('') == 'custom' and module.inner_pattern_custom_svg_code %}
+{% require_css %}
+<style>
+.sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__container.sw-body-inset--inner-effect-pattern::after {
+  background-image: url("data:image/svg+xml;charset=utf-8,{{ module.inner_pattern_custom_svg_code|urlencode|replace('+','%20')|replace('#','%23') }}");
+}
+</style>
+{% end_require_css %}
+{% endif %}
+{% if _hp_effect_active and _hp_effect_type == 'pattern' and _hp_effect.style|default('') == 'custom' and module.heading_panel_pattern_custom_svg_code %}
+{% require_css %}
+<style>
+.sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__heading-panel--effect-pattern::before {
+  background-image: url("data:image/svg+xml;charset=utf-8,{{ module.heading_panel_pattern_custom_svg_code|urlencode|replace('+','%20')|replace('#','%23') }}");
+}
+</style>
+{% end_require_css %}
+{% endif %}
+{% if _fp_effect_active and _fp_effect_type == 'pattern' and _fp_effect.style|default('') == 'custom' and module.footer_panel_pattern_custom_svg_code %}
+{% require_css %}
+<style>
+.sw-body-inset[data-instance="{{ name|escape }}"] .sw-body-inset__footer-panel--effect-pattern::before {
+  background-image: url("data:image/svg+xml;charset=utf-8,{{ module.footer_panel_pattern_custom_svg_code|urlencode|replace('+','%20')|replace('#','%23') }}");
+}
+</style>
+{% end_require_css %}
+{% endif %}
+
+{{ require_js(get_asset_url('module.js'), { defer: true }) }}
+{% if module.enable_module|default(true) %}
+{% if _outer_shell_active %}
+<div class="sw-body-inset__module-outer-root smithworks-module-outer-root{% if _outer_width_choice == 'full' %} sw-body-inset__module-outer-root--full-bleed{% endif %}" data-bi-outer-instance="{{ name|escape }}"{% if _outer_root_style %} style="{{ _outer_root_style|escape }}"{% endif %}>
+  {% if _outer_active %}
+  <div class="sw-body-inset__module-outer-bg smithworks-module-outer-bg{% if _outer_opt == 'image' %} sw-body-inset__module-outer-bg--image{% endif %}" aria-hidden="true">
+    {% if _outer_opt == 'divider' %}
+    <svg class="sw-body-inset__module-outer-divider-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <polygon points="0,0 100,0 100,{{ _outer_div_right }} 0,{{ _outer_div_left }}" fill="{{ macros.color(_outer_div_top) }}" />
+      <polygon points="0,{{ _outer_div_left }} 100,{{ _outer_div_right }} 100,100 0,100" fill="{{ macros.color(_outer_div_bottom) }}" />
+    </svg>
+    {% elif _outer_opt == 'animated' %}
+    {% set _oanim = _bg.outer_animated|default({}) %}
+    {% set _oanim_cm = _oanim.color_mode|default('theme') %}
+    {% if _oanim.art == 'custom' %}{% set _oanim_cm = _oanim.custom_color_mode|default('svg') %}{% endif %}
+    {% set _oanim_recolor = (_oanim_cm != 'svg') %}
+    {% set _oanim_color_css = macros.color(_oanim.custom_color|default({'color':'#ca3521','opacity':92})) %}
+    {% if _oanim_recolor %}
+      {% if _oanim_cm == 'custom' and _oanim.custom_color %}{% set _oanim_color_css = macros.color(_oanim.custom_color) %}
+      {% else %}{% set _oanim_tc = _oanim.theme_color|default('primary') %}{% if _oanim_tc == 'custom' %}{% set _oanim_tc = 'primary' %}{% endif %}{% set _oanim_color_css = 'var(--' ~ _oanim_tc ~ ', var(--primary, #ca3521))' %}{% endif %}
+    {% endif %}
+    <div class="sw-body-inset__outer-animated-stage" data-sw-body-inset-outer-animated data-art="{{ _oanim.art|default('wave')|escape }}" data-motion="{{ _oanim.motion|default('wave')|escape }}" data-roll-speed="{{ _oanim.roll_speed|default(0.38) }}" data-wave-speed="{{ _oanim.wave_speed|default(1.35) }}" data-wave-amp="{{ _oanim.wave_amp|default(95) }}" data-wave-lag="{{ _oanim.wave_lag|default(0.22) }}"{% if _oanim_recolor %} data-recolor="1"{% endif %} style="--sw-bi-oa-color: {{ _oanim_color_css }};">
+      <div class="sw-body-inset__outer-animated-source"{% unless is_in_editor %} style="opacity:0"{% endunless %}>{% if _oanim.art == 'custom' and module.outer_animated_custom_svg_code %}{{ module.outer_animated_custom_svg_code }}{% elif _oanim.art == 'wave-2' %}{% include '../../sw-partials/sw-animated/wave-2.html' %}{% elif _oanim.art == 'wave-3' %}{% include '../../sw-partials/sw-animated/wave-3.html' %}{% elif _oanim.art == 'wave-4' %}{% include '../../sw-partials/sw-animated/wave-4.html' %}{% elif _oanim.art == 'wave-5' %}{% include '../../sw-partials/sw-animated/wave-5.html' %}{% else %}{% include '../../sw-partials/sw-animated/wave.html' %}{% endif %}</div>
+      <canvas class="sw-body-inset__outer-animated-canvas" aria-hidden="true"></canvas>
+      <div class="sw-body-inset__outer-animated-fallback is-hidden{% if _oanim_recolor %} is-recolor{% endif %}" aria-hidden="true"></div>
+    </div>
+    {% else %}
+      {% if _outer_opt in ['color', 'custom', 'gradient'] %}
+    <div class="sw-body-inset__module-outer-bg-backdrop smithworks-module-outer-backdrop"></div>
+      {% endif %}
+      {% if _outer_opt == 'image' %}
+    <div class="sw-body-inset__module-outer-bg-fill"></div>
+      {% endif %}
+      {% if _outer_aurora_active %}
+    <div class="sw-body-inset__outer-aurora" style="--sw-bi-aurora-one: {{ macros.color(_outer_aurora.color_1|default({'color':'#343bed','opacity':50})) }}; --sw-bi-aurora-two: {{ macros.color(_outer_aurora.color_2|default({'color':'#e16bff','opacity':45})) }}; --sw-bi-aurora-three: {{ macros.color(_outer_aurora.color_3|default({'color':'#dcbb9b','opacity':40})) }}; --sw-bi-aurora-blur: {{ _outer_aurora.edge_blur|default(20) }}px; --sw-bi-aurora-scale: {{ _outer_aurora.scale|default(100) / 100 }}; --sw-bi-aurora-duration: {{ _outer_aurora.duration|default(8) }}s;"><span></span><span></span><span></span></div>
+      {% endif %}
+      {% if _outer_svg_active %}
+    <div class="sw-body-inset__svg-overlay{{ _svo_hide_cls }}{% if _outer_svg.color_mode|default('svg') == 'override' %} is-svo-override{% endif %}" data-sw-body-inset-svg-overlay data-pos="{{ _svo_pos|escape }}" data-par="{{ _svo_par|escape }}" data-anim="{{ _outer_svg.animation|default('appear')|escape }}" data-appear="{{ _outer_svg.appear_duration|default(1) }}" data-twinkle="{{ _outer_svg.twinkle_speed|default('medium')|escape }}" style="{{ _svo_style }}">
+      <div class="sw-body-inset__svg-overlay-src">{{ _svo_code }}</div>
+      <div class="sw-body-inset__svg-overlay-graphic"></div>
+    </div>
+      {% endif %}
+    {% endif %}
+  </div>
+  {% endif %}
+  <div class="sw-body-inset__module-outer-inner smithworks-module-outer-inner{% if _outer_max_width_px %} sw-body-inset__module-outer-inner--width-constrained{% endif %}{% if _has_outer_bg_image %} sw-body-inset--outer-has-bg-image{% endif %}">
+{% endif %}
+<section id="{% if module.custom_id %}{{ module.custom_id|escape }}{% else %}sw-body-inset-{{ name|escape }}{% endif %}"
+         class="smithworks-module sw-body-inset{% if module.custom_classes %} {{ module.custom_classes }}{% endif %}{% if _outer_shell_active %} sw-body-inset--over-outer{% endif %}"
+         data-instance="{{ name|escape }}"
+         {% if _section_style %}style="{{ _section_style|escape }}"{% endif %}>
+
+  {# Content width cap: --max-width on section + .sw-body-inset__container matches .sw-pillar__container. Inner background + video on container; inner spacing on .sw-body-inset__inner. #}
+  <div class="sw-body-inset__container{% if _inner_effect_active %} sw-body-inset--inner-effect sw-body-inset--inner-effect-{{ _inner_effect_type }}{% if _inner_effect_type == 'grain' %} sw-body-inset--inner-grain-{{ _inner_grain.density|default('default') }}{% endif %}{% if _inner_effect_type == 'pattern' %} sw-body-inset--inner-pattern-{{ _inner_pattern_style }}{% endif %}{% endif %}{% if _inner_aurora_active %} sw-body-inset--has-inner-aurora{% endif %}{% if _bg_opt == 'image' %} sw-body-inset--has-bg-image{% endif %}{% if _show_video %} sw-body-inset--has-bg-video{% endif %}"{% if _container_style %} style="{{ _container_style|escape }}"{% endif %}>
+  {% if _show_video %}
+  <div class="sw-body-inset__video-wrap" aria-hidden="true">
+    {% if _video_type == 'hubspot_video' and _video.hubspot_video and _video.hubspot_video.player_id %}
+      {% video_player "embed_player"
+        autoplay={{ _bg.video_autoplay|default(true) }},
+        full_width={{ true }},
+        hidden_controls={{ true }},
+        loop={{ _bg.video_loop|default(true) }},
+        muted={{ _bg.video_muted|default(true) }},
+        player_id={{ _video.hubspot_video.player_id }},
+        type={{ _video.hubspot_video.player_type || 'scriptV4' }}
+      %}
+    {% elif _video_type == 'file' and _video.video_file and _video.video_file|length > 0 %}
+      {% set _video_file = _video.video_file[0] %}
+      <video class="sw-body-inset__video-file" autoplay muted loop playsinline {% if _video.poster_image and _video.poster_image.src %}poster="{{ _video.poster_image.src }}"{% endif %} src="{{ _video_file.url|default(_video_file.src)|default(_video_file) }}"></video>
+    {% elif _video_type == 'embed' and _video.embed_field and _video.embed_field.embed_html %}
+      <div class="sw-body-inset__video-embed">{{ _video.embed_field.embed_html }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+    <div class="sw-body-inset__inner"{% if _inner_shell_style %} style="{{ _inner_shell_style|escape }}"{% endif %}>
+
+    {# --- Header Panel (headings-only; chrome default none/0) --- #}
+    {% if _show_heading_section %}
+    <div class="sw-body-inset__heading-section">
+      <div class="sw-body-inset__heading-panel{% if _hp_effect_active %} sw-body-inset__heading-panel--effect sw-body-inset__heading-panel--effect-{{ _hp_effect_type }}{% endif %}" data-content-align="{{ _hp_align_d }}"{% if _hp_style %} style="{{ _hp_style|escape }}"{% endif %}>
+        <div class="sw-body-inset__heading-panel-content{% if _cc_lc == 'dark' %} sw-dark{% elif _cc_lc == 'light' %} sw-light{% endif %}">
+    <div class="sw-body-inset__headings" style="--bi-heading-text-wrap: {{ _heading_text_wrap }};">
+      {% for item in _heading_items %}
+        {% set _tag = item.heading_size|default('h2') %}
+        {% if _tag not in ['h1','h2','h3','h4','h5','h6','p'] %}{% set _tag = 'h2' %}{% endif %}
+        {% set _display = item.heading_display_size|default('h2') %}
+        {% set _color_choice = item.heading_color|default('auto') %}
+        {% set _align_default_raw = item.heading_align|default('auto') %}
+        {% if _align_default_raw in ['left','center','right'] %}
+          {% set _align_default = _align_default_raw %}
+        {% else %}
+          {% set _align_default = _hp_align_d %}
+        {% endif %}
+        {% set _override_md_align = item.heading_md_text_align_override|default(false) %}
+        {% set _override_sm_align = item.heading_sm_text_align_override|default(false) %}
+        {% if _override_md_align %}
+          {% set _align_md = item.heading_md_text_align|default(_align_default) %}
+        {% elif _align_default_raw not in ['left','center','right'] %}
+          {% set _align_md = _hp_align_md %}
+        {% else %}
+          {% set _align_md = _align_default %}
+        {% endif %}
+        {% if _override_sm_align %}
+          {% set _align_sm = item.heading_sm_text_align|default(_align_md) %}
+        {% elif _align_default_raw not in ['left','center','right'] %}
+          {% set _align_sm = _hp_align_sm %}
+        {% else %}
+          {% set _align_sm = _align_md %}
+        {% endif %}
+        {% set _classes = ['heading', 'sw-body-inset__heading'] %}
+        {% if _display != 'auto' %}{% set _classes = _classes + [_display] %}{% endif %}
+        {% if _color_choice not in ['auto', 'custom', ''] %}{% set _classes = _classes + ['text-' ~ _color_choice] %}{% endif %}
+        {% if item.heading_class %}{% set _classes = _classes + [item.heading_class] %}{% endif %}
+        {% set _style_parts = ['--bi-heading-align-default: ' ~ _align_default, '--bi-heading-align-md: ' ~ _align_md, '--bi-heading-align-sm: ' ~ _align_sm] %}
+        {% if _color_choice == 'custom' and item.heading_color_custom %}
+          {% set _custom_color = item.heading_color_custom.rgba or item.heading_color_custom.color %}
+          {% if _custom_color %}{% set _style_parts = _style_parts + ['color: ' ~ _custom_color] %}{% endif %}
+        {% elif _color_choice in ['auto', ''] %}
+          {% if _cc_tc == 'custom' and _cc_tc_cust and (_cc_tc_cust.color or _cc_tc_cust.rgba) %}
+            {% set _style_parts = _style_parts + ['color: ' ~ macros.color(_cc_tc_cust) ~ ' !important'] %}
+          {% elif _cc_tc not in ['auto', ''] %}
+            {% if _cc_tc in ['gradient_one', 'gradient_two'] %}
+              {% set _classes = _classes + ['text-' ~ _cc_tc] %}
+            {% else %}
+              {% set _classes = _classes + ['text-' ~ _cc_tc] %}
+              {% set _style_parts = _style_parts + ['color: var(--' ~ _cc_tc ~ ') !important'] %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+        {% set _use_padding = item.heading_padding_override|default(false) %}
+        {% if _use_padding %}
+          {% set _style_parts = _style_parts + ['padding-top: ' ~ (item.heading_padding_top|default(0)) ~ 'px', 'padding-bottom: ' ~ (item.heading_padding_bottom|default(0)) ~ 'px'] %}
+        {% endif %}
+        <{{ _tag }} class="{{ _classes|join(' ') }}" style="{{ _style_parts|join('; ') }}; text-wrap: var(--bi-heading-text-wrap, auto); text-align: var(--bi-heading-align-default, left);">
+          {{ item.heading_text }}
+        </{{ _tag }}>
+      {% endfor %}
+    </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {# --- Flow: floated inset + wrapping body --- #}
+    <div class="sw-body-inset__flow"
+         data-show-inset="{{ 'true' if _show_inset else 'false' }}"
+         data-side-xl="{{ _side_xl|escape }}"
+         data-side-lg="{{ _side_lg|escape }}"
+         data-side-md="{{ _side_md|escape }}"
+         data-w-xl="{{ _w_xl|escape }}"
+         data-w-lg="{{ _w_lg|escape }}"
+         data-w-md="{{ _w_md|escape }}"
+         data-stack-order="{{ _stack_order|escape }}"
+         data-valign="{{ _valign|escape }}"
+         style="--bi-gap: {{ _gap }}px; --bi-cols-xl: {{ _w_xl }}; --bi-cols-lg: {{ _w_lg }}; --bi-cols-md: {{ _w_md }};">
+
+      {% if _show_inset %}
+      <div class="sw-body-inset__float" data-bi-float>
+      <aside class="sw-body-inset__inset{{ _inset_bg_class }}{{ _inset_tc_class }}" data-bi-inset{% if _inset_lc == 'dark' or _inset_lc == 'light' %} data-link-context="{{ _inset_lc|escape }}"{% endif %}{% if _inset_card_style %} style="{{ _inset_card_style|escape }}"{% endif %}>
+        {% if _inset_heading_items is iterable and _inset_heading_items|length > 0 %}
+        <div class="sw-body-inset__inset-headings">
+          {% for item in _inset_heading_items %}
+            {% set _tag = item.heading_size|default('h3') %}
+            {% if _tag not in ['h1','h2','h3','h4','h5','h6','p'] %}{% set _tag = 'h3' %}{% endif %}
+            {% set _display = item.heading_display_size|default('auto') %}
+            {% set _color_choice = item.heading_color|default('auto') %}
+            {% set _align_default_raw = item.heading_align|default('auto') %}
+            {% if _align_default_raw in ['left','center','right'] %}
+              {% set _align_default = _align_default_raw %}
+            {% else %}
+              {% set _align_default = _ica_align_d %}
+            {% endif %}
+            {% set _override_md_align = item.heading_md_text_align_override|default(false) %}
+            {% set _override_sm_align = item.heading_sm_text_align_override|default(false) %}
+            {% if _override_md_align %}
+              {% set _align_md = item.heading_md_text_align|default(_align_default) %}
+            {% elif _align_default_raw not in ['left','center','right'] %}
+              {% set _align_md = _ica_align_md %}
+            {% else %}
+              {% set _align_md = _align_default %}
+            {% endif %}
+            {% if _override_sm_align %}
+              {% set _align_sm = item.heading_sm_text_align|default(_align_md) %}
+            {% elif _align_default_raw not in ['left','center','right'] %}
+              {% set _align_sm = _ica_align_sm %}
+            {% else %}
+              {% set _align_sm = _align_md %}
+            {% endif %}
+            {% set _classes = ['heading', 'sw-body-inset__inset-heading'] %}
+            {% if _display != 'auto' %}{% set _classes = _classes + [_display] %}{% endif %}
+            {% if _color_choice not in ['auto', 'custom', ''] %}{% set _classes = _classes + ['text-' ~ _color_choice] %}{% endif %}
+            {% if item.heading_class %}{% set _classes = _classes + [item.heading_class] %}{% endif %}
+            {% set _style_parts = ['--bi-heading-align-default: ' ~ _align_default, '--bi-heading-align-md: ' ~ _align_md, '--bi-heading-align-sm: ' ~ _align_sm] %}
+            {% if _color_choice == 'custom' and item.heading_color_custom %}
+              {% set _custom_color = item.heading_color_custom.rgba or item.heading_color_custom.color %}
+              {% if _custom_color %}{% set _style_parts = _style_parts + ['color: ' ~ _custom_color] %}{% endif %}
+            {% elif _color_choice in ['auto', ''] %}
+              {% if _inset_tc == 'custom' and _inset_tc_cust and (_inset_tc_cust.color or _inset_tc_cust.rgba) %}
+                {% set _style_parts = _style_parts + ['color: ' ~ macros.color(_inset_tc_cust) ~ ' !important'] %}
+              {% elif _inset_tc not in ['auto', ''] %}
+                {% if _inset_tc in ['gradient_one', 'gradient_two'] %}
+                  {% set _classes = _classes + ['text-' ~ _inset_tc] %}
+                {% else %}
+                  {% set _classes = _classes + ['text-' ~ _inset_tc] %}
+                  {% set _style_parts = _style_parts + ['color: var(--' ~ _inset_tc ~ ') !important'] %}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+            {% set _use_padding = item.heading_padding_override|default(false) %}
+            {% if _use_padding %}
+              {% set _style_parts = _style_parts + ['padding-top: ' ~ (item.heading_padding_top|default(0)) ~ 'px', 'padding-bottom: ' ~ (item.heading_padding_bottom|default(0)) ~ 'px'] %}
+            {% endif %}
+            <{{ _tag }} class="{{ _classes|join(' ') }}" style="{{ _style_parts|join('; ') }}; text-align: var(--bi-heading-align-default, left);">{{ item.heading_text }}</{{ _tag }}>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if _has_inset_img %}
+        <div class="sw-body-inset__inset-image">
+          <picture>
+            {% if img_xl %}<source media="(min-width:1200px)" srcset="{{ img_xl }}">{% endif %}
+            {% if img_lg %}<source media="(min-width:992px)" srcset="{{ img_lg }}">{% endif %}
+            {% if img_md %}<source media="(min-width:768px)" srcset="{{ img_md }}">{% endif %}
+            <img src="{{ img_sm or img_md or img_lg or img_xl }}" alt="{{ img_xl_obj.alt|default('')|escape_attr }}" loading="lazy">
+          </picture>
+        </div>
+        {% endif %}
+
+        {% if _inset_g.inset_rich_text %}
+        <div class="sw-body-inset__inset-content content-area">{{ _inset_g.inset_rich_text }}</div>
+        {% endif %}
+
+        {% if _cta_items is iterable and _cta_items|length > 0 %}
+        <div class="sw-body-inset__inset-cta sw-body-inset__inset-cta--{{ _btn_layout|escape }} sw-body-inset__inset-cta--align-{{ _cta_align|escape }}"{% if _cta_margin_top %} style="margin-top: {{ _cta_margin_top }}px;"{% endif %}>
+          {% for _btn in _cta_items %}
+            {% set _css = sw_bi_btn_css(_btn.style, 'primary') %}
+            {% set _L = _btn.link if _btn.link else {} %}
+            {% set _U = _L.url if _L.url else {} %}
+            {% if _U.href %}
+              {% set _href = _U.href %}
+            {% elif _L.href %}
+              {% set _href = _L.href %}
+            {% else %}
+              {% set _href = '#' %}
+            {% endif %}
+            {% set _btn_icon = _btn.icon if _btn.icon else {} %}
+            {% set _btn_icon_icon = _btn_icon.icon if _btn_icon.icon else {} %}
+            {% set _icon_gap = _btn_icon.spacing|default(8) %}
+            {% set _hide_text = _btn.hide_text|default(false) %}
+            {% if _btn.text %}
+              {% set _btn_text = _btn.text %}
+            {% elif _btn.label %}
+              {% set _btn_text = _btn.label %}
+            {% elif _btn.content %}
+              {% set _btn_text = _btn.content %}
+            {% else %}
+              {% set _btn_text = 'Learn More' %}
+            {% endif %}
+            {% set _item_cls = 'sw-body-inset__cta-item sw-body-inset__cta-item--' ~ loop.index0 %}
+            {% if _css == 'simple_link' %}
+              <div class="{{ _item_cls }} simple-link-wrapper"{% if _btn.override_margins|default(false) %} style="margin-left: {{ _btn.margin_left|default(0) }}px; margin-right: {{ _btn.margin_right|default(0) }}px;"{% endif %}>
+                <a href="{{ _href }}" class="simple-link sw-simple-link--{{ _btn.size or 'sm' }}{% if _btn.override_link_colors|default(false) %} sw-body-inset__simple-link--color-overridden{% endif %}"{% if _L.open_in_new_tab %} target="_blank"{% endif %}{% if _L.no_follow %} rel="nofollow"{% endif %} style="--sw-btn-icon-gap: {{ _icon_gap }}px;{% if _btn.override_link_colors|default(false) %}{% if _btn.link_color and _btn.link_color.color %} color: {{ macros.color(_btn.link_color) }};{% endif %}{% if _btn.link_hover_color and _btn.link_hover_color.color %} --sw-btn-sl-hover: {{ macros.color(_btn.link_hover_color) }};{% endif %}{% endif %}">
+                  {% if _btn.add_icon and _btn_icon.position|default('right') == 'left' and _btn_icon_icon.name %}{% icon extra_classes="button_icon button_icon--left" name="{{ _btn_icon_icon.name }}" style="{{ _btn_icon_icon.type }}" unicode="{{ _btn_icon_icon.unicode }}" icon_set="fontawesome-5.14.0" purpose="{{ _btn_icon.purpose|default('decorative') }}" %}{% endif %}
+                  {% if _hide_text and _btn.add_icon %}<span class="sr-only">{{ _btn_text }}</span>{% else %}{{ _btn_text }}{% endif %}
+                  {% if _btn.add_icon and _btn_icon.position|default('right') != 'left' and _btn_icon_icon.name %}{% icon extra_classes="button_icon button_icon--right" name="{{ _btn_icon_icon.name }}" style="{{ _btn_icon_icon.type }}" unicode="{{ _btn_icon_icon.unicode }}" icon_set="fontawesome-5.14.0" purpose="{{ _btn_icon.purpose|default('decorative') }}" %}{% endif %}
+                </a>
+              </div>
+            {% else %}
+              <div class="{{ _item_cls }} btn-wrapper btn-{{ _css }}-wrapper btn-wrapper-{{ _btn.size|default('md') }}"{% if _btn.override_margins|default(false) %} style="margin-left: {{ _btn.margin_left|default(0) }}px; margin-right: {{ _btn.margin_right|default(0) }}px;"{% endif %}>
+                <a href="{{ _href }}" class="btn btn-{{ _css }} cta-button"{% if _L.open_in_new_tab %} target="_blank"{% endif %}{% if _L.no_follow %} rel="nofollow"{% endif %} style="--sw-btn-icon-gap: {{ _icon_gap }}px;">
+                  {% if _btn.add_icon and _btn_icon.position|default('right') == 'left' and _btn_icon_icon.name %}{% icon extra_classes="button_icon button_icon--left" name="{{ _btn_icon_icon.name }}" style="{{ _btn_icon_icon.type }}" unicode="{{ _btn_icon_icon.unicode }}" icon_set="fontawesome-5.14.0" purpose="{{ _btn_icon.purpose|default('decorative') }}" %}{% endif %}
+                  {% if _hide_text and _btn.add_icon %}<span class="sr-only">{{ _btn_text }}</span>{% else %}{{ _btn_text }}{% endif %}
+                  {% if _btn.add_icon and _btn_icon.position|default('right') != 'left' and _btn_icon_icon.name %}{% icon extra_classes="button_icon button_icon--right" name="{{ _btn_icon_icon.name }}" style="{{ _btn_icon_icon.type }}" unicode="{{ _btn_icon_icon.unicode }}" icon_set="fontawesome-5.14.0" purpose="{{ _btn_icon.purpose|default('decorative') }}" %}{% endif %}
+                </a>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+      </aside>
+      </div>
+      {% endif %}
+
+      <div class="sw-body-inset__body content-area{{ _csty_class }}{{ _msg_tc_class }}" data-bi-body{% if _cc_lc == 'dark' or _cc_lc == 'light' %} data-link-context="{{ _cc_lc|escape }}"{% endif %}{% if _msg_tc_style %} style="{{ _msg_tc_style|escape }}"{% endif %}>
+        {{ module.body_rich_text }}
+      </div>
+    </div>
+
+    {% if _show_footer_section %}
+    <div class="sw-body-inset__footer-section">
+      <div class="sw-body-inset__footer-panel{% if _fp_effect_active %} sw-body-inset__footer-panel--effect sw-body-inset__footer-panel--effect-{{ _fp_effect_type }}{% endif %}" data-content-align="{{ _footer_align }}"{% if _fp_style %} style="{{ _fp_style|escape }}"{% endif %}>
+        <div class="sw-body-inset__footer-panel-content{% if _footer_link_context == 'dark' %} sw-dark{% elif _footer_link_context == 'light' %} sw-light{% endif %}"{% if _footer_text_color == 'custom' and _footer_text_custom %} style="color: {{ macros.color(_footer_text_custom) }};"{% elif _footer_text_color not in ['auto',''] %} style="color: var(--{{ _footer_text_color }});"{% endif %}{% if _footer_link_context == 'dark' or _footer_link_context == 'light' %} data-link-context="{{ _footer_link_context|escape }}"{% endif %}>
+          {% for item in _footer_heading_items %}
+            {% set _ftag = item.heading_size|default('h3') %}{% if _ftag not in ['h1','h2','h3','h4','h5','h6','p'] %}{% set _ftag = 'h3' %}{% endif %}
+            {% set _falign_raw = item.heading_align|default('auto') %}
+            {% set _falign = _footer_align if _falign_raw in ['auto',''] else _falign_raw %}
+            {% set _falign_md = item.heading_md_text_align|default(_falign) if item.heading_md_text_align_override|default(false) else (_footer_align_md if _falign_raw in ['auto',''] else _falign) %}
+            {% set _falign_sm = item.heading_sm_text_align|default(_falign_md) if item.heading_sm_text_align_override|default(false) else (_footer_align_sm if _falign_raw in ['auto',''] else _falign_md) %}
+            {% set _fcolor = item.heading_color|default('auto') %}
+            {% set _fclasses = ['heading','sw-body-inset__footer-heading'] %}
+            {% if item.heading_display_size|default('auto') != 'auto' %}{% set _fclasses = _fclasses + [item.heading_display_size] %}{% endif %}
+            {% if _fcolor not in ['auto','custom',''] %}{% set _fclasses = _fclasses + ['text-' ~ _fcolor] %}{% elif _fcolor == 'auto' and _footer_text_color not in ['auto','custom',''] %}{% set _fclasses = _fclasses + ['text-' ~ _footer_text_color] %}{% endif %}
+            {% set _fstyle = ['--bi-heading-align-default: ' ~ _falign, '--bi-heading-align-md: ' ~ _falign_md, '--bi-heading-align-sm: ' ~ _falign_sm] %}
+            {% if _fcolor == 'custom' and item.heading_color_custom %}{% set _fstyle = _fstyle + ['color: ' ~ macros.color(item.heading_color_custom)] %}
+            {% elif _fcolor in ['auto',''] and _footer_text_color == 'custom' and _footer_text_custom %}{% set _fstyle = _fstyle + ['color: ' ~ macros.color(_footer_text_custom) ~ ' !important'] %}
+            {% elif _fcolor in ['auto',''] and _footer_text_color not in ['auto',''] %}{% set _fstyle = _fstyle + ['color: var(--' ~ _footer_text_color ~ ') !important'] %}
+            {% endif %}
+            {% if item.heading_padding_override|default(false) %}{% set _fstyle = _fstyle + ['padding-top: ' ~ item.heading_padding_top|default(0) ~ 'px', 'padding-bottom: ' ~ item.heading_padding_bottom|default(0) ~ 'px'] %}{% endif %}
+            <{{ _ftag }} class="{{ _fclasses|join(' ') }}" style="{{ _fstyle|join('; ') }}; text-align: var(--bi-heading-align-default, left);">{{ item.heading_text|default(item.heading) }}</{{ _ftag }}>
+          {% endfor %}
+          {% if _has_footer_content_area %}<div class="sw-body-inset__footer-description content-area{{ _fc_content_style_class }}">{{ _footer_group.footer_description }}</div>{% endif %}
+          {% if _footer_button_items|length > 0 %}
+          <div class="sw-body-inset__footer-buttons" data-cta-align="{{ _footer_group.alignment|default('left') }}">
+            {% for _btn in _footer_button_items %}
+              {% set _css = sw_bi_btn_css(_btn.style, 'primary') %}
+              {% set _L = _btn.link if _btn.link else {} %}
+              {% set _U = _L.url if _L.url else {} %}
+              {% if _U.href %}
+                {% set _href = _U.href %}
+              {% elif _L.href %}
+                {% set _href = _L.href %}
+              {% else %}
+                {% set _href = '#' %}
+              {% endif %}
+              {% set _btn_icon = _btn.icon if _btn.icon else {} %}
+              {% set _btn_icon_icon = _btn_icon.icon if _btn_icon.icon else {} %}
+              {% set _icon_gap = _btn_icon.spacing|default(8) %}
+              {% set _hide_text = _btn.hide_text|default(false) %}
+              {% if _btn.text %}
+                {% set _btn_text = _btn.text %}
+              {% elif _btn.label %}
+                {% set _btn_text = _btn.label %}
+              {% elif _btn.content %}
+                {% set _btn_text = _btn.content %}
+              {% else %}
+                {% set _btn_text = 'Learn More' %}
+              {% endif %}
+              {% set _item_cls = 'sw-body-inset__footer-cta-item sw-body-inset__footer-cta-item--' ~ loop.index0 %}
+              {% if _css == 'simple_link' %}
+                <div class="{{ _item_cls }} simple-link-wrapper"{% if _btn.override_margins|default(false) %} style="margin-left: {{ _btn.margin_left|default(0) }}px; margin-right: {{ _btn.margin_right|default(0) }}px;"{% endif %}>
+                  <a href="{{ _href }}" class="simple-link sw-simple-link--{{ _btn.size or 'sm' }}{% if _btn.override_link_colors|default(false) %} sw-body-inset__simple-link--color-overridden{% endif %}"{% if _L.open_in_new_tab %} target="_blank"{% endif %}{% if _L.no_follow %} rel="nofollow"{% endif %} style="--sw-btn-icon-gap: {{ _icon_gap }}px;{% if _btn.override_link_colors|default(false) %}{% if _btn.link_color and _btn.link_color.color %} color: {{ macros.color(_btn.link_color) }};{% endif %}{% if _btn.link_hover_color and _btn.link_hover_color.color %} --sw-btn-sl-hover: {{ macros.color(_btn.link_hover_color) }};{% endif %}{% endif %}">
+                    {% if _btn.add_icon and _btn_icon.position|default('right') == 'left' and _btn_icon_icon.name %}{% icon extra_classes="button_icon button_icon--left" name="{{ _btn_icon_icon.name }}" style="{{ _btn_icon_icon.type }}" unicode="{{ _btn_icon_icon.unicode }}" icon_set="fontawesome-5.14.0" purpose="{{ _btn_icon.purpose|default('decorative') }}" %}{% endif %}
+                    {% if _hide_text and _btn.add_icon %}<span class="sr-only">{{ _btn_text }}</span>{% else %}{{ _btn_text }}{% endif %}
+                    {% if _btn.add_icon and _btn_icon.position|default('right') != 'left' and _btn_icon_icon.name %}{% icon extra_classes="button_icon button_icon--right" name="{{ _btn_icon_icon.name }}" style="{{ _btn_icon_icon.type }}" unicode="{{ _btn_icon_icon.unicode }}" icon_set="fontawesome-5.14.0" purpose="{{ _btn_icon.purpose|default('decorative') }}" %}{% endif %}
+                  </a>
+                </div>
+              {% else %}
+                <div class="{{ _item_cls }} btn-wrapper btn-{{ _css }}-wrapper btn-wrapper-{{ _btn.size|default('md') }}"{% if _btn.override_margins|default(false) %} style="margin-left: {{ _btn.margin_left|default(0) }}px; margin-right: {{ _btn.margin_right|default(0) }}px;"{% endif %}>
+                  <a href="{{ _href }}" class="btn btn-{{ _css }} cta-button"{% if _L.open_in_new_tab %} target="_blank"{% endif %}{% if _L.no_follow %} rel="nofollow"{% endif %} style="--sw-btn-icon-gap: {{ _icon_gap }}px;">
+                    {% if _btn.add_icon and _btn_icon.position|default('right') == 'left' and _btn_icon_icon.name %}{% icon extra_classes="button_icon button_icon--left" name="{{ _btn_icon_icon.name }}" style="{{ _btn_icon_icon.type }}" unicode="{{ _btn_icon_icon.unicode }}" icon_set="fontawesome-5.14.0" purpose="{{ _btn_icon.purpose|default('decorative') }}" %}{% endif %}
+                    {% if _hide_text and _btn.add_icon %}<span class="sr-only">{{ _btn_text }}</span>{% else %}{{ _btn_text }}{% endif %}
+                    {% if _btn.add_icon and _btn_icon.position|default('right') != 'left' and _btn_icon_icon.name %}{% icon extra_classes="button_icon button_icon--right" name="{{ _btn_icon_icon.name }}" style="{{ _btn_icon_icon.type }}" unicode="{{ _btn_icon_icon.unicode }}" icon_set="fontawesome-5.14.0" purpose="{{ _btn_icon.purpose|default('decorative') }}" %}{% endif %}
+                  </a>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+  </div>
+</section>
+{% if _outer_shell_active %}
+  </div>
+</div>
+{% endif %}
+{% endif %}
+
+{# Editor re-renders module HTML without re-running module.js — kick valign for this instance. #}
+{% if module.enable_module|default(true) and _show_inset and _valign and _valign != 'top' %}
+<script>
+(function () {
+  var id = {{ name|tojson }};
+  function go() {
+    if (window.swBodyInsetValignInstance) {
+      window.swBodyInsetValignInstance(id);
+    } else if (window.swBodyInsetValignRefresh) {
+      window.swBodyInsetValignRefresh();
+    }
+  }
+  go();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', go);
+  }
+  requestAnimationFrame(function () {
+    requestAnimationFrame(go);
+  });
+  setTimeout(go, 50);
+  setTimeout(go, 200);
+  setTimeout(go, 600);
+})();
+</script>
+{% endif %}

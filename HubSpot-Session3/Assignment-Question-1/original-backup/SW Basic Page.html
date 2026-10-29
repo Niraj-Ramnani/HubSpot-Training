@@ -1,0 +1,147 @@
+<!--
+  templateType: page
+  label: SW Basic Page
+  screenshotPath: ../../images/sw-theme.jpg
+  isAvailableForNewContent: true
+-->
+
+{# SW Category: Page Templates
+   Internal name: SW Basic Page
+   Master version number: 2026.07.31.19.13
+
+   Minimal content template: Nav > Body (SW Body + Inset, inset off) > Footer.
+   Use for privacy/legal pages, or as a blank canvas to build custom pages.
+
+   Shared page-template design standards (match SW Home / General — do not drift):
+   - DND sections: full_width=true, zero padding/margin (spacing lives on modules).
+   - Module Outer Spacing: 56px top/bottom on content bands.
+   - Sample images: get_asset_url('../images/sw-defaults/…') when needed; File Manager "SW Defaults/" recommended per portal.
+   - Process: docs/PROCESS-SW-DEFAULTS-IMAGES.md
+   - dnd_module label = module name only (e.g. "SW Body + Inset"), not a custom section title.
+
+   Changelog: ../CHANGELOG.md
+#}
+
+{% include '../templates/header.html' %}
+
+{% require_head %}
+  <meta property="og:image" content="{{ get_asset_url('../images/sw-defaults/sw-default-og-1200x630.jpg') }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:image" content="{{ get_asset_url('../images/sw-defaults/sw-default-og-1200x630.jpg') }}">
+{% end_require_head %}
+
+<body class="smithworks sw-basic-page {{ widget_data.body_class.value }} {{ builtin_body_classes }} {% set theme_name = content.template_path|split('/')|first %}{{ theme_name }} {% set template_name = content.template_path|split('/')|last %}{{ template_name[:-5] if template_name }}">
+
+  {% block header %}
+    {% boolean "enabled_site_header" label='Enable Global Site Header', value=true, export_to_template_context=True %}
+    {% if widget_data.enabled_site_header.value %}
+      {% global_partial path="../sw-partials/sw-site_header.html" %}
+    {% endif %}
+  {% endblock header %}
+
+  {% block body %}
+
+  <main id="main-content" class="sw-main-content" role="main">
+  {% dnd_area "body_dnd_area" label="Main Content Area" class="body-container" margin={ "top": 0, "bottom": 0 } %}
+
+    {# --- Body · SW Body + Inset (inset off) --- #}
+    {% dnd_section padding={ "left": 0, "right": 0, "top": 0, "bottom": 0 }, full_width=true %}
+      {% dnd_column %}
+        {% dnd_row %}
+          {% dnd_module
+            path="../sw-modules/SW Body + Inset",
+            label="SW Body + Inset",
+            show_inset=false,
+            heading_items=[{
+              "heading_text": "Your Basic Page H1 Goes Here",
+              "heading_size": "h1",
+              "heading_display_size": "h1",
+              "heading_color": "auto",
+              "heading_align": "left"
+            }],
+            body_rich_text="<p><strong>Purpose.</strong> SW Basic Page is a minimal content template for privacy statements, legal pages, and other simple pages — and a clean starting point when you want to build a custom page from one module. Replace this sample copy with your own content.</p><hr><h2>Heading 2</h2><p>This paragraph shows default body text. Use it for policy language, terms, or long-form content. You can include <a href=\"https://smithworks.marketing/hubspot-development\">inline links</a> to related pages.</p><h3>Heading 3</h3><p>Secondary sections often use an H3. Keep policies scannable with short paragraphs and clear headings.</p><h4>Heading 4</h4><p>Smaller section titles work well for subsections within a longer policy.</p><h5>Heading 5</h5><p>Use sparingly for deep nesting or callout labels inside dense legal text.</p><h6>Heading 6</h6><p>The smallest heading size — typically reserved for fine-grained labels.</p><p>Here is a <strong>strong</strong> word, <em>emphasized</em> text, and a <a href=\"https://smithworks.marketing/contact\">sample contact link</a>.</p><ul><li>Unordered list item one</li><li>Unordered list item two with a <a href=\"https://smithworks.marketing\">sample link</a></li><li>Unordered list item three</li></ul><ol><li>Ordered list item one</li><li>Ordered list item two</li><li>Ordered list item three</li></ol><blockquote><p>Blockquote sample — useful for callouts or quoted policy excerpts.</p></blockquote><p>End of typography sample. Delete or replace everything above the horizontal rule (and this sample) when publishing a live page.</p>",
+            content_style="default",
+            inset_heading_items=[],
+            inset_rich_text="",
+            inset_cta_button_items=[],
+            styles={
+              "heading_settings": {
+                "heading_text_wrap": "auto"
+              },
+              "module_settings": {
+                "spacing": {
+                  "padding": {
+                    "top": { "value": 56, "units": "px" },
+                    "bottom": { "value": 56, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding-top: 56px; padding-bottom: 56px; padding-left: 0; padding-right: 0; margin-top: 0; margin-bottom: 0;"
+                },
+                "inner_spacing": {
+                  "padding": {
+                    "top": { "value": 25, "units": "px" },
+                    "bottom": { "value": 25, "units": "px" },
+                    "left": { "value": 25, "units": "px" },
+                    "right": { "value": 25, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 25px; margin-top: 0; margin-bottom: 0;"
+                },
+                "outer_background_width": "full",
+                "max_module_width": "large"
+              },
+              "module_background_settings": {
+                "outer_background_option": "none",
+                "background_option": "none",
+                "inner_border_override": false,
+                "inner_border_style": "none"
+              }
+            }
+          %}
+          {% end_dnd_module %}
+        {% end_dnd_row %}
+      {% end_dnd_column %}
+    {% end_dnd_section %}
+
+  {% end_dnd_area %}
+  </main>
+
+  {% endblock body %}
+
+  {% block footer %}
+    {% boolean "enabled_site_footer" label='Enable Global Site Footer', value=true, export_to_template_context=True %}
+    {% if widget_data.enabled_site_footer.value %}
+      {% global_partial path="../sw-partials/sw-site_footer.html" %}
+    {% endif %}
+  {% endblock footer %}
+
+  {# Inline footer includes (same as templates/footer-includes.html). Keep analytics token in-file for Theme Master update validation consistency with Home/General. #}
+  {% if theme.misc.enable_jquery %}
+  <script src="{{ get_asset_url('../js/jquery.js') }}" crossorigin="anonymous"></script>
+  {% endif %}
+  <script defer src="{{ get_asset_url('../js/interaction.js') }}"></script>
+  {{ standard_footer_includes }}
+  {% if widget_data.prototype_mode.value %}
+  <link rel="stylesheet" href="{{ get_asset_url('../css/prototype.css') }}" />
+  <script src="{{ get_asset_url('../js/prototype.js') }}"></script>
+  {% endif %}
+  <script id="srDebug" type="application/json">
+	{
+		"page_type": "{{ content.CMSContentType }}",
+		"theme": "{{ content.template_path|split('/templates/')|first }}",
+		"template": "{{ content.template_path }}",
+		"hub_id": "{{ hub_id }}",
+		"sr_app": "feb-2025"
+	}
+  </script>
+</body>
+</html>

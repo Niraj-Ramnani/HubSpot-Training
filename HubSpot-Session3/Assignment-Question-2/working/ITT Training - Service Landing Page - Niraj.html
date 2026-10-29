@@ -1,0 +1,380 @@
+<!--
+  templateType: page
+  label: Session 3 Assignment 2 - Service Landing
+  screenshotPath: ../../../../images/sw-theme.jpg
+  isAvailableForNewContent: true
+-->
+
+{# ITT Training service landing page.
+   Page sections are ordinary editable modules. The training CTA is a separate
+  global partial and must be installed at the matching sibling partial path first.
+#}
+
+{% include '../../../../templates/header.html' %}
+
+{% require_head %}
+  <meta property="og:image" content="{{ get_asset_url('../../../../images/sw-defaults/sw-default-og-1200x630.jpg') }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:image" content="{{ get_asset_url('../../../../images/sw-defaults/sw-default-og-1200x630.jpg') }}">
+{% end_require_head %}
+
+<body class="smithworks sw-service-page itt-training-service-landing-page {{ widget_data.body_class.value }} {{ builtin_body_classes }} {% set theme_name = content.template_path|split('/')|first %}{{ theme_name }} {% set template_name = content.template_path|split('/')|last %}{{ template_name[:-5] if template_name }}">
+
+  {% block header %}
+    {% boolean "enabled_site_header" label='Enable Global Site Header', value=true, export_to_template_context=True %}
+    {% if widget_data.enabled_site_header.value %}
+      {% global_partial path="../../../../sw-partials/sw-site_header.html" %}
+    {% endif %}
+  {% endblock header %}
+
+  {% block body %}
+
+  <main id="main-content" class="sw-main-content" role="main">
+  {% dnd_area "body_dnd_area" label="Main Content Area" class="body-container" margin={ "top": 0, "bottom": 0 } %}
+
+    {# Section 1: Ordinary page-specific hero. The network image is decorative. #}
+    {% dnd_section padding={ "left": 0, "right": 0, "top": 0, "bottom": 0 }, full_width=true %}
+      {% dnd_column %}
+        {% dnd_row %}
+          {% dnd_module
+            path="../../../../sw-modules/SW Hero",
+            label="SW Hero (1)",
+            heading_items=[{
+              "heading_text": "Cloud solutions that move your business forward",
+              "heading_size": "h1",
+              "heading_display_size": "h1",
+              "heading_color": "white",
+              "heading_align": "left"
+            }],
+            content_area="<p>Replace this introduction with your service's value proposition: who it helps, what challenge it solves, and why the offer matters.</p>",
+            content_style="large_fullwidth",
+            cta_alignment="left",
+            cta_button_items=[{
+              "text": "Explore cloud solutions",
+              "link": {
+                "url": { "type": "EXTERNAL", "href": "#service-details", "content_id": null },
+                "open_in_new_tab": false,
+                "no_follow": false
+              },
+              "style": "primary",
+              "size": "lg",
+              "add_icon": false
+            }],
+            styles={
+              "module_settings": {
+                "spacing": {
+                  "padding": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 0; margin-top: 0; margin-bottom: 0;"
+                },
+                "module_height_xl_group": {
+                  "module_height_xl_mode": "custom",
+                  "module_height_xl": 300,
+                  "vertical_align_xl": "middle"
+                },
+                "module_height_lg_group": {
+                  "override_lg_module_height": true,
+                  "module_height_lg_mode": "custom",
+                  "module_height_lg": 300,
+                  "vertical_align_lg": "middle"
+                },
+                "module_height_md_group": {
+                  "override_md_module_height": true,
+                  "module_height_md_mode": "custom",
+                  "module_height_md": 300,
+                  "vertical_align_md": "middle"
+                },
+                "module_height_sm_group": {
+                  "override_sm_module_height": true,
+                  "module_height_sm_mode": "custom",
+                  "module_height_sm": 300,
+                  "vertical_align_sm": "middle"
+                },
+                "inner_spacing": {
+                  "padding": {
+                    "top": { "value": 25, "units": "px" },
+                    "bottom": { "value": 25, "units": "px" },
+                    "left": { "value": 25, "units": "px" },
+                    "right": { "value": 25, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 25px; margin-top: 0; margin-bottom: 0;"
+                }
+              },
+              "module_background_settings": {
+                "background_option": "none",
+                "outer_background_option": "image",
+                "outer_aurora": { "enable": false },
+                "outer_border_style": "none",
+                "outer_background_image_xl_group": {
+                  "background_color_overlay_xl": { "color": "#000000", "opacity": 0 },
+                  "background_base_color_xl": { "color": "#005287", "opacity": 100 },
+                  "background_image_xl": {
+                    "size_type": "auto",
+                    "src": get_asset_url('../../../../images/sw-defaults/sw-default-hero-banner-hex50-v2.jpg'),
+                    "alt": "Small hexagonal network pattern",
+                    "loading": "eager"
+                  },
+                  "background_position_xl": "center center",
+                  "background_repeat_xl": "no-repeat",
+                  "hero_background_size": "cover"
+                }
+              },
+              "content_colors": {
+                "text_color": "white",
+                "link_context": "dark"
+              },
+              "text_box_width": {
+                "text_box_width_sizes": {
+                  "text_box_width_xl": "col-xl-12",
+                  "text_box_width_lg": "col-lg-12",
+                  "text_box_width_md": "col-md-12",
+                  "text_box_width_sm": "col-sm-12"
+                },
+                "text_box_side_spacing": {
+                  "text_box_horizontal_margin": 0,
+                  "text_box_horizontal_margin_lg": 0,
+                  "text_box_horizontal_margin_md": 0,
+                  "text_box_horizontal_margin_sm": 0
+                },
+                "text_box_padding": {
+                  "padding": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 0; margin: 0;"
+                },
+                "content_area_settings": {
+                  "text_align_default": "left"
+                },
+                "text_box_horizontal_align": "left"
+              }
+            }
+          %}
+          {% end_dnd_module %}
+        {% end_dnd_row %}
+      {% end_dnd_column %}
+    {% end_dnd_section %}
+
+    {# Section 2: Ordinary page-specific benefit cards. #}
+    {% dnd_section padding={ "left": 0, "right": 0, "top": 0, "bottom": 0 }, full_width=true %}
+      {% dnd_column %}
+        {% dnd_row %}
+          {% dnd_module
+            path="../../../../sw-modules/SW Cards",
+            label="SW Cards (2)",
+            heading_items=[{
+              "heading_text": "Benefits of a cloud service built around your team",
+              "heading_size": "h2",
+              "heading_display_size": "h2",
+              "heading_color": "auto",
+              "heading_align": "center"
+            }],
+            description="<p>Replace these sample benefits with the outcomes your service is designed to support.</p>",
+            content_style="default",
+            cards=[
+              {
+                "admin_title": "Flexible access",
+                "icon_type": "none",
+                "heading_items": [{
+                  "heading_text": "Work from anywhere",
+                  "heading_size": "h3",
+                  "heading_display_size": "h4",
+                  "heading_color": "auto",
+                  "heading_align": "left"
+                }],
+                "rich_text": "<p>Describe how your cloud service gives the right people secure access to the tools and information they need.</p>",
+                "add_button": false
+              },
+              {
+                "admin_title": "Room to grow",
+                "icon_type": "none",
+                "heading_items": [{
+                  "heading_text": "Scale with your needs",
+                  "heading_size": "h3",
+                  "heading_display_size": "h4",
+                  "heading_color": "auto",
+                  "heading_align": "left"
+                }],
+                "rich_text": "<p>Explain how the service can adapt as your team's requirements and workloads change.</p>",
+                "add_button": false
+              },
+              {
+                "admin_title": "Connected workflows",
+                "icon_type": "none",
+                "heading_items": [{
+                  "heading_text": "Bring work together",
+                  "heading_size": "h3",
+                  "heading_display_size": "h4",
+                  "heading_color": "auto",
+                  "heading_align": "left"
+                }],
+                "rich_text": "<p>Replace this copy with details about the systems or processes your service can help connect.</p>",
+                "add_button": false
+              }
+            ],
+            styles={
+              "module_settings": {
+                "spacing": {
+                  "padding": {
+                    "top": { "value": 50, "units": "px" },
+                    "bottom": { "value": 50, "units": "px" },
+                    "left": { "value": 25, "units": "px" },
+                    "right": { "value": 25, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding-top: 50px; padding-bottom: 50px; padding-left: 25px; padding-right: 25px; margin-top: 0; margin-bottom: 0;"
+                },
+                "inner_spacing": {
+                  "padding": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 0; margin-top: 0; margin-bottom: 0;"
+                }
+              },
+              "module_background_settings": {
+                "outer_background_option": "custom",
+                "outer_background_custom": { "color": "#f5f7fa", "opacity": 100 },
+                "background_option": "none"
+              },
+              "cards_layout": {
+                "cards_per_row_xl": "3",
+                "cards_per_row": "3",
+                "cards_per_row_tablet": "2",
+                "cards_per_row_mobile": "1"
+              }
+            }
+          %}
+          {% end_dnd_module %}
+        {% end_dnd_row %}
+      {% end_dnd_column %}
+    {% end_dnd_section %}
+
+    {# Section 3: Ordinary page-specific service details. #}
+    {% dnd_section padding={ "left": 0, "right": 0, "top": 0, "bottom": 0 }, full_width=true %}
+      {% dnd_column %}
+        {% dnd_row %}
+          {% dnd_module
+            path="../../../../sw-modules/SW Body + Inset",
+            label="SW Body + Inset (3)",
+            custom_id="service-details",
+            show_inset=false,
+            heading_items=[{
+              "heading_text": "Cloud services tailored to your goals",
+              "heading_size": "h2",
+              "heading_display_size": "h2",
+              "heading_color": "auto",
+              "heading_align": "left"
+            }],
+            body_rich_text="<p>Use this section to explain what your service includes, how it works, and who it is for. Replace each example with accurate, approved details.</p><p>You might describe onboarding, implementation, support, or the platforms involved. Avoid adding unverified performance claims or customer results.</p>",
+            content_style="large_fullwidth",
+            inset_heading_items=[],
+            inset_cta_button_items=[],
+            styles={
+              "module_settings": {
+                "spacing": {
+                  "padding": {
+                    "top": { "value": 50, "units": "px" },
+                    "bottom": { "value": 50, "units": "px" },
+                    "left": { "value": 25, "units": "px" },
+                    "right": { "value": 25, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding-top: 50px; padding-bottom: 50px; padding-left: 25px; padding-right: 25px; margin-top: 0; margin-bottom: 0;"
+                },
+                "inner_spacing": {
+                  "padding": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 0; margin-top: 0; margin-bottom: 0;"
+                },
+                "outer_background_width": "full",
+                "max_module_width": "large"
+              },
+              "module_background_settings": {
+                "outer_background_option": "none",
+                "background_option": "none",
+                "inner_border_override": false,
+                "inner_border_style": "none"
+              }
+            }
+          %}
+          {% end_dnd_module %}
+        {% end_dnd_row %}
+      {% end_dnd_column %}
+    {% end_dnd_section %}
+
+  {% end_dnd_area %}
+
+    {# This isolated global partial is a separate shared training element. #}
+    {% global_partial path="../partials/Session3-Assignment2-Global-CTA.html" %}
+  </main>
+
+  {% endblock body %}
+
+  {% block footer %}
+    {% boolean "enabled_site_footer" label='Enable Global Site Footer', value=true, export_to_template_context=True %}
+    {% if widget_data.enabled_site_footer.value %}
+      {% global_partial path="../../../../sw-partials/sw-site_footer.html" %}
+    {% endif %}
+  {% endblock footer %}
+
+  {# Keep the base template's scripts and footer includes unchanged. #}
+  {% if theme.misc.enable_jquery %}
+  <script src="{{ get_asset_url('../../../../js/jquery.js') }}" crossorigin="anonymous"></script>
+  {% endif %}
+  <script defer src="{{ get_asset_url('../../../../js/interaction.js') }}"></script>
+  {{ standard_footer_includes }}
+  {% if widget_data.prototype_mode.value %}
+  <link rel="stylesheet" href="{{ get_asset_url('../../../../css/prototype.css') }}" />
+  <script src="{{ get_asset_url('../../../../js/prototype.js') }}"></script>
+  {% endif %}
+  <script id="srDebug" type="application/json">
+	{
+		"page_type": "{{ content.CMSContentType }}",
+		"theme": "{{ content.template_path|split('/templates/')|first }}",
+		"template": "{{ content.template_path }}",
+		"hub_id": "{{ hub_id }}",
+		"sr_app": "feb-2025"
+	}
+  </script>
+</body>
+</html>

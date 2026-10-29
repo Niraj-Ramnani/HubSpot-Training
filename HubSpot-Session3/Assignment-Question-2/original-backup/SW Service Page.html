@@ -1,0 +1,914 @@
+<!--
+  templateType: page
+  label: SW Service Page
+  screenshotPath: ../../images/sw-theme.jpg
+  isAvailableForNewContent: true
+-->
+
+{# SW Category: Page Templates
+   Internal name: SW Service Page
+   Master version number: 2026.09.16.18.47
+
+   Finish Up **2026.09.16.18.47** — Category 2 on SW Theme Master. Available for new themes.
+
+   Figma Service mockup (KHvITY4VBQjyjf8QgdLY1s · Page Templates · Mockup · 318:3774):
+   Global header/footer (same partials as SW General Page) >
+   SW Hero compact (H1 Display H1, no CTA) >
+   SW Body + Inset Inset off (H2, Lead, Inner Large) >
+   SW Cards 3 (Outer #fafafa; card border 1px #dedede) >
+   SW Testimonials Single 3-item carousel (Quote Alignment center) >
+   SW Body + Inset Inset on wrap CTA (Outer top+bottom 1px #dedede) >
+   SW FAQs Basic Accordion 2 (3) >
+   SW Cards Blog 3 most recent + centered H2 + bottom CTA.
+
+   Cloned from origin/main SW General Page.html (2026.09.09.19.42) — theme-level bytes.
+   Category 2. Inventory: docs/Production Analysis/SW-Service-Page/SW-SERVICE-PAGE-FIGMA-INVENTORY.md
+
+   Shared page-template design standards (match SW Home Page / General — do not drift):
+   - DND sections: full_width=true, zero padding/margin (spacing lives on modules).
+   - Content bands Outer 50/25/50/25; Inner 0. Hero Outer Spacing 0; Compact custom height 225px all breakpoints + vertically centered text.
+   - Hero Inner 25 all around (content inset on 0 Outer).
+   - Hero: Outer Image (sw-default-hero-hex-small-overlay.png) + base #005287 100%; Inner None; outer_aurora.enable false.
+   - Intro Body + Inset: show_inset false; heading Size H2 / Display H2; content_style large_fullwidth (Lead); max_module_width large.
+   - Cards: 3-up; Outer #fafafa; Override Card Border 1px #dedede (theme radius 12 with override).
+   - Testimonials: columns_xl 1; use_slider_when_overflow true; arrows + dots; Quote Alignment (Desktop) center (tablet/mobile inherit).
+   - Inset-on wrap: ~half of General wrap copy through first "A theme that marketers can actually use" paragraph. Outer top+bottom 1px #dedede.
+   - FAQ: Heading Panel H2 only (no "Questions" pre-title); Accordion 2; questions H5; inner_border_override false; Outer #fafafa.
+   - Blog: SW Cards Blog (not deprecated SW Blog Cards). posts_to_show 3, post_start 1; heading H2 center; Button Alignment center.
+   - Sample images: get_asset_url('../images/sw-defaults/…'); File Manager "SW Defaults/" per portal.
+   - Process: docs/PROCESS-PAGE-TEMPLATE-FROM-LIVE.md, docs/PROCESS-SW-DEFAULTS-IMAGES.md
+   - Hero module: SW Hero (not deprecated SW Simple Hero). FAQ: SW FAQs Basic (not Simple).
+   - No breadcrumbs module; no CTA Simple Bar.
+   - dnd_module label = Module Name (N). form_id: null.
+
+   Changelog: ../CHANGELOG.md
+#}
+
+{% include '../templates/header.html' %}
+
+{% require_head %}
+  <meta property="og:image" content="{{ get_asset_url('../images/sw-defaults/sw-default-og-1200x630.jpg') }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:image" content="{{ get_asset_url('../images/sw-defaults/sw-default-og-1200x630.jpg') }}">
+{% end_require_head %}
+
+<body class="smithworks sw-service-page {{ widget_data.body_class.value }} {{ builtin_body_classes }} {% set theme_name = content.template_path|split('/')|first %}{{ theme_name }} {% set template_name = content.template_path|split('/')|last %}{{ template_name[:-5] if template_name }}">
+
+  {% block header %}
+    {% boolean "enabled_site_header" label='Enable Global Site Header', value=true, export_to_template_context=True %}
+    {% if widget_data.enabled_site_header.value %}
+      {% global_partial path="../sw-partials/sw-site_header.html" %}
+    {% endif %}
+  {% endblock header %}
+
+  {% block body %}
+
+  <main id="main-content" class="sw-main-content" role="main">
+  {% dnd_area "body_dnd_area" label="Main Content Area" class="body-container" margin={ "top": 0, "bottom": 0 } %}
+
+    {# --- 01 Page hero · SW Hero (shorter than Home; base #005287 + small hex overlay PNG; Outer Spacing 0) --- #}
+    {% dnd_section padding={ "left": 0, "right": 0, "top": 0, "bottom": 0 }, full_width=true %}
+      {% dnd_column %}
+        {% dnd_row %}
+          {% dnd_module
+            path="../sw-modules/SW Hero",
+            label="SW Hero (1)",
+            heading_items=[
+              {
+                "heading_text": "HubSpot development that fits how you sell",
+                "heading_size": "h1",
+                "heading_display_size": "h1",
+                "heading_color": "white",
+                "heading_align": "left"
+              }
+            ],
+            content_area="<p>Websites, inbound, and HubSpot consulting for teams that need a partner, not a one-off project.</p>",
+            content_style="large_fullwidth",
+            cta_alignment="left",
+            cta_button_items=[],
+            styles={
+              "module_settings": {
+                "spacing": {
+                  "padding": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 0; margin-top: 0; margin-bottom: 0;"
+                },
+                "module_height_xl_group": {
+                  "module_height_xl_mode": "custom",
+                  "module_height_xl": 225,
+                  "vertical_align_xl": "middle"
+                },
+                "module_height_lg_group": {
+                  "override_lg_module_height": true,
+                  "module_height_lg_mode": "custom",
+                  "module_height_lg": 225,
+                  "vertical_align_lg": "middle"
+                },
+                "module_height_md_group": {
+                  "override_md_module_height": true,
+                  "module_height_md_mode": "custom",
+                  "module_height_md": 225,
+                  "vertical_align_md": "middle"
+                },
+                "module_height_sm_group": {
+                  "override_sm_module_height": true,
+                  "module_height_sm_mode": "custom",
+                  "module_height_sm": 225,
+                  "vertical_align_sm": "middle"
+                },
+                "inner_spacing": {
+                  "padding": {
+                    "top": { "value": 25, "units": "px" },
+                    "bottom": { "value": 25, "units": "px" },
+                    "left": { "value": 25, "units": "px" },
+                    "right": { "value": 25, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 25px; margin-top: 0; margin-bottom: 0;"
+                }
+              },
+              "module_background_settings": {
+                "background_option": "none",
+                "outer_background_option": "image",
+                "outer_aurora": { "enable": false },
+                "outer_border_style": "none",
+                "outer_background_image_xl_group": {
+                  "background_color_overlay_xl": { "color": "#000000", "opacity": 0 },
+                  "background_base_color_xl": { "color": "#005287", "opacity": 100 },
+                  "background_image_xl": {
+                    "size_type": "auto",
+                    "src": get_asset_url('../images/sw-defaults/sw-default-hero-hex-small-overlay.png'),
+                    "alt": "Small hexagonal network pattern overlay",
+                    "loading": "eager"
+                  },
+                  "background_position_xl": "center center",
+                  "background_repeat_xl": "no-repeat",
+                  "hero_background_size": "cover"
+                }
+              },
+              "content_colors": {
+                "text_color": "white",
+                "link_context": "dark"
+              },
+              "text_box_width": {
+                "text_box_width_sizes": {
+                  "text_box_width_xl": "col-xl-12",
+                  "text_box_width_lg": "col-lg-12",
+                  "text_box_width_md": "col-md-12",
+                  "text_box_width_sm": "col-sm-12"
+                },
+                "text_box_side_spacing": {
+                  "text_box_horizontal_margin": 0,
+                  "text_box_horizontal_margin_lg": 0,
+                  "text_box_horizontal_margin_md": 0,
+                  "text_box_horizontal_margin_sm": 0
+                },
+                "text_box_padding": {
+                  "padding": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 0; margin: 0;"
+                },
+                "content_area_settings": {
+                  "text_align_default": "left"
+                },
+                "text_box_horizontal_align": "left"
+              }
+            }
+          %}
+          {% end_dnd_module %}
+        {% end_dnd_row %}
+      {% end_dnd_column %}
+    {% end_dnd_section %}
+
+    {# --- 02 Intro · SW Body + Inset (Inset off; H2; Lead; Inner Large) --- #}
+    {% dnd_section padding={ "left": 0, "right": 0, "top": 0, "bottom": 0 }, full_width=true %}
+      {% dnd_column %}
+        {% dnd_row %}
+          {% dnd_module
+            path="../sw-modules/SW Body + Inset",
+            label="SW Body + Inset (2)",
+            show_inset=false,
+            heading_items=[{
+              "heading_text": "What we offer",
+              "heading_size": "h2",
+              "heading_display_size": "h2",
+              "heading_color": "auto",
+              "heading_align": "left"
+            }],
+            body_rich_text="<p>Every engagement starts with how your team actually sells and markets — not a generic template dump. We map pages, modules, and HubSpot tools to the journeys you need to support.</p><p>Developers build on the SW theme so you keep theme settings, reusable modules, and a system you can extend without a custom CSS pile-up.</p><p>After launch we stay on as a support partner: new landing pages, module updates, and HubSpot improvements that keep the site aligned with your pipeline.</p>",
+            content_style="large_fullwidth",
+            inset_heading_items=[],
+            inset_cta_button_items=[],
+            styles={
+              "module_settings": {
+                "spacing": {
+                  "padding": {
+                    "top": { "value": 50, "units": "px" },
+                    "bottom": { "value": 50, "units": "px" },
+                    "left": { "value": 25, "units": "px" },
+                    "right": { "value": 25, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding-top: 50px; padding-bottom: 50px; padding-left: 25px; padding-right: 25px; margin-top: 0; margin-bottom: 0;"
+                },
+                "inner_spacing": {
+                  "padding": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 0; margin-top: 0; margin-bottom: 0;"
+                },
+                "outer_background_width": "full",
+                "max_module_width": "large"
+              },
+              "module_background_settings": {
+                "outer_background_option": "none",
+                "background_option": "none",
+                "inner_border_override": false,
+                "inner_border_style": "none"
+              }
+            }
+          %}
+          {% end_dnd_module %}
+        {% end_dnd_row %}
+      {% end_dnd_column %}
+    {% end_dnd_section %}
+
+    {# --- 03 Offers · SW Cards (3) --- #}
+    {% dnd_section padding={ "left": 0, "right": 0, "top": 0, "bottom": 0 }, full_width=true %}
+      {% dnd_column %}
+        {% dnd_row %}
+          {% dnd_module
+            path="../sw-modules/SW Cards",
+            label="SW Cards (3)",
+            heading_items=[
+              {
+                "heading_text": "What we do",
+                "heading_size": "p",
+                "heading_display_size": "h4",
+                "heading_color": "auto",
+                "heading_align": "center"
+              },
+              {
+                "heading_text": "Three ways we help you grow",
+                "heading_size": "h2",
+                "heading_display_size": "h2",
+                "heading_color": "auto",
+                "heading_align": "center"
+              }
+            ],
+            description="",
+            content_style="default",
+            cards=[
+              {
+                "admin_title": "Websites",
+                "icon_type": "image",
+                "image": {
+                  "size_type": "auto",
+                  "src": get_asset_url('../images/sw-defaults/sw-default-card-websites.jpg'),
+                  "alt": "Team brainstorming on a glass wall",
+                  "loading": "lazy"
+                },
+                "heading_items": [{
+                  "heading_text": "Custom websites & CMS",
+                  "heading_size": "h3",
+                  "heading_display_size": "h4",
+                  "heading_color": "auto",
+                  "heading_align": "left"
+                }],
+                "rich_text": "<p>High-converting sites on HubSpot and beyond — built to look professional, perform well, and turn visitors into leads.</p>",
+                "add_button": true,
+                "button_text": "See websites",
+                "button_link": {
+                  "url": { "type": "EXTERNAL", "href": "https://smithworks.marketing/web-development", "content_id": null },
+                  "open_in_new_tab": false,
+                  "no_follow": false
+                },
+                "button_style": "primary",
+                "button_size": "sm",
+                "button_align": "left",
+                "button_horizontal_align": "left",
+                "add_icon": false
+              },
+              {
+                "admin_title": "Inbound",
+                "icon_type": "image",
+                "image": {
+                  "size_type": "auto",
+                  "src": get_asset_url('../images/sw-defaults/sw-default-card-inbound.jpg'),
+                  "alt": "Collaborative marketing meeting",
+                  "loading": "lazy"
+                },
+                "heading_items": [{
+                  "heading_text": "Inbound & demand gen",
+                  "heading_size": "h3",
+                  "heading_display_size": "h4",
+                  "heading_color": "auto",
+                  "heading_align": "left"
+                }],
+                "rich_text": "<p>Campaigns and content that bring in the right conversations — not more noise for your team to chase.</p>",
+                "add_button": true,
+                "button_text": "See inbound",
+                "button_link": {
+                  "url": { "type": "EXTERNAL", "href": "https://smithworks.marketing/inbound-marketing", "content_id": null },
+                  "open_in_new_tab": false,
+                  "no_follow": false
+                },
+                "button_style": "primary",
+                "button_size": "sm",
+                "button_align": "left",
+                "button_horizontal_align": "left",
+                "add_icon": false
+              },
+              {
+                "admin_title": "HubSpot",
+                "icon_type": "image",
+                "image": {
+                  "size_type": "auto",
+                  "src": get_asset_url('../images/sw-defaults/sw-default-card-hubspot.jpg'),
+                  "alt": "Bright idea lightbulb in a meeting room",
+                  "loading": "lazy"
+                },
+                "heading_items": [{
+                  "heading_text": "HubSpot consulting",
+                  "heading_size": "h3",
+                  "heading_display_size": "h4",
+                  "heading_color": "auto",
+                  "heading_align": "left"
+                }],
+                "rich_text": "<p>Implement, optimize, and train your team so HubSpot delivers meetings — not another unfinished project.</p>",
+                "add_button": true,
+                "button_text": "Explore HubSpot",
+                "button_link": {
+                  "url": { "type": "EXTERNAL", "href": "https://smithworks.marketing/hubspot-consulting", "content_id": null },
+                  "open_in_new_tab": false,
+                  "no_follow": false
+                },
+                "button_style": "primary",
+                "button_size": "sm",
+                "button_align": "left",
+                "button_horizontal_align": "left",
+                "add_icon": false
+              }
+            ],
+            styles={
+              "module_settings": {
+                "spacing": {
+                  "padding": {
+                    "top": { "value": 50, "units": "px" },
+                    "bottom": { "value": 50, "units": "px" },
+                    "left": { "value": 25, "units": "px" },
+                    "right": { "value": 25, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding-top: 50px; padding-bottom: 50px; padding-left: 25px; padding-right: 25px; margin-top: 0; margin-bottom: 0;"
+                },
+                "inner_spacing": {
+                  "padding": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 0; margin-top: 0; margin-bottom: 0;"
+                }
+              },
+              "module_background_settings": {
+                "outer_background_option": "custom",
+                "outer_background_custom": { "color": "#fafafa", "opacity": 100 },
+                "background_option": "none"
+              },
+              "cards_layout": {
+                "cards_per_row_xl": "3",
+                "card_border_settings": {
+                  "card_border_override": true,
+                  "card_border_radius": 12,
+                  "card_border": {
+                    "top": {
+                      "style": "solid",
+                      "width": { "value": 1, "units": "px" },
+                      "color": "#dedede",
+                      "opacity": 100
+                    },
+                    "right": {
+                      "style": "solid",
+                      "width": { "value": 1, "units": "px" },
+                      "color": "#dedede",
+                      "opacity": 100
+                    },
+                    "bottom": {
+                      "style": "solid",
+                      "width": { "value": 1, "units": "px" },
+                      "color": "#dedede",
+                      "opacity": 100
+                    },
+                    "left": {
+                      "style": "solid",
+                      "width": { "value": 1, "units": "px" },
+                      "color": "#dedede",
+                      "opacity": 100
+                    },
+                    "css": "border-top: 1px solid #dedede; border-right: 1px solid #dedede; border-bottom: 1px solid #dedede; border-left: 1px solid #dedede;"
+                  }
+                }
+              }
+            }
+          %}
+          {% end_dnd_module %}
+        {% end_dnd_row %}
+      {% end_dnd_column %}
+    {% end_dnd_section %}
+
+    {# --- 04 Proof · SW Testimonials (Single carousel) --- #}
+    {% dnd_section padding={ "left": 0, "right": 0, "top": 0, "bottom": 0 }, full_width=true %}
+      {% dnd_column %}
+        {% dnd_row %}
+          {% dnd_module
+            path="../sw-modules/SW Testimonials",
+            label="SW Testimonials (4)",
+            heading_items=[
+              {
+                "heading_text": "Social proof",
+                "heading_size": "p",
+                "heading_display_size": "h4",
+                "heading_color": "auto",
+                "heading_align": "center"
+              },
+              {
+                "heading_text": "Trusted by ambitious SMBs",
+                "heading_size": "h2",
+                "heading_display_size": "h2",
+                "heading_color": "auto",
+                "heading_align": "center"
+              }
+            ],
+            testimonial_items=[
+              {
+                "testimonial_body": "<p>They turned HubSpot from a burden into a system that actually books meetings.</p>",
+                "summary_override": "",
+                "author_image": {
+                  "src": get_asset_url('../images/sw-defaults/sw-default-portrait-03.jpg'),
+                  "alt": "Portrait of Alex Rivera",
+                  "loading": "lazy"
+                },
+                "author_name": "Alex Rivera",
+                "author_title": "VP Marketing",
+                "author_company": "Sample Client Co."
+              },
+              {
+                "testimonial_body": "<p>Clear website, clearer pipeline. Finally marketing we can measure.</p>",
+                "summary_override": "",
+                "author_image": {
+                  "src": get_asset_url('../images/sw-defaults/sw-default-portrait-11.jpg'),
+                  "alt": "Portrait of Sam K.",
+                  "loading": "lazy"
+                },
+                "author_name": "Sam K.",
+                "author_title": "VP of Growth",
+                "author_company": "Sample Client Co."
+              },
+              {
+                "testimonial_body": "<p>Our marketers can edit pages without breaking the layout. That is the difference.</p>",
+                "summary_override": "",
+                "author_image": {
+                  "src": get_asset_url('../images/sw-defaults/sw-default-portrait-05.jpg'),
+                  "alt": "Portrait of Jordan Lee",
+                  "loading": "lazy"
+                },
+                "author_name": "Jordan Lee",
+                "author_title": "Head of Digital",
+                "author_company": "Sample Client Co."
+              }
+            ],
+            styles={
+              "module_settings": {
+                "spacing": {
+                  "padding": {
+                    "top": { "value": 50, "units": "px" },
+                    "bottom": { "value": 50, "units": "px" },
+                    "left": { "value": 25, "units": "px" },
+                    "right": { "value": 25, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding-top: 50px; padding-bottom: 50px; padding-left: 25px; padding-right: 25px; margin-top: 0; margin-bottom: 0;"
+                },
+                "inner_spacing": {
+                  "padding": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 0; margin-top: 0; margin-bottom: 0;"
+                }
+              },
+              "module_background_settings": {
+                "outer_background_option": "none",
+                "background_option": "none"
+              },
+              "testimonials_layout": {
+                "columns_xl": "1",
+                "columns": "same_as_xl",
+                "columns_tablet": "same_as_desktop",
+                "columns_mobile": "1"
+              },
+              "slider_settings": {
+                "use_slider_when_overflow": true,
+                "show_slider_arrows": true,
+                "show_slider_dots": true
+              },
+              "testimonial_content_settings": {
+                "summary_max_chars": 200,
+                "content_style": "large_fullwidth",
+                "quote_align": "center",
+                "override_md_quote_align": false,
+                "quote_align_md": "left",
+                "override_sm_quote_align": false,
+                "quote_align_sm": "left",
+                "author_space_above": 20,
+                "author_space_below": 20
+              },
+              "testimonial_divider_settings": {
+                "show_dividers": false
+              }
+            }
+          %}
+          {% end_dnd_module %}
+        {% end_dnd_row %}
+      {% end_dnd_column %}
+    {% end_dnd_section %}
+
+    {# --- 05 Wrap CTA · SW Body + Inset (Inset on) --- #}
+    {% dnd_section padding={ "left": 0, "right": 0, "top": 0, "bottom": 0 }, full_width=true %}
+      {% dnd_column %}
+        {% dnd_row %}
+          {% dnd_module
+            path="../sw-modules/SW Body + Inset",
+            label="SW Body + Inset (5)",
+            show_inset=true,
+            heading_items=[],
+            body_rich_text="<h2>What good HubSpot development looks like</h2><p>It starts with clarity: who the site is for, what action matters most, and which HubSpot tools actually support that journey. Templates, modules, and CRM wiring only help when they serve that story.</p><p>HubSpot can transform how you attract, engage, and delight customers — but only when it is set up and used well. Smithworks focuses on practical HubSpot website and theme work for marketing teams who need clarity, not another unfinished project.</p><h2>Where teams get stuck</h2><p>Most teams do not fail on design taste. They stall on unfinished migration, unused modules, and a portal nobody trusts. The fix is usually fewer moving parts and clearer ownership — not more features.</p><p>Three theme problems show up again and again on HubSpot sites:</p><ul><li><strong>Wrong controls in the wrong place</strong> — marketers cannot easily change width, colors, or buttons without hunting through every module.</li><li><strong>Inconsistent developer patterns</strong> — spacing, backgrounds, and labels work differently from section to section, so every page becomes a new learning curve.</li><li><strong>Missing building blocks</strong> — the demo looks great, but the theme lacks the modules a growing site actually needs for campaigns, FAQs, testimonials, and landing pages.</li></ul><p>When those gaps pile up, the business pays for them through custom one-offs, inconsistent pages, and slower publishing.</p><h2>A theme that marketers can actually use</h2><p>A HubSpot theme has to be flexible enough for marketers, structured enough for developers, and consistent enough that the site does not become a mess over time. That is why Smithworks builds on Sprocket Rocket–style themes and extends them with SW modules that share Global Theme Styles for typography, colors, buttons, and spacing.</p>",
+            content_style="default",
+            inset_heading_items=[{
+              "heading_text": "Talk through your project",
+              "heading_size": "h3",
+              "heading_display_size": "h4",
+              "heading_color": "auto",
+              "heading_align": "left",
+              "heading_padding_override": true,
+              "heading_padding_top": 0,
+              "heading_padding_bottom": 16
+            }],
+            inset_rich_text="<p>Share where you are stuck with HubSpot or your site. We will tell you honestly what is worth fixing first.</p>",
+            inset_image_group={
+              "image_xl": {
+                "size_type": "auto",
+                "src": get_asset_url('../images/sw-defaults/sw-default-card-hubspot.jpg'),
+                "alt": "HubSpot marketing and CRM tools on a laptop",
+                "loading": "lazy"
+              }
+            },
+            inset_cta_alignment="left",
+            inset_cta_buttons_layout="stacked",
+            inset_cta_button_items=[{
+              "text": "Book a consultation",
+              "link": {
+                "url": { "type": "EXTERNAL", "href": "https://smithworks.marketing/meeting", "content_id": null },
+                "open_in_new_tab": false,
+                "no_follow": false
+              },
+              "style": "primary",
+              "size": "md",
+              "add_icon": false
+            }],
+            styles={
+              "inset_width_setting": {
+                "inset_cols_xl": "4",
+                "inset_cols_lg": "3",
+                "inset_cols_md": "3"
+              },
+              "inset_settings": {
+                "xl_inset_position": "inset_right",
+                "desktop_inset_position": "inherit",
+                "tablet_inset_position": "inherit",
+                "mobile_inset_position": "inset_bottom",
+                "inset_vertical_align": "top",
+                "inset_gap": 24
+              },
+              "heading_settings": {
+                "heading_text_wrap": "auto"
+              },
+              "module_settings": {
+                "spacing": {
+                  "padding": {
+                    "top": { "value": 50, "units": "px" },
+                    "bottom": { "value": 50, "units": "px" },
+                    "left": { "value": 25, "units": "px" },
+                    "right": { "value": 25, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding-top: 50px; padding-bottom: 50px; padding-left: 25px; padding-right: 25px; margin-top: 0; margin-bottom: 0;"
+                },
+                "inner_spacing": {
+                  "padding": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 0; margin-top: 0; margin-bottom: 0;"
+                },
+                "outer_background_width": "full",
+                "max_module_width": "default"
+              },
+              "module_background_settings": {
+                "outer_background_option": "none",
+                "background_option": "none",
+                "inner_border_override": false,
+                "inner_border_style": "none",
+                "outer_border_style": "solid",
+                "outer_border_position": "both",
+                "outer_border_width": 1,
+                "outer_border_color": { "color": "#dedede", "opacity": 100 }
+              }
+            }
+          %}
+          {% end_dnd_module %}
+        {% end_dnd_row %}
+      {% end_dnd_column %}
+    {% end_dnd_section %}
+
+    {# --- 06 FAQs · SW FAQs Basic (H2 only; Accordion 2; no Questions pre-title) --- #}
+    {% dnd_section padding={ "left": 0, "right": 0, "top": 0, "bottom": 0 }, full_width=true %}
+      {% dnd_column %}
+        {% dnd_row %}
+          {% dnd_module
+            path="../sw-modules/SW FAQs Basic",
+            label="SW FAQs Basic (6)",
+            faq_source_type="repeater",
+            heading_panel={
+              "heading_items": [
+                {
+                  "heading_text": "Frequently asked questions",
+                  "heading_size": "h2",
+                  "heading_display_size": "h2",
+                  "heading_color": "auto",
+                  "heading_align": "left"
+                }
+              ],
+              "description": "",
+              "content_style": "default",
+              "heading_buttons": {
+                "alignment": "left",
+                "margin_top": 0,
+                "heading_button_items": []
+              }
+            },
+            intro_content="",
+            heading_items=[],
+            faq_items=[
+              {
+                "question": "What do you actually do for SMB marketing teams?",
+                "answer": "<p>Websites, inbound, and HubSpot consulting — practical systems your team can run, not more noise.</p>"
+              },
+              {
+                "question": "Do you implement HubSpot in our portal?",
+                "answer": "<p>Yes. We work in your HubSpot portal: theme, modules, and the CRM wiring your team needs so campaigns run in one system.</p>"
+              },
+              {
+                "question": "How do we get started if our site and CRM are already a mess?",
+                "answer": "<p>We audit what is already live, keep what works, and replace only the parts that fight your editors. Then we agree a lean first slice instead of a blank-slate rebuild.</p>"
+              }
+            ],
+            styles={
+              "module_settings": {
+                "spacing": {
+                  "padding": {
+                    "top": { "value": 50, "units": "px" },
+                    "bottom": { "value": 50, "units": "px" },
+                    "left": { "value": 25, "units": "px" },
+                    "right": { "value": 25, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding-top: 50px; padding-bottom: 50px; padding-left: 25px; padding-right: 25px; margin-top: 0; margin-bottom: 0;"
+                },
+                "inner_spacing": {
+                  "padding": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 0; margin-top: 0; margin-bottom: 0;"
+                }
+              },
+              "module_background_settings": {
+                "outer_background_option": "custom",
+                "outer_background_custom": { "color": "#fafafa", "opacity": 100 },
+                "background_option": "none",
+                "inner_border_override": false,
+                "inner_border_style": "none"
+              },
+              "faq_box_settings": {
+                "enable_accordion": true,
+                "accordion_mode": "accordion_2",
+                "question_display_size": "h5",
+                "item_spacing": 24,
+                "question_answer_gap": 12
+              },
+              "heading_panel_settings": {
+                "spacing": {
+                  "padding": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 24, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding-top: 0; padding-bottom: 24px; padding-left: 0; padding-right: 0;"
+                }
+              },
+              "content_area_settings": {
+                "background_option": "none",
+                "spacing": {
+                  "padding": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding-top: 0; padding-bottom: 0; padding-left: 0; padding-right: 0;"
+                }
+              }
+            }
+          %}
+          {% end_dnd_module %}
+        {% end_dnd_row %}
+      {% end_dnd_column %}
+    {% end_dnd_section %}
+
+    {# --- 07 Blog · SW Cards Blog (3 most recent) --- #}
+    {% dnd_section padding={ "left": 0, "right": 0, "top": 0, "bottom": 0 }, full_width=true %}
+      {% dnd_column %}
+        {% dnd_row %}
+          {% dnd_module
+            path="../sw-modules/SW Cards Blog",
+            label="SW Cards Blog (7)",
+            heading_items=[{
+              "heading_text": "See our Recent Blog Posts",
+              "heading_size": "h2",
+              "heading_display_size": "h2",
+              "heading_color": "auto",
+              "heading_align": "center"
+            }],
+            post_display_settings={
+              "posts_to_show": 3,
+              "post_start": 1
+            },
+            cta_buttons={
+              "alignment": "center",
+              "margin_top": 15,
+              "cta_button_items": [{
+                "text": "Read All Our Posts",
+                "link": {
+                  "url": { "type": "EXTERNAL", "href": "https://smithworks.marketing/blog", "content_id": null },
+                  "open_in_new_tab": false,
+                  "no_follow": false
+                },
+                "style": "primary",
+                "size": "md",
+                "add_icon": false
+              }]
+            },
+            styles={
+              "module_settings": {
+                "spacing": {
+                  "padding": {
+                    "top": { "value": 50, "units": "px" },
+                    "bottom": { "value": 50, "units": "px" },
+                    "left": { "value": 25, "units": "px" },
+                    "right": { "value": 25, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding-top: 50px; padding-bottom: 50px; padding-left: 25px; padding-right: 25px; margin-top: 0; margin-bottom: 0;"
+                },
+                "inner_spacing": {
+                  "padding": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" },
+                    "left": { "value": 0, "units": "px" },
+                    "right": { "value": 0, "units": "px" }
+                  },
+                  "margin": {
+                    "top": { "value": 0, "units": "px" },
+                    "bottom": { "value": 0, "units": "px" }
+                  },
+                  "css": "padding: 0; margin-top: 0; margin-bottom: 0;"
+                }
+              },
+              "module_background_settings": {
+                "outer_background_option": "none",
+                "background_option": "none"
+              },
+              "cards_layout": {
+                "cards_per_row_xl": "3"
+              }
+            }
+          %}
+          {% end_dnd_module %}
+        {% end_dnd_row %}
+      {% end_dnd_column %}
+    {% end_dnd_section %}
+
+  {% end_dnd_area %}
+  </main>
+
+  {% endblock body %}
+
+  {% block footer %}
+    {% boolean "enabled_site_footer" label='Enable Global Site Footer', value=true, export_to_template_context=True %}
+    {% if widget_data.enabled_site_footer.value %}
+      {% global_partial path="../sw-partials/sw-site_footer.html" %}
+    {% endif %}
+  {% endblock footer %}
+
+  {# Inline footer includes (same as templates/footer-includes.html). Theme Master rejects updates to this template when the analytics token is only inside an include. #}
+  {% if theme.misc.enable_jquery %}
+  <script src="{{ get_asset_url('../js/jquery.js') }}" crossorigin="anonymous"></script>
+  {% endif %}
+  <script defer src="{{ get_asset_url('../js/interaction.js') }}"></script>
+  {{ standard_footer_includes }}
+  {% if widget_data.prototype_mode.value %}
+  <link rel="stylesheet" href="{{ get_asset_url('../css/prototype.css') }}" />
+  <script src="{{ get_asset_url('../js/prototype.js') }}"></script>
+  {% endif %}
+  <script id="srDebug" type="application/json">
+	{
+		"page_type": "{{ content.CMSContentType }}",
+		"theme": "{{ content.template_path|split('/templates/')|first }}",
+		"template": "{{ content.template_path }}",
+		"hub_id": "{{ hub_id }}",
+		"sr_app": "feb-2025"
+	}
+  </script>
+</body>
+</html>

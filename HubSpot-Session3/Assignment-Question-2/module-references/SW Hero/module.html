@@ -1,0 +1,1616 @@
+{# ===============================
+   Smithworks' SW Hero module.html
+   Internal name: SW Hero
+   SW Category: Banners
+   Master version number: 2026.09.16.10.37
+   Changelog: ../CHANGELOG.md
+   SW Version Note: Canonical banner hero. Prefer this over SW Simple Hero. Do not overwrite SW Simple Hero.module on sites that still use it.
+
+   Fields used:
+   - enable_module, custom_id, custom_classes, inner_pattern_custom_svg_code, text_box_pattern_custom_svg_code, outer_aurora_custom_svg_code, inner_aurora_custom_svg_code, outer_svg_overlay_code, outer_animated_custom_svg_code (Content, last; surface-specific Custom SVG Code)
+   - heading_items, content_area, content_style, cta_alignment, cta_buttons_margin_top (Space Above Buttons), cta_button_items (icon.spacing, hide_text, override_margins, margin_left/right)
+   - background_video_settings (Content last; visible when Module Inner Background Options = Video)
+   - styles.module_settings: Module Outer Spacing (spacing), Max Module Outer Width, Module Inner Spacing (inner_spacing), Max Module Inner Width, module_height_*
+   - styles.module_background_settings: outer_* + outer_animated (Animated choice, Outer band only — not Inner) + outer_aurora (overlay on Theme Color / Custom Color / Gradient / Image; off for None / Divided/Split / Animated) + outer_svg_overlay (SVG Overlay on the same Outer fills; off for None / Divided/Split / Animated) + Module Outer Border; Module Inner Background Options (None + background_* including Effect — no Animated); inner_aurora (same overlay on Inner Theme Color / Custom Color / Gradient / Image; off for None / Video / Effect); inner_effect_type / inner_glass / inner_grain / inner_pattern when Effect (glass edge takes priority over inner_border stroke; radius unchanged); inner_border_* (override off = no stroke)
+   - Module Outer Image: outer_background_image_xl|lg|md|sm_group (type image + hero_background_size, same stack as Inner) painted on .sw-hero__module-outer-bg-fill; Outer Animated stage (canvas + static SVG) on that same fill; Outer Aurora stamps on that fill; SVG Overlay above Aurora and the fill ::after scrim (still under Inner / text box); Inner Aurora stamps on .sw-hero (below ::before overlay, above LCP/photo)
+   - styles.text_box_width: text_box_background_option (None | Color default | Effect); text_box_background_color when Color; text_box_glass / text_box_grain / text_box_pattern when Effect (each has rim + face when rim > 0; Custom SVG uses Pattern rim); radius override unchanged
+   - styles.content_colors, styles.heading_settings
+   - Default link href: https://smithworks.marketing/sw-module-documentation
+   =============================== #}
+
+{% import "../../sw-templates/sw-macros.html" as macros %}
+
+{# Button repeater helpers: icon gap, Simple Link icon-only label (sr-only), per-item margin CSS. #}
+{% macro sw_hero_cta_icon_gap_style(btn) -%}
+--sw-btn-icon-gap: {{ (btn.icon.spacing|default(8)) }}px;
+{%- endmacro %}
+{% macro sw_hero_cta_label(text, hide_text) -%}
+{%- if hide_text -%}<span class="sr-only">{{ text }}</span>{%- else -%}{{ text }}{%- endif -%}
+{%- endmacro %}
+{% macro sw_hero_cta_side_margins(inst, i, apply_ml, apply_mr, btn) -%}
+{%- if btn.override_margins|default(false) -%}
+{%- if apply_ml %}
+{{ inst }} .sw-hero-cta-{{ i }} { margin-left: {{ btn.margin_left|default(0) }}px; }
+{%- endif -%}
+{%- if apply_mr %}
+{{ inst }} .sw-hero-cta-{{ i }} { margin-right: {{ btn.margin_right|default(0) }}px; }
+{{ inst }} .sw-hero-cta-{{ i }} + .sw-hero__cta-item:not(.sw-hs-ov) { margin-left: 0; }
+{%- endif -%}
+{%- endif -%}
+{%- endmacro %}
+
+{# ---------- Primary (XL) values + cascaded fallbacks ---------- #}
+{% set _bg_settings = module.styles.module_background_settings|default({}) %}
+{% set _background_option = (_bg_settings.background_option or module.styles.background_option)|default('custom') %}
+{% set _inner_effect_type = _bg_settings.inner_effect_type|default('glass') %}
+{% set _inner_glass = _bg_settings.inner_glass|default({}) %}
+{% set _inner_grain = _bg_settings.inner_grain|default({}) %}
+{% set _inner_pattern = _bg_settings.inner_pattern|default({}) %}
+{% set _inner_glass_active = (_background_option == 'effect') and (_inner_effect_type == 'glass' or not _inner_effect_type) %}
+{% set _inner_grain_active = (_background_option == 'effect') and (_inner_effect_type == 'grain') %}
+{% set _inner_pattern_active = (_background_option == 'effect') and (_inner_effect_type == 'pattern') %}
+{% set _inner_pattern_style = _inner_pattern.style|default('dots') %}
+{% if _inner_pattern_style == 'lines' %}
+  {% set _inner_pattern_style = 'lines-tl-br' %}
+{% endif %}
+{% set _inner_pattern_svg = module.inner_pattern_custom_svg_code|default('')|trim %}
+{% if not _inner_pattern_svg %}
+  {% set _inner_pattern_svg = module.pattern_custom_svg_code|default('')|trim %}
+{% endif %}
+{% set _inner_pattern_custom_ready = (_inner_pattern_style == 'custom') and (_inner_pattern_svg != '') %}
+{% set _inner_pattern_color_mode = _inner_pattern.color_mode|default('override') %}
+{% set _inner_pattern_size_mode = _inner_pattern.size_mode|default('tile') %}
+{% set _mod_settings = module.styles.module_settings|default({}) %}
+{% set _general_settings = module.styles.general_banner_settings|default({}) %}
+{# Outer / inner (SW Hero — no aliases; paths under styles.*) #}
+{% set _outer_opt = _bg_settings.outer_background_option|default('none') %}
+{% set _outer_active = (_outer_opt != 'none' and _outer_opt != '') %}
+{% set _oa = _bg_settings.outer_aurora|default({}) %}
+{% set _oa_fill_ok = _outer_opt == 'color' or _outer_opt == 'custom' or _outer_opt == 'gradient' or _outer_opt == 'image' %}
+{% set _outer_aurora_active = _outer_active and _oa_fill_ok and _oa.enable %}
+{% set _oa_c1 = _oa.color_1|default({'color':'#343bed','opacity':50}) %}
+{% set _oa_c2 = _oa.color_2|default({'color':'#e16bff','opacity':45}) %}
+{% set _oa_c3 = _oa.color_3|default({'color':'#dcbb9b','opacity':40}) %}
+{% set _oa_c1_rgb = (_oa_c1.color|default('#343bed'))|convert_rgb %}
+{% set _oa_c2_rgb = (_oa_c2.color|default('#e16bff'))|convert_rgb %}
+{% set _oa_c3_rgb = (_oa_c3.color|default('#dcbb9b'))|convert_rgb %}
+{% set _oa_c1a = (_oa_c1.opacity|default(50)) / 100 %}
+{% set _oa_c2a = (_oa_c2.opacity|default(45)) / 100 %}
+{% set _oa_c3a = (_oa_c3.opacity|default(40)) / 100 %}
+{% set _oa_strength = (_oa.strength|default(50)) / 100 %}
+{% set _oa_blur = (_oa.edge_blur|default(20))|int %}
+{% set _oa_scale = (_oa.scale|default(100)) / 100 %}
+{% set _oa_blend = _oa.blend|default('normal') %}
+{% set _oa_motion = _oa.motion|default(true) %}
+{% set _oa_duration = (_oa.duration|default(8))|int %}
+{% set _oa_style = _oa.style|default('soft') %}
+{% set _oa_svg = module.outer_aurora_custom_svg_code|default('')|trim %}
+{% set _oa_custom_ready = (_oa_style == 'custom') and (_oa_svg != '') %}
+{# Module Outer SVG Overlay: same Outer paints as Aurora; hidden for None / Divided/Split / Animated. Enable default false. #}
+{% set _svo = _bg_settings.outer_svg_overlay|default({}) %}
+{% set _svo_svg = module.outer_svg_overlay_code|default('')|trim|replace('</script','')|replace('</SCRIPT','')|replace('<script','')|replace('<SCRIPT','') %}
+{% set _svo_active = _outer_active and _oa_fill_ok and (_svo.enable|default(false)) and (_svo_svg != '') %}
+{% set _svo_anim = _svo.animation|default('appear') %}
+{% set _svo_appear = _svo.appear_duration|default(1) %}
+{% set _svo_twinkle = _svo.twinkle_speed|default('medium') %}
+{% set _svo_pos = _svo.position|default('center center') %}
+{% set _svo_scale = (_svo.scale|default(100))|int %}
+{% set _svo_opacity = (_svo.opacity|default(100))|int %}
+{% if _svo_opacity < 0 %}
+  {% set _svo_opacity = 0 %}
+{% elif _svo_opacity > 100 %}
+  {% set _svo_opacity = 100 %}
+{% endif %}
+{% set _svo_par = 'xMidYMid meet' %}
+{% if _svo_pos == 'left top' %}
+  {% set _svo_par = 'xMinYMin meet' %}
+{% elif _svo_pos == 'center top' %}
+  {% set _svo_par = 'xMidYMin meet' %}
+{% elif _svo_pos == 'right top' %}
+  {% set _svo_par = 'xMaxYMin meet' %}
+{% elif _svo_pos == 'left center' %}
+  {% set _svo_par = 'xMinYMid meet' %}
+{% elif _svo_pos == 'center center' %}
+  {% set _svo_par = 'xMidYMid meet' %}
+{% elif _svo_pos == 'right center' %}
+  {% set _svo_par = 'xMaxYMid meet' %}
+{% elif _svo_pos == 'left bottom' %}
+  {% set _svo_par = 'xMinYMax meet' %}
+{% elif _svo_pos == 'center bottom' %}
+  {% set _svo_par = 'xMidYMax meet' %}
+{% elif _svo_pos == 'right bottom' %}
+  {% set _svo_par = 'xMaxYMax meet' %}
+{% endif %}
+{% set _svo_override = _svo.color_mode == 'override' %}
+{% set _svo_color_css = '' %}
+{% if _svo_override %}
+  {% if _svo.override_color_source == 'custom' %}
+    {% set _svo_color_css = macros.color(_svo.custom_color) %}
+  {% else %}
+    {% set _svo_tc = _svo.theme_color|default('primary') %}
+    {% if _svo_tc == 'custom' %}
+      {% set _svo_tc = 'primary' %}
+    {% endif %}
+    {% set _svo_color_css = 'var(--' ~ _svo_tc ~ ', var(--primary, #0C2D4C))' %}
+  {% endif %}
+{% endif %}
+{% set _svo_style = '--sw-svo-scale: ' ~ _svo_scale ~ '; --sw-svo-opacity: ' ~ _svo_opacity ~ ';' %}
+{% if _svo_override and _svo_color_css %}
+  {% set _svo_style = _svo_style ~ '--sw-svo-color: ' ~ _svo_color_css ~ ';' %}
+{% endif %}
+{% if _svo_pos == 'custom' %}
+  {% set _svo_h_edge = _svo.custom_h_edge|default('right') %}
+  {% set _svo_h_off = _svo.custom_h_offset|default(0) %}
+  {% set _svo_h_unit = _svo.custom_h_unit|default('%') %}
+  {% set _svo_v_edge = _svo.custom_v_edge|default('top') %}
+  {% set _svo_v_off = _svo.custom_v_offset|default(0) %}
+  {% set _svo_v_unit = _svo.custom_v_unit|default('%') %}
+  {% if _svo_h_edge == 'right' %}
+    {% set _svo_style = _svo_style ~ '--sw-svo-right: ' ~ _svo_h_off ~ _svo_h_unit ~ '; --sw-svo-left: auto;' %}
+  {% else %}
+    {% set _svo_style = _svo_style ~ '--sw-svo-left: ' ~ _svo_h_off ~ _svo_h_unit ~ '; --sw-svo-right: auto;' %}
+  {% endif %}
+  {% if _svo_v_edge == 'bottom' %}
+    {% set _svo_style = _svo_style ~ '--sw-svo-bottom: ' ~ _svo_v_off ~ _svo_v_unit ~ '; --sw-svo-top: auto;' %}
+  {% else %}
+    {% set _svo_style = _svo_style ~ '--sw-svo-top: ' ~ _svo_v_off ~ _svo_v_unit ~ '; --sw-svo-bottom: auto;' %}
+  {% endif %}
+{% endif %}
+{% set _svo_disable = _svo.disable|default({}) %}
+{% set _svo_hide_xl = _svo_disable.xl|default(false) %}
+{% set _svo_hide_lg = _svo_disable.lg|default(false) %}
+{% set _svo_hide_md = _svo_disable.md|default(false) %}
+{% set _svo_hide_sm = _svo_disable.sm|default(false) %}
+{# Module Outer Animated: Outer band only. Do not add Animated to Inner background_option. Aurora stays off via _oa_fill_ok. #}
+{% set _oanim = _bg_settings.outer_animated|default({}) %}
+{% set _oanim_motion = _oanim.motion|default('wave') %}
+{% set _oanim_art = _oanim.art|default('wave') %}
+{% set _oanim_cm = _oanim.color_mode|default('theme') %}
+{% if _oanim_art == 'custom' %}
+  {% set _oanim_cm = _oanim.custom_color_mode|default('svg') %}
+{% endif %}
+{% set _oanim_recolor = (_oanim_cm != 'svg') %}
+{% set _oanim_color_css = 'var(--primary, #0C2D4C)' %}
+{% if _oanim_recolor %}
+  {% if _oanim_cm == 'custom' and _oanim.custom_color %}
+    {% set _oanim_color_css = macros.color(_oanim.custom_color) %}
+  {% else %}
+    {% set _oanim_tc = _oanim.theme_color|default('primary') %}
+    {% if _oanim_tc == 'custom' %}
+      {% set _oanim_tc = 'primary' %}
+    {% endif %}
+    {% set _oanim_color_css = 'var(--' ~ _oanim_tc ~ ', var(--primary, #0C2D4C))' %}
+  {% endif %}
+{% endif %}
+{% set _oanim_rot = _oanim.rotate|default(0) %}
+{% set _oanim_px = _oanim.pos_x|default(50) %}
+{% set _oanim_py = _oanim.pos_y|default(50) %}
+{% set _oanim_sx = _oanim.scale_x|default(100) %}
+{% set _oanim_sy = _oanim.scale_y|default(100) %}
+{% set _oanim_cover_n = 1 %}
+{% if _oanim.cover == false %}
+  {% set _oanim_cover_n = 0 %}
+{% endif %}
+{% set _oanim_roll = _oanim.roll_speed|default(0.38) %}
+{% set _oanim_wspeed = _oanim.wave_speed|default(1.35) %}
+{% set _oanim_wamp = _oanim.wave_amp|default(95) %}
+{% set _oanim_wlag = _oanim.wave_lag|default(0.22) %}
+{% set _oanim_custom_svg = module.outer_animated_custom_svg_code|default('')|trim %}
+{% set _ia = _bg_settings.inner_aurora|default({}) %}
+{% set _ia_fill_ok = _background_option == 'color' or _background_option == 'custom' or _background_option == 'gradient' or _background_option == 'image' %}
+{% set _inner_aurora_active = _ia_fill_ok and _ia.enable %}
+{% set _ia_c1 = _ia.color_1|default({'color':'#343bed','opacity':50}) %}
+{% set _ia_c2 = _ia.color_2|default({'color':'#e16bff','opacity':45}) %}
+{% set _ia_c3 = _ia.color_3|default({'color':'#dcbb9b','opacity':40}) %}
+{% set _ia_c1_rgb = (_ia_c1.color|default('#343bed'))|convert_rgb %}
+{% set _ia_c2_rgb = (_ia_c2.color|default('#e16bff'))|convert_rgb %}
+{% set _ia_c3_rgb = (_ia_c3.color|default('#dcbb9b'))|convert_rgb %}
+{% set _ia_c1a = (_ia_c1.opacity|default(50)) / 100 %}
+{% set _ia_c2a = (_ia_c2.opacity|default(45)) / 100 %}
+{% set _ia_c3a = (_ia_c3.opacity|default(40)) / 100 %}
+{% set _ia_strength = (_ia.strength|default(50)) / 100 %}
+{% set _ia_blur = (_ia.edge_blur|default(20))|int %}
+{% set _ia_scale = (_ia.scale|default(100)) / 100 %}
+{% set _ia_blend = _ia.blend|default('normal') %}
+{% set _ia_motion = _ia.motion|default(true) %}
+{% set _ia_duration = (_ia.duration|default(8))|int %}
+{% set _ia_style = _ia.blob_style|default(_ia.style)|default('soft') %}
+{% set _ia_svg = module.inner_aurora_custom_svg_code|default('')|trim %}
+{% set _ia_custom_ready = (_ia_style == 'custom') and (_ia_svg != '') %}
+{% set _outer_border_style = _bg_settings.outer_border_style|default('none') %}
+{% set _outer_border_position = _bg_settings.outer_border_position|default('both') %}
+{% set _outer_border_width = _bg_settings.outer_border_width|default(1)|int %}
+{% set _outer_border_color = _bg_settings.outer_border_color|default({'color':'#dddddd','opacity':100}) %}
+{% set _outer_border_active = (_outer_border_style != 'none' and _outer_border_style != '') %}
+{% set _outer_border_inline = '' %}
+{% if _outer_border_active %}
+  {% set _outer_border_color_value = macros.color(_outer_border_color) %}
+  {% if _outer_border_position == 'top' %}
+    {% set _outer_border_inline = 'border-top-width: ' ~ _outer_border_width|string ~ 'px; border-top-style: ' ~ _outer_border_style ~ '; border-top-color: ' ~ _outer_border_color_value ~ ';' %}
+  {% elif _outer_border_position == 'bottom' %}
+    {% set _outer_border_inline = 'border-bottom-width: ' ~ _outer_border_width|string ~ 'px; border-bottom-style: ' ~ _outer_border_style ~ '; border-bottom-color: ' ~ _outer_border_color_value ~ ';' %}
+  {% else %}
+    {% set _outer_border_inline = 'border-top-width: ' ~ _outer_border_width|string ~ 'px; border-top-style: ' ~ _outer_border_style ~ '; border-top-color: ' ~ _outer_border_color_value ~ '; border-bottom-width: ' ~ _outer_border_width|string ~ 'px; border-bottom-style: ' ~ _outer_border_style ~ '; border-bottom-color: ' ~ _outer_border_color_value ~ ';' %}
+  {% endif %}
+{% endif %}
+{% set _inner_border_override = _bg_settings.inner_border_override|default(false) %}
+{% set _inner_border_style = _bg_settings.inner_border_style|default('none') %}
+{% set _inner_border_width = (_bg_settings.inner_border_width|default(1))|int %}
+{% set _inner_border_color = _bg_settings.inner_border_color|default({'color':'#dddddd','opacity':100}) %}
+{% set _inner_border_radius_px = (_bg_settings.inner_border_radius|default(0))|int %}
+{% set _inner_border_active = _inner_border_override and (_inner_border_style != 'none' and _inner_border_style != '') %}
+{% set _inner_border_inline = '' %}
+{% if _inner_glass_active %}
+  {# Glass owns the stroke while Effect is on. Inner Border style/weight/color are ignored. Radius still comes from override below. #}
+  {% set _glass_border = _inner_glass.border|default({'color':'#ffffff','opacity':45}) %}
+  {% set _glass_border_width = (_inner_glass.border_width|default(1))|int %}
+  {% if _glass_border_width > 0 %}
+    {% set _inner_border_inline = 'border-width: ' ~ _glass_border_width|string ~ 'px; border-style: solid; border-color: ' ~ macros.color(_glass_border) ~ ';' %}
+  {% else %}
+    {% set _inner_border_inline = 'border-style: none; border-width: 0;' %}
+  {% endif %}
+{% elif _inner_border_active %}
+  {% set _inner_border_color_value = macros.color(_inner_border_color) %}
+  {% set _inner_border_inline = 'border-width: ' ~ _inner_border_width|string ~ 'px; border-style: ' ~ _inner_border_style ~ '; border-color: ' ~ _inner_border_color_value ~ ';' %}
+{% elif not _inner_border_override %}
+  {# Override off: force no stroke (do not leave inherited/leftover border). Standard: PROCESS-MODULE-OUTER-INNER-FIELD-REORG §2 / §4. #}
+  {% set _inner_border_inline = 'border-style: none; border-width: 0;' %}
+{% endif %}
+{% set _inner_border_radius_css = '' %}
+{% if _inner_border_override %}
+  {% set _inner_border_radius_css = 'border-radius: ' ~ _inner_border_radius_px|string ~ 'px;' %}
+  {% if _inner_border_radius_px > 0 %}
+    {% set _inner_border_radius_css = _inner_border_radius_css ~ ' overflow: hidden;' %}
+  {% endif %}
+{% endif %}
+{% set _outer_shell_active = _outer_active or _outer_border_active %}
+{% set _outer_width_choice = _mod_settings.outer_background_width|default('full') %}
+{% set _outer_max_width_px = null %}
+{% if _outer_width_choice == 'default' %}
+  {% set _outer_max_width_px = theme.containers.default|default(1800) %}
+{% elif _outer_width_choice == 'small' %}
+  {% set _outer_max_width_px = theme.containers.small|default(968) %}
+{% elif _outer_width_choice == 'large' %}
+  {% set _outer_max_width_px = theme.containers.large|default(theme.containers_large|default(1800)) %}
+{% elif _outer_width_choice == 'custom' %}
+  {% set _outer_cust = _mod_settings.outer_background_width_custom|default(1800) %}
+  {% set _outer_max_width_px = (_outer_cust >= 600 and _outer_cust <= 2400) ? _outer_cust : 1800 %}
+{% endif %}
+{% set _outer_bg_css = '' %}
+{% if _outer_opt == 'color' %}
+  {% set _og_color_choice = _bg_settings.outer_background_color|default('primary') %}
+  {% if _og_color_choice == 'custom' and _bg_settings.outer_background_color_custom %}
+    {% set _outer_bg_css = 'background-color: ' ~ macros.color(_bg_settings.outer_background_color_custom) ~ ';' %}
+  {% elif _og_color_choice == 'none' or not _og_color_choice %}
+    {% set _outer_bg_css = 'background-color: transparent;' %}
+  {% else %}
+    {% set _outer_bg_css = 'background-color: var(--' ~ _og_color_choice ~ ', var(--primary, #0C2D4C));' %}
+  {% endif %}
+{% elif _outer_opt == 'custom' and _bg_settings.outer_background_custom %}
+  {% set _outer_bg_css = 'background-color: ' ~ macros.color(_bg_settings.outer_background_custom) ~ ';' %}
+{% elif _outer_opt == 'gradient' and _bg_settings.outer_background_gradient and _bg_settings.outer_background_gradient.css %}
+  {% set _outer_bg_css = 'background: ' ~ _bg_settings.outer_background_gradient.css ~ ';' %}
+{% endif %}
+{# Module Outer Image: paint existing outer_background_image_* fields onto .sw-hero__module-outer-bg-fill (CTA Simple Bar pattern). No placeholder if src is empty — base color only. #}
+{% macro _hero_outer_pos_css(val) %}{{ (val|default('center center'))|lower|replace("_", " ")|replace("middle", "center") }}{% endmacro %}
+{% set _og_xl_grp = _bg_settings.outer_background_image_xl_group|default({}) %}
+{% set _og_lg_grp = _bg_settings.outer_background_image_lg_group|default({}) %}
+{% set _og_md_grp = _bg_settings.outer_background_image_md_group|default({}) %}
+{% set _og_sm_grp = _bg_settings.outer_background_image_sm_group|default({}) %}
+{% set og_xl = _og_xl_grp.background_image_xl|default({}) %}
+{% set og_lg = _og_lg_grp.background_image_lg|default({}) %}
+{% set og_md = _og_md_grp.background_image_md|default({}) %}
+{% set og_sm = _og_sm_grp.background_image_sm|default({}) %}
+{% set _og_xl_src = (og_xl.src|default(''))|trim if og_xl else '' %}
+{% set _og_override_lg = _og_lg_grp.override_lg_background_image|default(false) %}
+{% set _og_override_md = _og_md_grp.override_md_background_image|default(false) %}
+{% set _og_override_sm = _og_sm_grp.override_sm_background_image|default(false) %}
+{% set _og_pos_xl_raw = _og_xl_grp.background_position_xl|default(og_xl.background_position)|default('center center') %}
+{% set _og_pos_lg_raw = (_og_lg_grp.background_position_lg|default(og_lg.background_position)|default(_og_pos_xl_raw)) if _og_override_lg else _og_pos_xl_raw %}
+{% set _og_pos_md_raw = (_og_md_grp.background_position_md|default(og_md.background_position)|default(_og_pos_lg_raw)) if _og_override_md else _og_pos_lg_raw %}
+{% set _og_pos_sm_raw = (_og_sm_grp.background_position_sm|default(og_sm.background_position)|default(_og_pos_md_raw)) if _og_override_sm else _og_pos_md_raw %}
+{% set _og_repeat_xl = _og_xl_grp.background_repeat_xl|default(og_xl.background_repeat)|default('no-repeat') %}
+{% set _og_repeat_lg = (_og_lg_grp.background_repeat_lg|default(_og_repeat_xl)) if _og_override_lg else _og_repeat_xl %}
+{% set _og_repeat_md = (_og_md_grp.background_repeat_md|default(_og_repeat_lg)) if _og_override_md else _og_repeat_lg %}
+{% set _og_repeat_sm = (_og_sm_grp.background_repeat_sm|default(_og_repeat_md)) if _og_override_sm else _og_repeat_md %}
+{# Outer size: Inner-style hero_background_size; leftover backgroundimage.background_size if unsaved; exact image size_type like Inner. #}
+{% set _og_size_choice_xl = _og_xl_grp.hero_background_size|default(og_xl.background_size)|default('cover') %}
+{% set _og_size_choice_lg = (_og_lg_grp.hero_background_size_lg|default(og_lg.background_size)|default(_og_size_choice_xl)) if _og_override_lg else _og_size_choice_xl %}
+{% set _og_size_choice_md = (_og_md_grp.hero_background_size_md|default(og_md.background_size)|default(_og_size_choice_lg)) if _og_override_md else _og_size_choice_lg %}
+{% set _og_size_choice_sm = (_og_sm_grp.hero_background_size_sm|default(og_sm.background_size)|default(_og_size_choice_md)) if _og_override_sm else _og_size_choice_md %}
+{% if og_xl and og_xl.size_type == 'exact' and og_xl.width and og_xl.height %}
+  {% set _og_size_xl = (og_xl.width|int) ~ 'px ' ~ (og_xl.height|int) ~ 'px' %}
+{% else %}
+  {% set _og_size_xl = _og_size_choice_xl|lower %}
+{% endif %}
+{% if _og_override_lg and og_lg and og_lg.size_type == 'exact' and og_lg.width and og_lg.height %}
+  {% set _og_size_lg = (og_lg.width|int) ~ 'px ' ~ (og_lg.height|int) ~ 'px' %}
+{% else %}
+  {% set _og_size_lg = _og_size_choice_lg|lower %}
+{% endif %}
+{% if _og_override_md and og_md and og_md.size_type == 'exact' and og_md.width and og_md.height %}
+  {% set _og_size_md = (og_md.width|int) ~ 'px ' ~ (og_md.height|int) ~ 'px' %}
+{% else %}
+  {% set _og_size_md = _og_size_choice_md|lower %}
+{% endif %}
+{% if _og_override_sm and og_sm and og_sm.size_type == 'exact' and og_sm.width and og_sm.height %}
+  {% set _og_size_sm = (og_sm.width|int) ~ 'px ' ~ (og_sm.height|int) ~ 'px' %}
+{% else %}
+  {% set _og_size_sm = _og_size_choice_sm|lower %}
+{% endif %}
+{% set _og_overlay_xl = _og_xl_grp.background_color_overlay_xl|default({'color':'#000000','opacity':0}) %}
+{% set _og_overlay_lg = _og_lg_grp.background_color_overlay_lg if _og_override_lg else _og_overlay_xl %}
+{% set _og_overlay_md = _og_md_grp.background_color_overlay_md if _og_override_md else _og_overlay_lg %}
+{% set _og_overlay_sm = _og_sm_grp.background_color_overlay_sm if _og_override_sm else _og_overlay_md %}
+{% set _og_base_xl = _og_xl_grp.background_base_color_xl|default({'color':'#ffffff','opacity':100}) %}
+{% set _og_base_lg = (_og_lg_grp.background_base_color_lg|default(_og_base_xl)) if _og_override_lg else _og_base_xl %}
+{% set _og_base_md = (_og_md_grp.background_base_color_md|default(_og_base_lg)) if _og_override_md else _og_base_lg %}
+{% set _og_base_sm = (_og_sm_grp.background_base_color_sm|default(_og_base_md)) if _og_override_sm else _og_base_md %}
+{% set _og_lg_src = (og_lg.src|default(''))|trim if og_lg else '' %}
+{% set _og_md_src = (og_md.src|default(''))|trim if og_md else '' %}
+{% set _og_sm_src = (og_sm.src|default(''))|trim if og_sm else '' %}
+{% set _ourl_xl = resize_image_url(_og_xl_src, '2880') if _og_xl_src else '' %}
+{# Override on + empty file = no image (do not inherit XL). Overlay/base still apply. Hide cascades down. #}
+{% if _og_override_lg %}
+  {% set _ourl_lg = resize_image_url(_og_lg_src, '2400') if _og_lg_src else '' %}
+{% else %}
+  {% set _ourl_lg = _ourl_xl %}
+{% endif %}
+{% if _og_override_md %}
+  {% set _ourl_md = resize_image_url(_og_md_src, '2000') if _og_md_src else '' %}
+{% else %}
+  {% set _ourl_md = _ourl_lg %}
+{% endif %}
+{% if _og_override_sm %}
+  {% set _ourl_sm = resize_image_url(_og_sm_src, '1600') if _og_sm_src else '' %}
+{% else %}
+  {% set _ourl_sm = _ourl_md %}
+{% endif %}
+{% set _inner_spacing = _mod_settings.inner_spacing|default({}) %}
+{% set _inner_spacing_css = '' %}
+{% if _inner_spacing.padding %}
+  {% set _ipt = _inner_spacing.padding.top|default({"value":0,"units":"px"}) %}
+  {% set _ipr = _inner_spacing.padding.right|default({"value":0,"units":"px"}) %}
+  {% set _ipb = _inner_spacing.padding.bottom|default({"value":0,"units":"px"}) %}
+  {% set _ipl = _inner_spacing.padding.left|default({"value":0,"units":"px"}) %}
+  {% set _inner_spacing_css = 'padding: ' ~ (_ipt.value|default(0))|string ~ (_ipt.units|default('px')) ~ ' ' ~ (_ipr.value|default(0))|string ~ (_ipr.units|default('px')) ~ ' ' ~ (_ipb.value|default(0))|string ~ (_ipb.units|default('px')) ~ ' ' ~ (_ipl.value|default(0))|string ~ (_ipl.units|default('px')) ~ ';' %}
+{% elif _inner_spacing.margin %}
+  {% set _imt = _inner_spacing.margin.top|default({"value":0,"units":"px"}) %}
+  {% set _imr = _inner_spacing.margin.right|default({"value":0,"units":"px"}) %}
+  {% set _imb = _inner_spacing.margin.bottom|default({"value":0,"units":"px"}) %}
+  {% set _iml = _inner_spacing.margin.left|default({"value":0,"units":"px"}) %}
+  {% set _inner_spacing_css = 'margin: ' ~ (_imt.value|default(0))|string ~ (_imt.units|default('px')) ~ ' ' ~ (_imr.value|default(0))|string ~ (_imr.units|default('px')) ~ ' ' ~ (_imb.value|default(0))|string ~ (_imb.units|default('px')) ~ ' ' ~ (_iml.value|default(0))|string ~ (_iml.units|default('px')) ~ ';' %}
+{% elif _inner_spacing.css %}
+  {% set _inner_spacing_css = _inner_spacing.css %}
+{% endif %}
+
+{# Background media: prefer module_background_settings (xl/lg/md/sm groups), fallback to legacy background_image #}
+{% set _bg_xl_grp = _bg_settings.background_image_xl_group|default({}) %}
+{% set _bg_lg_grp = _bg_settings.background_image_lg_group|default({}) %}
+{% set _bg_md_grp = _bg_settings.background_image_md_group|default({}) %}
+{% set _bg_sm_grp = _bg_settings.background_image_sm_group|default({}) %}
+{% set _background_style = module.styles.background_image if module.styles.background_image is defined else {} %}
+{% set _color_settings = module.styles.background_color_settings if module.styles.background_color_settings is defined else {} %}
+{% set _gradient_settings = module.styles.background_gradient_settings if module.styles.background_gradient_settings is defined else {} %}
+{% set _content_banner = module.banner_image if module.banner_image is defined else {} %}
+{% set _video_settings = module.background_video_settings|default({}) %}
+{% set _has_video = false %}
+
+{# Content Colors: must be set before text color computation (line ~288). Text color and link context for hero content. #}
+{% set _cc = module.styles.content_colors|default({}) %}
+{% set _text_color_choice = _cc.text_color|default('auto') %}
+{% set _text_color_custom = _cc.text_color_custom|default({}) %}
+{% set _link_context = _cc.link_context|default('theme_defaults') %}
+
+{# Module Settings spacing: apply to outer .sw-hero only. Defaults: 0 margin, 0 padding. #}
+{% set _mod_spacing = _mod_settings.spacing|default({}) %}
+{% set _module_margin_css = '' %}
+{% set _module_padding_css = '' %}
+{% if _mod_spacing.margin %}
+  {% set _mt = _mod_spacing.margin.top|default({"value":0,"units":"px"}) %}
+  {% set _mr = _mod_spacing.margin.right|default({"value":0,"units":"px"}) %}
+  {% set _mb = _mod_spacing.margin.bottom|default({"value":0,"units":"px"}) %}
+  {% set _ml = _mod_spacing.margin.left|default({"value":0,"units":"px"}) %}
+  {% set _module_margin_css = 'margin: ' ~ _mt.value|string ~ _mt.units ~ ' ' ~ _mr.value|string ~ _mr.units ~ ' ' ~ _mb.value|string ~ _mb.units ~ ' ' ~ _ml.value|string ~ _ml.units ~ ';' %}
+{% elif _mod_spacing.css and not _mod_spacing.padding %}
+  {% set _module_margin_css = _mod_spacing.css %}
+{% else %}
+  {% set _module_margin_css = 'margin: 0;' %}
+{% endif %}
+{% if _mod_spacing.padding %}
+  {% set _pt = _mod_spacing.padding.top|default({"value":0,"units":"px"}) %}
+  {% set _pr = _mod_spacing.padding.right|default({"value":0,"units":"px"}) %}
+  {% set _pb = _mod_spacing.padding.bottom|default({"value":0,"units":"px"}) %}
+  {% set _pl = _mod_spacing.padding.left|default({"value":0,"units":"px"}) %}
+  {% set _module_padding_css = 'padding: ' ~ _pt.value|string ~ _pt.units ~ ' ' ~ _pr.value|string ~ _pr.units ~ ' ' ~ _pb.value|string ~ _pb.units ~ ' ' ~ _pl.value|string ~ _pl.units ~ ';' %}
+{% elif _mod_spacing.css and not _mod_spacing.margin %}
+  {% set _module_padding_css = '' %}
+{% else %}
+  {% set _module_padding_css = 'padding: 0;' %}
+{% endif %}
+
+{# Heights: prefer Module Settings (with alias from general_banner_settings); cascade when override toggles off #}
+{% set _xl_grp = _mod_settings.module_height_xl_group|default({}) %}
+{% set _lg_grp = _mod_settings.module_height_lg_group|default({}) %}
+{% set _md_grp = _mod_settings.module_height_md_group|default({}) %}
+{% set _sm_grp = _mod_settings.module_height_sm_group|default({}) %}
+{% set _override_lg = _lg_grp.override_lg_module_height|default(true) %}
+{% set _override_md = _md_grp.override_md_module_height|default(true) %}
+{% set _override_sm = _sm_grp.override_sm_module_height|default(true) %}
+{% set _height_mode_xl = _xl_grp.module_height_xl_mode|default(_general_settings.hero_height_xl_mode)|default('custom') %}
+{% set _height_mode_lg = (_lg_grp.module_height_lg_mode|default(_general_settings.hero_height_lg_mode)|default('custom')) if _override_lg else _height_mode_xl %}
+{% set _height_mode_md = (_md_grp.module_height_md_mode|default(_general_settings.hero_height_md_mode)|default('custom')) if _override_md else _height_mode_lg %}
+{% set _height_mode_sm = (_sm_grp.module_height_sm_mode|default(_general_settings.hero_height_sm_mode)|default('custom')) if _override_sm else _height_mode_md %}
+{% set _h_xl_custom      = _xl_grp.module_height_xl|default(_general_settings.hero_height_xl)|default(_content_banner.desktop_xl_height|default(600)) %}
+{% set _h_desktop_custom = (_lg_grp.module_height_lg|default(_general_settings.hero_height_lg)|default(550)) if _override_lg else _h_xl_custom %}
+{% set _h_tablet_custom  = (_md_grp.module_height_md|default(_general_settings.hero_height_md)|default(450)) if _override_md else _h_desktop_custom %}
+{% set _h_mobile_custom  = (_sm_grp.module_height_sm|default(_general_settings.hero_height_sm)|default(300)) if _override_sm else _h_tablet_custom %}
+{# Vertical alignment: Module Settings (XL and overrides with inherit cascade). Replaces Text Box Vertical Alignment; legacy fallback to text_box_vertical_align. #}
+{% set _va_xl = _xl_grp.vertical_align_xl|default(_general_settings.vertical_align_xl)|default(module.styles.text_box_width.text_box_vertical_align)|default('middle') %}
+{% set _va_lg_raw = (_lg_grp.vertical_align_lg|default(_general_settings.vertical_align_lg)|default('inherit')) if _override_lg else 'inherit' %}
+{% set _va_lg = _va_lg_raw if _va_lg_raw != 'inherit' else _va_xl %}
+{% set _va_md_raw = (_md_grp.vertical_align_md|default(_general_settings.vertical_align_md)|default('inherit')) if _override_md else 'inherit' %}
+{% set _va_md = _va_md_raw if _va_md_raw != 'inherit' else _va_lg %}
+{% set _va_sm_raw = (_sm_grp.vertical_align_sm|default(_general_settings.vertical_align_sm)|default('inherit')) if _override_sm else 'inherit' %}
+{% set _va_sm = _va_sm_raw if _va_sm_raw != 'inherit' else _va_md %}
+{% macro _va_css(v) %}{% if v == 'top' %}flex-start{% elif v == 'bottom' %}flex-end{% else %}center{% endif %}{% endmacro %}
+
+{# Max module width: default/small/large from theme, custom from field, full = no max on inner paint node; Outer width is separate #}
+{% set _width_choice = _mod_settings.max_module_width|default('default') %}
+{% if _width_choice == 'default' %}
+  {% set _module_max_width_px = theme.containers.default|default(1800) %}
+{% elif _width_choice == 'small' %}
+  {% set _module_max_width_px = theme.containers.small|default(968) %}
+{% elif _width_choice == 'large' %}
+  {% set _module_max_width_px = theme.containers.large|default(theme.containers_large|default(1800)) %}
+{% elif _width_choice == 'custom' %}
+  {% set _custom_val = _mod_settings.max_module_width_custom|default(1800) %}
+  {% set _module_max_width_px = (_custom_val >= 600 and _custom_val <= 2400) ? _custom_val : 1800 %}
+{% else %}
+  {% set _module_max_width_px = null %}
+{% endif %}
+
+{# Images / backgrounds: prefer module_background_settings (xl/lg/md/sm groups), fallback to legacy background_image #}
+{% if _background_option == 'image' %}
+  {% set _style_image_xl = _bg_xl_grp.background_image_xl or _background_style.hero_image_xl %}
+  {% set _style_image_lg = _bg_lg_grp.background_image_lg or _background_style.hero_image_lg %}
+  {% set _style_image_md = _bg_md_grp.background_image_md or _background_style.hero_image_md %}
+  {% set _style_image_sm = _bg_sm_grp.background_image_sm or _background_style.hero_image_sm %}
+  {% set _bg_repeat = (_bg_xl_grp.background_repeat_xl or _background_style.hero_background_repeat)|default('no-repeat') %}
+
+  {# Placeholder only from fields.json default (editor shows Replace/Remove). When user removes image, do NOT fall back to placeholder — show base color only. #}
+  {% set _bg_xl      = (_style_image_xl.src if _style_image_xl else None) or _content_banner.desktop_xl_banner_image.src or _content_banner.banner_image_desktop.src %}
+  {% set _override_lg_bg = (_bg_lg_grp.override_lg_background_image or _background_style.hero_override_lg)|default(false) %}
+  {% set _override_md_bg = (_bg_md_grp.override_md_background_image or _background_style.hero_override_md)|default(false) %}
+  {% set _override_sm_bg = (_bg_sm_grp.override_sm_background_image or _background_style.hero_override_sm)|default(false) %}
+  {# Override on + empty file = hide (do not inherit). Hide cascades down until a lower override sets a file. #}
+  {% if _override_lg_bg %}
+    {% set _bg_desktop = (_style_image_lg.src if _style_image_lg and _style_image_lg.src else None) %}
+  {% else %}
+    {% set _bg_desktop = _content_banner.banner_image_desktop.src or _bg_xl %}
+  {% endif %}
+  {% if _override_md_bg %}
+    {% set _bg_tablet = (_style_image_md.src if _style_image_md and _style_image_md.src else None) %}
+  {% else %}
+    {% set _bg_tablet = _content_banner.banner_image_tablet.src or _bg_desktop %}
+  {% endif %}
+  {% if _override_sm_bg %}
+    {% set _bg_mobile = (_style_image_sm.src if _style_image_sm and _style_image_sm.src else None) %}
+  {% else %}
+    {% set _bg_mobile = _content_banner.banner_image_mobile.src or _bg_tablet %}
+  {% endif %}
+  {% set _bg_xl_alt = (_style_image_xl.alt if _style_image_xl and _style_image_xl.alt else None) or (_content_banner.desktop_xl_banner_image.alt if _content_banner.desktop_xl_banner_image and _content_banner.desktop_xl_banner_image.alt else None) or (_content_banner.banner_image_desktop.alt if _content_banner.banner_image_desktop and _content_banner.banner_image_desktop.alt else None) %}
+  {% if _override_lg_bg %}
+    {% set _bg_desktop_alt = (_style_image_lg.alt if _style_image_lg and _style_image_lg.alt else None) %}
+  {% else %}
+    {% set _bg_desktop_alt = (_content_banner.banner_image_desktop.alt if _content_banner.banner_image_desktop and _content_banner.banner_image_desktop.alt else None) or _bg_xl_alt %}
+  {% endif %}
+  {% if _override_md_bg %}
+    {% set _bg_tablet_alt = (_style_image_md.alt if _style_image_md and _style_image_md.alt else None) %}
+  {% else %}
+    {% set _bg_tablet_alt = (_content_banner.banner_image_tablet.alt if _content_banner.banner_image_tablet and _content_banner.banner_image_tablet.alt else None) or _bg_desktop_alt %}
+  {% endif %}
+  {% if _override_sm_bg %}
+    {% set _bg_mobile_alt = (_style_image_sm.alt if _style_image_sm and _style_image_sm.alt else None) %}
+  {% else %}
+    {% set _bg_mobile_alt = (_content_banner.banner_image_mobile.alt if _content_banner.banner_image_mobile and _content_banner.banner_image_mobile.alt else None) or _bg_tablet_alt %}
+  {% endif %}
+  {% elif _background_option == 'video' %}
+  {# Video: source from Content tab (background_video_settings). Poster from Content. Overlay/base from Style (video_overlay_base_group). No video_controls group — use defaults. #}
+  {% set _video_source_type = _video_settings.video_source_type|default('file') %}
+  {# video_file is single file picker; support legacy repeater (array) or single object #}
+  {% set _video_xl_raw = _video_settings.video_file if _video_source_type == 'file' else None %}
+  {% if not _video_xl_raw or (_video_xl_raw is iterable and _video_xl_raw|length == 0) %}
+    {% set _video_xl_raw = module.video_settings.hero_video_xl if module.video_settings and module.video_settings.hero_video_xl else None %}
+  {% endif %}
+  {% set _video_url = None %}
+  {% if _video_xl_raw %}
+    {% if _video_xl_raw is iterable and _video_xl_raw|length > 0 %}
+      {% set _first_item = _video_xl_raw[0] %}
+      {% if _first_item is string %}
+        {% set _video_url = _first_item %}
+      {% elif _first_item.url %}
+        {% set _video_url = _first_item.url %}
+      {% elif _first_item.src %}
+        {% set _video_url = _first_item.src %}
+      {% elif _first_item.href %}
+        {% set _video_url = _first_item.href %}
+      {% endif %}
+    {% elif _video_xl_raw is string %}
+      {% set _video_url = _video_xl_raw %}
+    {% elif _video_xl_raw.url %}
+      {% set _video_url = _video_xl_raw.url %}
+    {% elif _video_xl_raw.src %}
+      {% set _video_url = _video_xl_raw.src %}
+    {% elif _video_xl_raw.href %}
+      {% set _video_url = _video_xl_raw.href %}
+    {% endif %}
+  {% endif %}
+  {% set _poster_img = _video_settings.poster_image if _video_settings and _video_settings.poster_image else {} %}
+  {% set _video_poster_url = _poster_img.src if _poster_img and _poster_img.src else None %}
+  {% set _video_position = 'center center' %}
+  {% set _video_autoplay = _bg_settings.video_autoplay|default(true) %}
+  {% set _video_loop = _bg_settings.video_loop|default(true) %}
+  {% set _video_muted = _bg_settings.video_muted|default(true) %}
+  {% set _video_plays_inline = _bg_settings.video_plays_inline|default(true) %}
+  {% set _bg_xl = None %}
+  {% set _bg_desktop = None %}
+  {% set _bg_tablet = None %}
+  {% set _bg_mobile = None %}
+  {% set _bg_repeat = 'no-repeat' %}
+  {% set _pos_tablet = _video_position %}
+  {% set _pos_mobile = _video_position %}
+  {% set _has_video = (_video_source_type == 'hubspot_video' and _video_settings.hubspot_video and _video_settings.hubspot_video.player_id) or (_video_source_type == 'file' and _video_url) or (_video_source_type == 'embed' and _video_settings.embed_field and (_video_settings.embed_field.oembed_url or _video_settings.embed_field.embed_html)) %}
+{% elif _background_option == 'gradient' %}
+  {% set _gradient_value = _bg_settings.background_gradient or _gradient_settings.background_gradient %}
+  {% set _gradient_css = _gradient_value.css if _gradient_value and _gradient_value.css else None %}
+  {% set _bg_xl      = _gradient_css %}
+  {% set _bg_desktop = _gradient_css %}
+  {% set _bg_tablet  = _gradient_css %}
+  {% set _bg_mobile  = _gradient_css %}
+{% elif _background_option == 'none' or _background_option == 'color' or _background_option == 'custom' or _background_option == 'effect' %}
+  {% set _bg_xl = None %}
+  {% set _bg_desktop = None %}
+  {% set _bg_tablet = None %}
+  {% set _bg_mobile = None %}
+  {% set _bg_repeat = 'no-repeat' %}
+{% else %}
+  {% set _bg_xl      = _content_banner.desktop_xl_banner_image.src or _content_banner.banner_image_desktop.src %}
+  {% set _bg_desktop = _content_banner.banner_image_desktop.src or _bg_xl %}
+  {% set _bg_tablet  = _content_banner.banner_image_tablet.src  or _bg_xl %}
+  {% set _bg_mobile  = _content_banner.banner_image_mobile.src  or _bg_xl %}
+{% endif %}
+
+{# HubFS resize for hero backgrounds/posters (smithworks-2025; roll up to sw-master). Skip SVG/external; size_type exact preserves src. #}
+{% set _bg_xl_disp = _bg_xl %}
+{% set _bg_desktop_disp = _bg_desktop %}
+{% set _bg_tablet_disp = _bg_tablet %}
+{% set _bg_mobile_disp = _bg_mobile %}
+{% set _video_poster_disp = none %}
+{% if _background_option == 'image' %}
+  {% set _xl_ex = _style_image_xl and _style_image_xl.size_type == 'exact' %}
+  {% set _lg_ex = _override_lg_bg and _style_image_lg and _style_image_lg.size_type == 'exact' %}
+  {% set _md_ex = _override_md_bg and _style_image_md and _style_image_md.size_type == 'exact' %}
+  {% set _sm_ex = _override_sm_bg and _style_image_sm and _style_image_sm.size_type == 'exact' %}
+  {% if _bg_xl %}{% set _bg_xl_disp = macros.sw_bg_image_url_resize(_bg_xl, '2400', _xl_ex) %}{% endif %}
+  {% if _bg_desktop %}{% set _bg_desktop_disp = macros.sw_bg_image_url_resize(_bg_desktop, '2400', _lg_ex) %}{% endif %}
+  {% if _bg_tablet %}{% set _bg_tablet_disp = macros.sw_bg_image_url_resize(_bg_tablet, '1600', _md_ex) %}{% endif %}
+  {% if _bg_mobile %}{% set _bg_mobile_disp = macros.sw_bg_image_url_resize(_bg_mobile, '1200', _sm_ex) %}{% endif %}
+{% elif _background_option == 'video' and _video_poster_url %}
+  {% set _video_poster_disp = macros.sw_bg_image_url_resize(_video_poster_url, '1920', false) %}
+{% endif %}
+
+{# LCP (image mode): real <picture>/<img> layer — clear CSS background vars when active so we do not double-paint (smithworks-2025; roll up to sw-master after QA). #}
+{% set _use_lcp_img = (_background_option == 'image') and (_bg_mobile_disp or _bg_tablet_disp or _bg_desktop_disp or _bg_xl_disp) %}
+
+{# Positions: prefer module_background_settings (background_position_*). When "Custom (from edge)", build edge-relative CSS (e.g. right 20px bottom 30px). #}
+{% if _background_option == 'image' %}
+  {% set _pos_choice_xl = _bg_xl_grp.background_position_xl or _background_style.hero_image_xl_position %}
+  {% if _pos_choice_xl == 'custom' %}
+    {% set _pos_xl = (_bg_xl_grp.background_position_xl_custom_h_edge|default('left')) ~ ' ' ~ ((_bg_xl_grp.background_position_xl_custom_h_offset|default(0))|int) ~ (_bg_xl_grp.background_position_xl_custom_h_unit|default('px')) ~ ' ' ~ (_bg_xl_grp.background_position_xl_custom_v_edge|default('top')) ~ ' ' ~ ((_bg_xl_grp.background_position_xl_custom_v_offset|default(0))|int) ~ (_bg_xl_grp.background_position_xl_custom_v_unit|default('px')) %}
+  {% else %}
+    {% set _pos_xl = _pos_choice_xl or _content_banner.desktop_xl_background_position or 'center center' %}
+  {% endif %}
+  {% if _override_lg_bg %}
+    {% set _pos_choice_lg = _bg_lg_grp.background_position_lg or _background_style.hero_image_lg_position %}
+    {% if _pos_choice_lg == 'custom' %}
+      {% set _pos_desktop = (_bg_lg_grp.background_position_lg_custom_h_edge|default('left')) ~ ' ' ~ ((_bg_lg_grp.background_position_lg_custom_h_offset|default(0))|int) ~ (_bg_lg_grp.background_position_lg_custom_h_unit|default('px')) ~ ' ' ~ (_bg_lg_grp.background_position_lg_custom_v_edge|default('top')) ~ ' ' ~ ((_bg_lg_grp.background_position_lg_custom_v_offset|default(0))|int) ~ (_bg_lg_grp.background_position_lg_custom_v_unit|default('px')) %}
+    {% else %}
+      {% set _pos_desktop = _pos_choice_lg or _content_banner.background_position_desktop or _pos_xl %}
+    {% endif %}
+  {% else %}
+    {% set _pos_desktop = _pos_xl %}
+  {% endif %}
+  {% if _override_md_bg %}
+    {% set _pos_choice_md = _bg_md_grp.background_position_md or _background_style.hero_image_md_position %}
+    {% if _pos_choice_md == 'custom' %}
+      {% set _pos_tablet = (_bg_md_grp.background_position_md_custom_h_edge|default('left')) ~ ' ' ~ ((_bg_md_grp.background_position_md_custom_h_offset|default(0))|int) ~ (_bg_md_grp.background_position_md_custom_h_unit|default('px')) ~ ' ' ~ (_bg_md_grp.background_position_md_custom_v_edge|default('top')) ~ ' ' ~ ((_bg_md_grp.background_position_md_custom_v_offset|default(0))|int) ~ (_bg_md_grp.background_position_md_custom_v_unit|default('px')) %}
+    {% else %}
+      {% set _pos_tablet = _pos_choice_md or _content_banner.background_position_tablet or _pos_xl %}
+    {% endif %}
+  {% else %}
+    {% set _pos_tablet = _pos_desktop %}
+  {% endif %}
+  {% if _override_sm_bg %}
+    {% set _pos_choice_sm = _bg_sm_grp.background_position_sm or _background_style.hero_image_sm_position %}
+    {% if _pos_choice_sm == 'custom' %}
+      {% set _pos_mobile = (_bg_sm_grp.background_position_sm_custom_h_edge|default('left')) ~ ' ' ~ ((_bg_sm_grp.background_position_sm_custom_h_offset|default(0))|int) ~ (_bg_sm_grp.background_position_sm_custom_h_unit|default('px')) ~ ' ' ~ (_bg_sm_grp.background_position_sm_custom_v_edge|default('top')) ~ ' ' ~ ((_bg_sm_grp.background_position_sm_custom_v_offset|default(0))|int) ~ (_bg_sm_grp.background_position_sm_custom_v_unit|default('px')) %}
+    {% else %}
+      {% set _pos_mobile = _pos_choice_sm or _content_banner.background_position_mobile or _pos_xl %}
+    {% endif %}
+  {% else %}
+    {% set _pos_mobile = _pos_tablet %}
+  {% endif %}
+{% elif _background_option == 'video' %}
+  {% set _pos_xl = 'center center' %}
+  {% set _pos_desktop = 'center center' %}
+  {# _pos_tablet and _pos_mobile already set above for video fallback images #}
+{% else %}
+  {% set _pos_xl      = _content_banner.desktop_xl_background_position or 'center center' %}
+  {% set _pos_desktop = _content_banner.background_position_desktop or _pos_xl %}
+  {% set _pos_tablet  = _content_banner.background_position_tablet  or _pos_xl %}
+  {% set _pos_mobile  = _content_banner.background_position_mobile  or _pos_xl %}
+{% endif %}
+
+{# Text box horizontal alignment #}
+{% set _text_box_align = module.styles.text_box_width.text_box_horizontal_align|default('center') %}
+
+{# Width classes: from Text Box Width group (aliased from flat path for existing pages) #}
+{% set _width_sizes = module.styles.text_box_width.text_box_width_sizes|default({}) %}
+{% set _col_xl = _width_sizes.text_box_width_xl or module.styles.text_box_width.text_box_width_xl or 'col-xl-8' %}
+{% set _col_lg = _width_sizes.text_box_width_lg or module.styles.text_box_width.text_box_width_lg or 'col-lg-6' %}
+{% set _col_md = _width_sizes.text_box_width_md or module.styles.text_box_width.text_box_width_md or 'col-md-12' %}
+{% set _col_sm = _width_sizes.text_box_width_sm or module.styles.text_box_width.text_box_width_sm or 'col-sm-12' %}
+
+{# Calculate offsets for centering - only for widths that have perfect integer offsets #}
+{% set _xl_width_num = _col_xl|split('-')|last|int %}
+{% set _lg_width_num = _col_lg|split('-')|last|int %}
+{% set _md_width_num = _col_md|split('-')|last|int %}
+{% set _sm_width_num = _col_sm|split('-')|last|int %}
+
+{# Only use offset classes for widths that divide evenly (6, 8, 4, 12) #}
+{% set _xl_needs_auto = (_xl_width_num == 9 or _xl_width_num == 3) %}
+{% set _lg_needs_auto = (_lg_width_num == 9 or _lg_width_num == 3) %}
+{% set _md_needs_auto = (_md_width_num == 9 or _md_width_num == 3) %}
+{% set _sm_needs_auto = (_sm_width_num == 9 or _sm_width_num == 3) %}
+
+{# Do not use grid offset classes: they conflict with our centering (margin-left: 25% vs margin: auto). Center/left/right use row justify-content + column margin auto only for center. #}
+{% set _xl_offset = 0 %}
+{% set _lg_offset = 0 %}
+{% set _md_offset = 0 %}
+{% set _sm_offset = 0 %}
+
+{# Build offset classes #}
+{% set _offset_xl = 'offset-xl-' ~ _xl_offset if _xl_offset > 0 else '' %}
+{% set _offset_lg = 'offset-lg-' ~ _lg_offset if _lg_offset > 0 else '' %}
+{% set _offset_md = 'offset-md-' ~ _md_offset if _md_offset > 0 else '' %}
+{% set _offset_sm = 'offset-sm-' ~ _sm_offset if _sm_offset > 0 else '' %}
+
+{# Text color: from Content Colors (styles.content_colors). Theme color → var(--name); Custom → text_color_custom (alias from legacy text_color). When 'auto' (Theme defaults), never use text_color_custom — use cascade per MODULE-CONTENT-COLORS-STANDARD §4. #}
+{% if _text_color_choice == 'custom' and _text_color_custom and _text_color_custom.css %}
+  {% set _text_color = _text_color_custom.css %}
+{% elif _text_color_choice != 'auto' %}
+  {% set _text_color = 'var(--' ~ _text_color_choice ~ ')' %}
+{% else %}
+  {% set _text_color = 'inherit' %}
+{% endif %}
+{# Banner background color / overlay: prefer module_background_settings (xl overlay/base; background_color, background_color_custom). When video, use Module Background Video overlay/base. #}
+{% if _background_option == 'image' %}
+  {% set _image_base = (_bg_xl_grp.background_base_color_xl or _background_style.background_base_color)|default({}) %}
+  {% set _banner_background_color = _image_base.rgba or _image_base.color or '#999999' %}
+  {% set _image_overlay = (_bg_xl_grp.background_color_overlay_xl or _background_style.background_color_overlay)|default({}) %}
+  {% set _background_color_overlay = _image_overlay.rgba or _image_overlay.color or 'rgba(0, 0, 0, 0.15)' %}
+{% elif _background_option == 'video' %}
+  {# Video overlay/base: from Style tab Module Background Settings (direct fields when Video selected); fallback to Content for legacy. #}
+  {% set _video_base = _bg_settings.background_base_color_video|default(_video_settings.background_base_color_video)|default({}) %}
+  {% set _banner_background_color = _video_base.rgba or _video_base.color or '#999999' %}
+  {% set _video_overlay = _bg_settings.background_color_overlay_video|default(_video_settings.background_color_overlay_video)|default({}) %}
+  {% set _background_color_overlay = _video_overlay.rgba or _video_overlay.color or 'rgba(0, 0, 0, 0.15)' %}
+{% elif _background_option == 'color' %}
+  {# Theme Color: use theme var. Legacy: if background_color was "custom", use background_color_custom (no gray fallback). #}
+  {% set _color_choice = (_bg_settings.background_color or _color_settings.background_color_choice)|default('primary') %}
+  {% if _color_choice == 'custom' %}
+    {% set _color_custom = (_bg_settings.background_color_custom or _color_settings.background_color_custom)|default({}) %}
+    {% if _color_custom.color or _color_custom.rgba or _color_custom.css %}
+      {% set _banner_background_color = macros.color(_color_custom) %}
+    {% else %}
+      {% set _banner_background_color = 'transparent' %}
+    {% endif %}
+  {% elif _color_choice == 'none' or not _color_choice %}
+    {% set _banner_background_color = 'transparent' %}
+  {% else %}
+    {% set _banner_background_color = 'var(--' ~ _color_choice ~ ')' %}
+  {% endif %}
+  {% set _background_color_overlay = 'transparent' %}
+{% elif _background_option == 'custom' %}
+  {# Custom Color: hex + opacity from background_color_custom. No #999 fallback — empty = no background paint. #}
+  {% set _color_custom = (_bg_settings.background_color_custom or _color_settings.background_color_custom)|default({}) %}
+  {% if _color_custom.color or _color_custom.rgba or _color_custom.css %}
+    {% set _banner_background_color = macros.color(_color_custom) %}
+  {% else %}
+    {% set _banner_background_color = 'transparent' %}
+  {% endif %}
+  {% set _background_color_overlay = 'transparent' %}
+{% elif _background_option == 'effect' %}
+  {# Effect overlays the layer below (typically Outer). Glass fill is the translucent paint; no inner photo. #}
+  {% if _inner_glass_active %}
+    {% set _glass_fill = _inner_glass.fill|default({'color':'#ffffff','opacity':35}) %}
+    {% if _glass_fill.color or _glass_fill.rgba or _glass_fill.css %}
+      {% set _banner_background_color = macros.color(_glass_fill) %}
+    {% else %}
+      {% set _banner_background_color = 'rgba(255, 255, 255, 0.35)' %}
+    {% endif %}
+  {% elif _inner_grain_active %}
+    {% set _grain_bg = _inner_grain.background|default({'color':'#000000','opacity':0}) %}
+    {% if _grain_bg.color or _grain_bg.rgba or _grain_bg.css %}
+      {% set _banner_background_color = macros.color(_grain_bg) %}
+    {% else %}
+      {% set _banner_background_color = 'transparent' %}
+    {% endif %}
+  {% elif _inner_pattern_active %}
+    {% set _pattern_bg = _inner_pattern.background|default({'color':'#000000','opacity':0}) %}
+    {% if _pattern_bg.color or _pattern_bg.rgba or _pattern_bg.css %}
+      {% set _banner_background_color = macros.color(_pattern_bg) %}
+    {% else %}
+      {% set _banner_background_color = 'transparent' %}
+    {% endif %}
+  {% else %}
+    {% set _banner_background_color = 'transparent' %}
+  {% endif %}
+  {% set _background_color_overlay = 'transparent' %}
+  {% set _bg_repeat = 'no-repeat' %}
+{% elif _background_option == 'gradient' %}
+  {% set _banner_background_color = 'transparent' %}
+  {% set _background_color_overlay = 'transparent' %}
+  {% set _bg_repeat = 'no-repeat' %}
+{% elif _background_option == 'none' %}
+  {# No Inner fill — Outer / section shows through. Do not fall through to a legacy image else. #}
+  {% set _banner_background_color = 'transparent' %}
+  {% set _background_color_overlay = 'transparent' %}
+  {% set _bg_repeat = 'no-repeat' %}
+{% else %}
+  {% set _banner_background_color = 'transparent' %}
+  {% set _background_color_overlay = 'transparent' %}
+  {% set _bg_repeat = 'no-repeat' %}
+{% endif %}
+{# Background size: prefer module_background_settings (hero_background_size, hero_background_size_*), fallback to legacy. When image has "Exact width and height", use those px dimensions so image stays fixed. #}
+{% set _bg_size = (_bg_xl_grp.hero_background_size or _background_style.hero_background_size)|default('cover') %}
+{% set _bg_size_value = _bg_size %}
+{% set _bg_size_lg = (_bg_lg_grp.hero_background_size_lg or _background_style.hero_background_size_lg)|default(_bg_size) %}
+{% set _bg_size_md = (_bg_md_grp.hero_background_size_md or _background_style.hero_background_size_md)|default(_bg_size) %}
+{% set _bg_size_sm = (_bg_sm_grp.hero_background_size_sm or _background_style.hero_background_size_sm)|default(_bg_size) %}
+{% if _background_option == 'image' %}
+  {% set _override_lg = _override_lg_bg %}
+  {% set _override_md = _override_md_bg %}
+  {% set _override_sm = _override_sm_bg %}
+  {# When Background Image is set to "Exact width and height", use that for background-size so it doesn't grow to fill. #}
+  {% if _style_image_xl and _style_image_xl.size_type == 'exact' and _style_image_xl.width and _style_image_xl.height %}
+    {% set _bg_size_value = (_style_image_xl.width|int) ~ 'px ' ~ (_style_image_xl.height|int) ~ 'px' %}
+  {% endif %}
+{% else %}
+  {% set _override_lg = (_bg_lg_grp.override_lg_background_image or _background_style.hero_override_lg)|default(false) %}
+  {% set _override_md = (_bg_md_grp.override_md_background_image or _background_style.hero_override_md)|default(false) %}
+  {% set _override_sm = (_bg_sm_grp.override_sm_background_image or _background_style.hero_override_sm)|default(false) %}
+{% endif %}
+{% set _bg_size_lg_final = _bg_size_lg %}
+{% set _bg_size_md_final = _bg_size_md %}
+{% set _bg_size_sm_final = _bg_size_sm %}
+{% if _background_option == 'image' %}
+  {% if _override_lg and _style_image_lg and _style_image_lg.size_type == 'exact' and _style_image_lg.width and _style_image_lg.height %}
+    {% set _bg_size_lg_final = (_style_image_lg.width|int) ~ 'px ' ~ (_style_image_lg.height|int) ~ 'px' %}
+  {% elif not _override_lg %}
+    {% set _bg_size_lg_final = _bg_size_value %}
+  {% endif %}
+  {% if _override_md and _style_image_md and _style_image_md.size_type == 'exact' and _style_image_md.width and _style_image_md.height %}
+    {% set _bg_size_md_final = (_style_image_md.width|int) ~ 'px ' ~ (_style_image_md.height|int) ~ 'px' %}
+  {% elif not _override_md %}
+    {% set _bg_size_md_final = _bg_size_lg_final %}
+  {% endif %}
+  {% if _override_sm and _style_image_sm and _style_image_sm.size_type == 'exact' and _style_image_sm.width and _style_image_sm.height %}
+    {% set _bg_size_sm_final = (_style_image_sm.width|int) ~ 'px ' ~ (_style_image_sm.height|int) ~ 'px' %}
+  {% elif not _override_sm %}
+    {% set _bg_size_sm_final = _bg_size_md_final %}
+  {% endif %}
+{% endif %}
+
+{# Text box background: Color (existing field) or Effect (glass / grain / pattern on .content-wrapper). Additive — default color. PROCESS-CSS-SURFACE-EFFECTS.md #}
+{% set _tb_settings = module.styles.text_box_width|default({}) %}
+{% set _text_box_bg_option = _tb_settings.text_box_background_option|default('color') %}
+{% set _text_box_effect_type = _tb_settings.text_box_effect_type|default('glass') %}
+{% set _text_box_glass = _tb_settings.text_box_glass|default({}) %}
+{% set _text_box_grain = _tb_settings.text_box_grain|default({}) %}
+{% set _text_box_pattern = _tb_settings.text_box_pattern|default({}) %}
+{% set _text_box_glass_active = (_text_box_bg_option == 'effect') and (_text_box_effect_type == 'glass' or not _text_box_effect_type) %}
+{% set _text_box_grain_active = (_text_box_bg_option == 'effect') and (_text_box_effect_type == 'grain') %}
+{% set _text_box_pattern_active = (_text_box_bg_option == 'effect') and (_text_box_effect_type == 'pattern') %}
+{% set _tb_rim = 0 %}
+{% set _tb_face = {'color':'#ffffff','opacity':100} %}
+{% if _text_box_glass_active %}
+  {% set _tb_rim = (_text_box_glass.rim|default(25))|int %}
+  {% set _tb_face = _text_box_glass.face|default({'color':'#ffffff','opacity':100}) %}
+{% elif _text_box_grain_active %}
+  {% set _tb_rim = (_text_box_grain.rim|default(25))|int %}
+  {% set _tb_face = _text_box_grain.face|default({'color':'#ffffff','opacity':100}) %}
+{% elif _text_box_pattern_active %}
+  {% set _tb_rim = (_text_box_pattern.rim|default(25))|int %}
+  {% set _tb_face = _text_box_pattern.face|default({'color':'#ffffff','opacity':100}) %}
+{% endif %}
+{% set _text_box_rim_active = (_text_box_glass_active or _text_box_grain_active or _text_box_pattern_active) and (_tb_rim > 0) %}
+{% set _text_box_pattern_style = _text_box_pattern.style|default('dots') %}
+{% if _text_box_pattern_style == 'lines' %}
+  {% set _text_box_pattern_style = 'lines-tl-br' %}
+{% endif %}
+{% set _text_box_pattern_svg = module.text_box_pattern_custom_svg_code|default('')|trim %}
+{% set _text_box_pattern_custom_ready = (_text_box_pattern_style == 'custom') and (_text_box_pattern_svg != '') %}
+{% set _text_box_pattern_color_mode = _text_box_pattern.color_mode|default('override') %}
+{% set _text_box_pattern_size_mode = _text_box_pattern.size_mode|default('tile') %}
+{% set _text_box_glass_border_inline = '' %}
+{% if _text_box_glass_active %}
+  {% set _tb_glass_fill = _text_box_glass.fill|default({'color':'#ffffff','opacity':35}) %}
+  {% if _tb_glass_fill.color or _tb_glass_fill.rgba or _tb_glass_fill.css %}
+    {% set _text_box_background_color = macros.color(_tb_glass_fill) %}
+  {% else %}
+    {% set _text_box_background_color = 'rgba(255, 255, 255, 0.35)' %}
+  {% endif %}
+  {% set _tb_glass_border = _text_box_glass.border|default({'color':'#ffffff','opacity':45}) %}
+  {% set _tb_glass_border_width = (_text_box_glass.border_width|default(1))|int %}
+  {% if _tb_glass_border_width > 0 %}
+    {% set _text_box_glass_border_inline = 'border-width: ' ~ _tb_glass_border_width|string ~ 'px; border-style: solid; border-color: ' ~ macros.color(_tb_glass_border) ~ ';' %}
+  {% else %}
+    {% set _text_box_glass_border_inline = 'border-style: none; border-width: 0;' %}
+  {% endif %}
+{% elif _text_box_grain_active %}
+  {% set _tb_grain_bg = _text_box_grain.background|default({'color':'#000000','opacity':0}) %}
+  {% if _tb_grain_bg.color or _tb_grain_bg.rgba or _tb_grain_bg.css %}
+    {% set _text_box_background_color = macros.color(_tb_grain_bg) %}
+  {% else %}
+    {% set _text_box_background_color = 'transparent' %}
+  {% endif %}
+{% elif _text_box_pattern_active %}
+  {% set _tb_pattern_bg = _text_box_pattern.background|default({'color':'#000000','opacity':0}) %}
+  {% if _tb_pattern_bg.color or _tb_pattern_bg.rgba or _tb_pattern_bg.css %}
+    {% set _text_box_background_color = macros.color(_tb_pattern_bg) %}
+  {% else %}
+    {% set _text_box_background_color = 'transparent' %}
+  {% endif %}
+{% elif _text_box_bg_option == 'none' %}
+  {% set _text_box_background_color = 'transparent' %}
+{% else %}
+{% set _text_box_background_color = module.styles.text_box_width.text_box_background_color.rgba or 'transparent' %}
+{% endif %}
+{# Text box border radius: when override on use value (including 0); when off use theme --border_radius (underscore; set in base-overrides from theme.misc.border_radius). Do not use hyphenated --border-radius / --global-border-radius (unset → hard 8px fallback). #}
+{% set _text_box_border_radius_override = module.styles.text_box_width.text_box_border_radius_override|default(false) %}
+{% set _text_box_border_radius = module.styles.text_box_width.text_box_border_radius|default(0) %}
+{% if _text_box_border_radius_override %}
+  {% set _text_box_border_radius_css = _text_box_border_radius ~ 'px' %}
+{% else %}
+  {% set _theme_border_radius = theme.misc.border_radius|default(0) %}
+  {% set _text_box_border_radius_css = 'var(--border_radius, ' ~ _theme_border_radius|string ~ 'px)' %}
+{% endif %}
+{# Text box side spacing: from Text Box Side Spacing group (aliased from flat path for existing pages); cascade LG/MD/SM #}
+{% set _side_spacing = module.styles.text_box_width.text_box_side_spacing|default({}) %}
+{% set _margin_xl = (_side_spacing.text_box_horizontal_margin|default(module.styles.text_box_width.text_box_horizontal_margin)|default(0))|int %}
+{% set _margin_lg = (_side_spacing.text_box_horizontal_margin_lg|default(module.styles.text_box_width.text_box_horizontal_margin_lg)|default(_margin_xl))|int %}
+{% set _margin_md = (_side_spacing.text_box_horizontal_margin_md|default(module.styles.text_box_width.text_box_horizontal_margin_md)|default(_margin_lg))|int %}
+{% set _margin_sm = (_side_spacing.text_box_horizontal_margin_sm|default(module.styles.text_box_width.text_box_horizontal_margin_sm)|default(_margin_md))|int %}
+{% set _text_box_horizontal_margin = _margin_xl %}
+{# Text Box Settings spacing: apply to .content-wrapper only. Defaults: 0 margin, 0 padding (use Module Inner Spacing for content inset). #}
+{% set _text_box_padding_raw = module.styles.text_box_width.text_box_padding|default({}) %}
+{% set _text_box_margin_css = '' %}
+{% set _text_box_padding_css = '' %}
+{% if _text_box_padding_raw and _text_box_padding_raw.css %}
+  {% set _text_box_padding = _text_box_padding_raw.css %}
+{% else %}
+  {% if _text_box_padding_raw.margin %}
+    {% set _tbm = _text_box_padding_raw.margin %}
+    {% set _text_box_margin_css = 'margin: ' ~ (_tbm.top|default({"value":0,"units":"px"})).value|string ~ (_tbm.top|default({"value":0,"units":"px"})).units ~ ' ' ~ (_tbm.right|default({"value":0,"units":"px"})).value|string ~ (_tbm.right|default({"value":0,"units":"px"})).units ~ ' ' ~ (_tbm.bottom|default({"value":0,"units":"px"})).value|string ~ (_tbm.bottom|default({"value":0,"units":"px"})).units ~ ' ' ~ (_tbm.left|default({"value":0,"units":"px"})).value|string ~ (_tbm.left|default({"value":0,"units":"px"})).units ~ ';' %}
+  {% else %}
+    {% set _text_box_margin_css = 'margin: 0;' %}
+  {% endif %}
+  {% if _text_box_padding_raw.padding %}
+    {% set _tbp = _text_box_padding_raw.padding %}
+    {% set _text_box_padding_css = 'padding: ' ~ (_tbp.top|default({"value":0,"units":"px"})).value|string ~ (_tbp.top|default({"value":0,"units":"px"})).units ~ ' ' ~ (_tbp.right|default({"value":0,"units":"px"})).value|string ~ (_tbp.right|default({"value":0,"units":"px"})).units ~ ' ' ~ (_tbp.bottom|default({"value":0,"units":"px"})).value|string ~ (_tbp.bottom|default({"value":0,"units":"px"})).units ~ ' ' ~ (_tbp.left|default({"value":0,"units":"px"})).value|string ~ (_tbp.left|default({"value":0,"units":"px"})).units ~ ';' %}
+  {% else %}
+    {% set _text_box_padding_css = 'padding: 0;' %}
+  {% endif %}
+  {% set _text_box_padding = _text_box_margin_css ~ ' ' ~ _text_box_padding_css %}
+{% endif %}
+{# Effect rim: Text Box Padding stays on the wrapper at rim 0; at rim > 0, wrapper padding is the effect frame and padding moves to the face. Margin stays on the wrapper. Glass / Grain / Pattern (including Custom SVG). #}
+{% set _text_box_wrapper_box_css = _text_box_padding %}
+{% set _text_box_face_box_css = '' %}
+{% if _text_box_rim_active %}
+  {% set _text_box_wrapper_box_css = _text_box_margin_css %}
+  {% if _text_box_padding_raw and _text_box_padding_raw.css %}
+    {% set _text_box_face_box_css = _text_box_padding_raw.css %}
+  {% else %}
+    {% set _text_box_face_box_css = _text_box_padding_css %}
+  {% endif %}
+{% endif %}
+{# Content area text alignment: default + override tablet + override mobile (cascade); vars on content-wrapper #}
+{% set _cas = module.styles.text_box_width.content_area_settings|default({}) %}
+{% set _content_align_default = _cas.text_align_default|default('left') %}
+{% set _content_align_md = _cas.text_align_md|default(_content_align_default) if _cas.override_md_text_align|default(false) else _content_align_default %}
+{% set _content_align_sm = _cas.text_align_sm|default(_content_align_md) if _cas.override_sm_text_align|default(false) else _content_align_md %}
+{# Heading text-wrap (Style > Headings); default balance #}
+{% set _heading_settings = module.styles.heading_settings|default({}) %}
+{% set _heading_text_wrap = _heading_settings.heading_text_wrap|default('balance') %}
+{# CTA buttons alignment (top-level; legacy fallback from cta_buttons group) #}
+{% set _cta_alignment = module.cta_alignment|default(module.cta_buttons.cta_alignment)|default('left') %}
+
+{# Normalize heading items. No fallback when empty — headings loop outputs nothing when no items added. #}
+{% set _heading_items = module.heading_items if module.heading_items is iterable else [] %}
+
+<style>
+  {# Margin auto only for center alignment (not for left/right) #}
+  {% if _text_box_align == 'center' %}
+  /* Perfect centering for col-XX-9 and col-XX-3 using margin auto */
+  {% if _xl_needs_auto %}
+  @media (min-width: 1200px) {
+    .sw-hero .content-column { margin-left: auto; margin-right: auto; }
+  }
+  {% endif %}
+  {% if _lg_needs_auto %}
+  @media (min-width: 992px) and (max-width: 1199.98px) {
+    .sw-hero .content-column { margin-left: auto; margin-right: auto; }
+  }
+  {% endif %}
+  {% if _md_needs_auto %}
+  @media (min-width: 768px) and (max-width: 991.98px) {
+    .sw-hero .content-column { margin-left: auto; margin-right: auto; }
+  }
+  {% endif %}
+  {% if _sm_needs_auto %}
+  @media (min-width: 576px) and (max-width: 767.98px) {
+    .sw-hero .content-column { margin-left: auto; margin-right: auto; }
+  }
+  {% endif %}
+  {% endif %}
+</style>
+{% if _has_video and _video_source_type == 'embed' and _video_settings.embed_field and (_video_settings.embed_field.oembed_url or _video_settings.embed_field.embed_html) %}
+{{ require_js(get_asset_url('module.js'), { defer: true }) }}
+{% endif %}
+
+{% if module.enable_module|default(true) %}
+{# LCP: preload URLs match <picture> sources + module.css breakpoints. When sw-hero--has-lcp-img, hero uses <img fetchpriority="high"> (CSS bg cleared). fetchpriority on preload links. #}
+{% if _background_option == 'image' and (_bg_mobile_disp or _bg_tablet_disp or _bg_desktop_disp or _bg_xl_disp) %}
+{% require_head %}
+  {% if _bg_mobile_disp %}
+  <link rel="preload" as="image" href="{{ _bg_mobile_disp|escape_url }}" media="(max-width: 575.98px)" fetchpriority="high">
+  {% endif %}
+  {% if _bg_tablet_disp %}
+  <link rel="preload" as="image" href="{{ _bg_tablet_disp|escape_url }}" media="(min-width: 576px) and (max-width: 991.98px)" fetchpriority="high">
+  {% endif %}
+  {% if _bg_desktop_disp %}
+  <link rel="preload" as="image" href="{{ _bg_desktop_disp|escape_url }}" media="(min-width: 992px) and (max-width: 1399.98px)" fetchpriority="high">
+  {% endif %}
+  {% if _bg_xl_disp %}
+    {% if _bg_desktop_disp %}
+  <link rel="preload" as="image" href="{{ _bg_xl_disp|escape_url }}" media="(min-width: 1400px)" fetchpriority="high">
+    {% else %}
+  <link rel="preload" as="image" href="{{ _bg_xl_disp|escape_url }}" media="(min-width: 992px)" fetchpriority="high">
+    {% endif %}
+  {% endif %}
+{% end_require_head %}
+{% elif _background_option == 'video' and _video_poster_disp %}
+{% require_head %}
+  <link rel="preload" as="image" href="{{ _video_poster_disp|escape_url }}" fetchpriority="high">
+{% end_require_head %}
+{% endif %}
+{% if _outer_active and _outer_opt == 'image' %}
+{% require_css %}
+  <style>
+    .sw-hero__module-outer-root[data-sw-hero-outer-instance="{{ name|escape }}"] .sw-hero__module-outer-bg-fill {
+      {% if _ourl_xl and _ourl_xl is string %}
+      background-image: url('{{ _ourl_xl }}');
+      background-size: {{ _og_size_xl }};
+      background-position: {{ _hero_outer_pos_css(_og_pos_xl_raw) }};
+      background-repeat: {{ _og_repeat_xl }};
+      {% endif %}
+      --sw-hero-outer-overlay: {{ macros.color(_og_overlay_xl|default({'color':'#000000','opacity':0})) }};
+      background-color: {{ macros.color(_og_base_xl|default({'color':'#ffffff','opacity':100})) }};
+    }
+    @media (max-width: 1199px) {
+      .sw-hero__module-outer-root[data-sw-hero-outer-instance="{{ name|escape }}"] .sw-hero__module-outer-bg-fill {
+        {% if _ourl_lg %}background-image: url('{{ _ourl_lg }}'); background-size: {{ _og_size_lg }}; background-position: {{ _hero_outer_pos_css(_og_pos_lg_raw) }}; background-repeat: {{ _og_repeat_lg }};{% else %}background-image: none !important;{% endif %}
+        --sw-hero-outer-overlay: {{ macros.color(_og_overlay_lg|default({'color':'#000000','opacity':0})) }};
+        background-color: {{ macros.color(_og_base_lg|default({'color':'#ffffff','opacity':100})) }};
+      }
+    }
+    @media (max-width: 991px) {
+      .sw-hero__module-outer-root[data-sw-hero-outer-instance="{{ name|escape }}"] .sw-hero__module-outer-bg-fill {
+        {% if _ourl_md %}background-image: url('{{ _ourl_md }}'); background-size: {{ _og_size_md }}; background-position: {{ _hero_outer_pos_css(_og_pos_md_raw) }}; background-repeat: {{ _og_repeat_md }};{% else %}background-image: none !important;{% endif %}
+        --sw-hero-outer-overlay: {{ macros.color(_og_overlay_md|default({'color':'#000000','opacity':0})) }};
+        background-color: {{ macros.color(_og_base_md|default({'color':'#ffffff','opacity':100})) }};
+      }
+    }
+    @media (max-width: 767px) {
+      .sw-hero__module-outer-root[data-sw-hero-outer-instance="{{ name|escape }}"] .sw-hero__module-outer-bg-fill {
+        {% if _ourl_sm %}background-image: url('{{ _ourl_sm }}'); background-size: {{ _og_size_sm }}; background-position: {{ _hero_outer_pos_css(_og_pos_sm_raw) }}; background-repeat: {{ _og_repeat_sm }};{% else %}background-image: none !important;{% endif %}
+        --sw-hero-outer-overlay: {{ macros.color(_og_overlay_sm|default({'color':'#000000','opacity':0})) }};
+        background-color: {{ macros.color(_og_base_sm|default({'color':'#ffffff','opacity':100})) }};
+      }
+    }
+  </style>
+{% end_require_css %}
+{% endif %}
+{% if _inner_pattern_custom_ready %}
+{# Data URI in a stylesheet, not the HTML style="" attribute — url("…") would close the attribute and drop the SVG. Encode # so fill="#fff" is not treated as a URL fragment. #}
+{% require_css %}
+  <style>
+    .sw-hero__module-outer-root[data-sw-hero-outer-instance="{{ name|escape }}"] > .sw-hero {
+      --sw-pattern-svg: url("data:image/svg+xml;charset=utf-8,{{ _inner_pattern_svg|urlencode|replace('+','%20')|replace('#','%23') }}");
+    }
+  </style>
+{% end_require_css %}
+{% endif %}
+{% if _text_box_pattern_custom_ready %}
+{% require_css %}
+  <style>
+    .sw-hero__module-outer-root[data-sw-hero-outer-instance="{{ name|escape }}"] .content-wrapper[data-sw-hero-text-box-instance="{{ name|escape }}"] {
+      --sw-tb-pattern-svg: url("data:image/svg+xml;charset=utf-8,{{ _text_box_pattern_svg|urlencode|replace('+','%20')|replace('#','%23') }}");
+    }
+  </style>
+{% end_require_css %}
+{% endif %}
+{% if _oa_custom_ready %}
+{# Data URI in a stylesheet, not HTML style="" — same as Pattern Custom SVG. #}
+{% require_css %}
+  <style>
+    .sw-hero__module-outer-root[data-sw-hero-outer-instance="{{ name|escape }}"] .sw-hero__outer-aurora {
+      --sw-outer-aurora-svg: url("data:image/svg+xml;charset=utf-8,{{ _oa_svg|urlencode|replace('+','%20')|replace('#','%23') }}");
+    }
+  </style>
+{% end_require_css %}
+{% endif %}
+{% if _ia_custom_ready %}
+{% require_css %}
+  <style>
+    .sw-hero__module-outer-root[data-sw-hero-outer-instance="{{ name|escape }}"] .sw-hero__inner-aurora {
+      --sw-outer-aurora-svg: url("data:image/svg+xml;charset=utf-8,{{ _ia_svg|urlencode|replace('+','%20')|replace('#','%23') }}");
+    }
+  </style>
+{% end_require_css %}
+{% endif %}
+<div class="sw-hero__module-outer-root smithworks-module-outer-root{% if _outer_width_choice == 'full' %} sw-hero__module-outer-root--full-bleed{% endif %}" data-sw-hero-outer-instance="{{ name|escape }}" style="{{ _module_margin_css }}{{ _module_padding_css }}{% if _outer_max_width_px %} --outer-max-width: {{ _outer_max_width_px }}px;{% endif %}{{ _outer_border_inline }}{{ _outer_bg_css }}">
+{% if _outer_active %}<div class="sw-hero__module-outer-bg-fill"{% if _outer_aurora_active and _outer_opt != 'image' and _outer_bg_css %} style="{{ _outer_bg_css }}"{% endif %} aria-hidden="true">{% if _outer_aurora_active %}<div class="sw-hero__outer-aurora{% if _oa_custom_ready %} is-aurora-custom{% endif %}{% if _oa_motion %} is-aurora-motion{% endif %}{% if _oa_blur < 1 %} is-aurora-sharp{% endif %}" style="--sw-outer-aurora-strength: {{ _oa_strength }}; --sw-outer-aurora-blur: {{ _oa_blur }}px; --sw-outer-aurora-scale: {{ _oa_scale }}; --sw-outer-aurora-blend: {{ _oa_blend }}; --sw-outer-aurora-duration: {{ _oa_duration }}s; --sw-outer-aurora-c1: {{ _oa_c1_rgb }}; --sw-outer-aurora-c1a: {{ _oa_c1a }}; --sw-outer-aurora-c2: {{ _oa_c2_rgb }}; --sw-outer-aurora-c2a: {{ _oa_c2a }}; --sw-outer-aurora-c3: {{ _oa_c3_rgb }}; --sw-outer-aurora-c3a: {{ _oa_c3a }};"><div class="sw-hero__outer-aurora-blob sw-hero__outer-aurora-blob--1"><span class="sw-hero__outer-aurora-stamp"></span></div><div class="sw-hero__outer-aurora-blob sw-hero__outer-aurora-blob--2"><span class="sw-hero__outer-aurora-stamp"></span></div><div class="sw-hero__outer-aurora-blob sw-hero__outer-aurora-blob--3"><span class="sw-hero__outer-aurora-stamp"></span></div></div>{% endif %}{% if _outer_opt == 'animated' %}<div class="sw-hero__outer-animated-stage" data-sw-hero-outer-animated data-art="{{ _oanim_art|escape }}" data-motion="{{ _oanim_motion|escape }}" data-roll-speed="{{ _oanim_roll }}" data-wave-speed="{{ _oanim_wspeed }}" data-wave-amp="{{ _oanim_wamp }}" data-wave-lag="{{ _oanim_wlag }}"{% if _oanim_recolor %} data-recolor="1"{% endif %} style="--sw-hero-oa-rot: {{ _oanim_rot }}deg; --sw-hero-oa-px: {{ _oanim_px }}%; --sw-hero-oa-py: {{ _oanim_py }}%; --sw-hero-oa-sx: {{ _oanim_sx }}; --sw-hero-oa-sy: {{ _oanim_sy }}; --sw-hero-oa-cover: {{ _oanim_cover_n }}; --sw-hero-oa-color: {{ _oanim_color_css }};"><div class="sw-hero__outer-animated-source"{% unless is_in_editor %} style="opacity:0"{% endunless %}>{% if _oanim_art == 'custom' and _oanim_custom_svg %}{{ _oanim_custom_svg }}{% elif _oanim_art == 'wave-2' %}{% include '../../sw-partials/sw-animated/wave-2.html' %}{% elif _oanim_art == 'wave-3' %}{% include '../../sw-partials/sw-animated/wave-3.html' %}{% elif _oanim_art == 'wave-4' %}{% include '../../sw-partials/sw-animated/wave-4.html' %}{% elif _oanim_art == 'wave-5' %}{% include '../../sw-partials/sw-animated/wave-5.html' %}{% else %}{% include '../../sw-partials/sw-animated/wave.html' %}{% endif %}</div><canvas class="sw-hero__outer-animated-canvas is-idle" aria-hidden="true"></canvas><div class="sw-hero__outer-animated-fallback is-hidden{% if _oanim_recolor %} is-recolor{% endif %}" aria-hidden="true"></div></div>{% endif %}{% if _svo_active %}<div class="sw-hero__svg-overlay{% if _svo_override %} is-svo-override{% endif %}{% if _svo_hide_xl %} is-svo-hide-xl{% endif %}{% if _svo_hide_lg %} is-svo-hide-lg{% endif %}{% if _svo_hide_md %} is-svo-hide-md{% endif %}{% if _svo_hide_sm %} is-svo-hide-sm{% endif %}" data-sw-hero-svg-overlay data-anim="{{ _svo_anim|escape_attr }}" data-appear="{{ _svo_appear }}" data-twinkle="{{ _svo_twinkle|escape_attr }}" data-par="{{ _svo_par|escape_attr }}" data-pos="{{ _svo_pos|escape_attr }}" style="{{ _svo_style }}" aria-hidden="true"><div class="sw-hero__svg-overlay-graphic"><script type="text/plain" class="sw-hero__svg-overlay-src">{{ _svo_svg|safe }}</script></div></div>{% endif %}</div>{% endif %}
+<div class="smithworks-module sw-hero{% if _has_video %} sw-hero--has-bg-video{% endif %}{% if _use_lcp_img %} sw-hero--has-lcp-img{% endif %}{% if _inner_aurora_active %} sw-hero--inner-aurora{% endif %}{% if _background_option == 'effect' %} sw-hero--inner-effect{% if _inner_glass_active %} sw-hero--inner-effect-glass{% endif %}{% if _inner_grain_active %} sw-hero--inner-effect-grain sw-hero--inner-grain-{{ _inner_grain.density|default('default') }}{% endif %}{% if _inner_pattern_active %} sw-hero--inner-effect-pattern{% if _inner_pattern_style != 'custom' or _inner_pattern_custom_ready %} sw-hero--inner-pattern-{{ _inner_pattern_style }}{% if _inner_pattern_custom_ready and _inner_pattern_color_mode == 'svg' %} sw-hero--inner-pattern-color-svg{% endif %}{% if _inner_pattern_custom_ready and _inner_pattern_size_mode == 'overlay' %} sw-hero--inner-pattern-fit{% endif %}{% endif %}{% endif %}{% endif %}{% if _background_option == 'video' %}{% if _override_md_bg|default(_background_style.hero_override_md)|default(false) %} sw-hero--video-override-md{% endif %}{% if _override_sm_bg|default(_background_style.hero_override_sm)|default(false) %} sw-hero--video-override-sm{% endif %}{% endif %}{% if module.custom_classes %} {{ module.custom_classes }}{% endif %}" data-instance="{{ name|escape }}"
+     {% if module.custom_id %}id="{{ module.custom_id }}" data-sw-custom-id="{{ module.custom_id }}"{% endif %}
+     style="
+       /* images */
+      {% if _background_option == 'gradient' and _gradient_css %}
+      --hero-bg-xl:      {{ _gradient_css }};
+      --hero-bg-desktop: {{ _gradient_css }};
+      --hero-bg-tablet:  {{ _gradient_css }};
+      --hero-bg-mobile:  {{ _gradient_css }};
+      {% elif _background_option == 'none' or _background_option == 'color' or _background_option == 'custom' or _background_option == 'effect' %}
+      --hero-bg-xl:      none;
+      --hero-bg-desktop: none;
+      --hero-bg-tablet:  none;
+      --hero-bg-mobile:  none;
+      {% elif _background_option == 'video' %}
+      --hero-bg-xl:      {% if _video_poster_disp %}url('{{ _video_poster_disp }}');{% else %}none;{% endif %}
+      --hero-bg-desktop: {% if _video_poster_disp %}url('{{ _video_poster_disp }}');{% else %}none;{% endif %}
+      --hero-bg-tablet:  {% if _bg_tablet %}url('{{ _bg_tablet_disp }}');{% elif _video_poster_disp %}url('{{ _video_poster_disp }}');{% else %}none;{% endif %}
+      --hero-bg-mobile:  {% if _bg_mobile %}url('{{ _bg_mobile_disp }}');{% elif _video_poster_disp %}url('{{ _video_poster_disp }}');{% else %}none;{% endif %}
+      {% else %}
+      {% if _use_lcp_img %}
+      --hero-bg-xl:      none;
+      --hero-bg-desktop: none;
+      --hero-bg-tablet:  none;
+      --hero-bg-mobile:  none;
+      --hero-lcp-object-fit: {% if _bg_size_value == 'contain' %}contain{% else %}cover{% endif %};
+      {% else %}
+      --hero-bg-xl:      {% if _bg_xl_disp %}url('{{ _bg_xl_disp }}');{% else %}none;{% endif %}
+      --hero-bg-desktop: {% if _bg_desktop_disp %}url('{{ _bg_desktop_disp }}');{% else %}none;{% endif %}
+      --hero-bg-tablet:  {% if _bg_tablet_disp %}url('{{ _bg_tablet_disp }}');{% else %}none;{% endif %}
+      --hero-bg-mobile:  {% if _bg_mobile_disp %}url('{{ _bg_mobile_disp }}');{% else %}none;{% endif %}
+      {% endif %}
+      {% endif %}
+
+      --hero-bg-repeat: {{ _bg_repeat }};
+      --hero-bg-size: {{ _bg_size_value }};
+      --hero-bg-size-lg: {{ _bg_size_lg_final }};
+      --hero-bg-size-md: {{ _bg_size_md_final }};
+      --hero-bg-size-sm: {{ _bg_size_sm_final }};
+      {% if _module_max_width_px %}--hero-module-max-width: {{ _module_max_width_px }}px;{% endif %}
+
+       /* positions */
+       --hero-pos-xl:      {{ _pos_xl }};
+       --hero-pos-desktop: {{ _pos_desktop }};
+       --hero-pos-tablet:  {{ _pos_tablet }};
+       --hero-pos-mobile:  {{ _pos_mobile }};
+
+       /* vertical alignment (Module Settings > XL/LG/MD/SM Module Height > Vertical Alignment) */
+       --hero-align-items: {{ _va_css(_va_xl) }};
+       --hero-align-items-desktop: {{ _va_css(_va_lg) }};
+       --hero-align-items-tablet: {{ _va_css(_va_md) }};
+       --hero-align-items-mobile: {{ _va_css(_va_sm) }};
+
+       /* heights — full: 100vh minus header; custom: slider px; default: auto (ignore hidden slider) */
+       {% if _height_mode_xl == 'full' %}
+       --hero-height-xl:      calc(100vh - var(--sw-hero-header-height, 0px));
+       {% elif _height_mode_xl == 'custom' %}
+       --hero-height-xl:      {{ _h_xl_custom }}px;
+       {% else %}
+       --hero-height-xl:      auto;
+       {% endif %}
+       {% if _height_mode_lg == 'full' %}
+       --hero-height-desktop: calc(100vh - var(--sw-hero-header-height, 0px));
+       {% elif _height_mode_lg == 'custom' %}
+       --hero-height-desktop: {{ _h_desktop_custom }}px;
+       {% else %}
+       --hero-height-desktop: auto;
+       {% endif %}
+       {% if _height_mode_md == 'full' %}
+       --hero-height-tablet:  calc(100vh - var(--sw-hero-header-height, 0px));
+       {% elif _height_mode_md == 'custom' %}
+       --hero-height-tablet:  {{ _h_tablet_custom }}px;
+       {% else %}
+       --hero-height-tablet:  auto;
+       {% endif %}
+       {% if _height_mode_sm == 'full' %}
+       --hero-height-mobile:  calc(100vh - var(--sw-hero-header-height, 0px));
+       {% elif _height_mode_sm == 'custom' %}
+       --hero-height-mobile:  {{ _h_mobile_custom }}px;
+       {% else %}
+       --hero-height-mobile:  auto;
+       {% endif %}
+
+       /* banner background color */
+       --hero-banner-background-color: {{ _banner_background_color }};
+       /* background color overlay */
+       --hero-background-color-overlay: {{ _background_color_overlay }};
+       {% if _inner_glass_active %}
+       --sw-glass-blur: {{ (_inner_glass.blur|default(20))|int }}px;
+       --sw-glass-saturate: {{ (_inner_glass.saturate|default(160))|int }}%;
+       {% endif %}
+       {% if _inner_grain_active %}
+       --sw-grain-scale: {{ (_inner_grain.scale|default(100))|int }};
+       --sw-grain-color: {{ macros.color(_inner_grain.grain_color|default({'color':'#ffffff','opacity':85})) }};
+       --sw-grain-blend: {{ _inner_grain.blend|default('normal') }};
+       {% endif %}
+       {% if _inner_pattern_active %}
+       --sw-pattern-scale: {{ (_inner_pattern.scale|default(100))|int }};
+       --sw-pattern-color: {{ macros.color(_inner_pattern.pattern_color|default({'color':'#ffffff','opacity':28})) }};
+       --sw-pattern-blend: {{ _inner_pattern.blend|default('normal') }};
+       {% if _inner_pattern_custom_ready and _inner_pattern_color_mode == 'svg' %}
+       --sw-pattern-opacity: {{ (_inner_pattern.opacity|default(28))|int }};
+       {% endif %}
+       {% endif %}
+       /* text box border radius CSS var only when override; else content-wrapper uses var(--border_radius) inline */
+       {% if _text_box_border_radius_override %}--hero-text-box-border-radius: {{ _text_box_border_radius }}px;{% endif %}
+       /* text color: set per instance so module.css var() resolves per hero (avoids cascade when multiple instances) */
+       --hero-text-color: {{ _text_color }};
+       /* Module Outer Spacing applied on .sw-hero__module-outer-root */
+       {{ _inner_border_inline }}{{ _inner_border_radius_css }}{{ _inner_spacing_css }}
+     ">
+  {% if _use_lcp_img %}
+  {% set _lcp_fallback = _bg_xl_disp or _bg_desktop_disp or _bg_tablet_disp or _bg_mobile_disp %}
+  {% set _lcp_alt_raw = (_bg_xl_alt or _bg_desktop_alt or _bg_tablet_alt or _bg_mobile_alt or '')|trim %}
+  {% set _lcp_alt = _lcp_alt_raw if _lcp_alt_raw else 'Hero background photograph' %}
+  <picture class="sw-hero__lcp-picture" aria-hidden="true">
+    {% if _bg_mobile_disp %}
+    <source media="(max-width: 575.98px)" srcset="{{ _bg_mobile_disp|escape_url }}">
+    {% endif %}
+    {% if _bg_tablet_disp %}
+    <source media="(min-width: 576px) and (max-width: 991.98px)" srcset="{{ _bg_tablet_disp|escape_url }}">
+    {% endif %}
+    {% if _bg_desktop_disp %}
+    <source media="(min-width: 992px) and (max-width: 1399.98px)" srcset="{{ _bg_desktop_disp|escape_url }}">
+    {% endif %}
+    {% if _bg_xl_disp %}
+      {% if _bg_desktop_disp %}
+    <source media="(min-width: 1400px)" srcset="{{ _bg_xl_disp|escape_url }}">
+      {% else %}
+    <source media="(min-width: 992px)" srcset="{{ _bg_xl_disp|escape_url }}">
+      {% endif %}
+    {% endif %}
+    <img class="sw-hero__lcp-img" src="{{ _lcp_fallback|escape_url }}" alt="{{ _lcp_alt|escape_attr }}" decoding="async" fetchpriority="high">
+  </picture>
+  {% endif %}
+  {% if _inner_aurora_active %}<div class="sw-hero__inner-aurora{% if _ia_custom_ready %} is-aurora-custom{% endif %}{% if _ia_motion %} is-aurora-motion{% endif %}{% if _ia_blur < 1 %} is-aurora-sharp{% endif %}" aria-hidden="true" style="--sw-outer-aurora-strength: {{ _ia_strength }}; --sw-outer-aurora-blur: {{ _ia_blur }}px; --sw-outer-aurora-scale: {{ _ia_scale }}; --sw-outer-aurora-blend: {{ _ia_blend }}; --sw-outer-aurora-duration: {{ _ia_duration }}s; --sw-outer-aurora-c1: {{ _ia_c1_rgb }}; --sw-outer-aurora-c1a: {{ _ia_c1a }}; --sw-outer-aurora-c2: {{ _ia_c2_rgb }}; --sw-outer-aurora-c2a: {{ _ia_c2a }}; --sw-outer-aurora-c3: {{ _ia_c3_rgb }}; --sw-outer-aurora-c3a: {{ _ia_c3a }};"><div class="sw-hero__outer-aurora-blob sw-hero__outer-aurora-blob--1"><span class="sw-hero__outer-aurora-stamp"></span></div><div class="sw-hero__outer-aurora-blob sw-hero__outer-aurora-blob--2"><span class="sw-hero__outer-aurora-stamp"></span></div><div class="sw-hero__outer-aurora-blob sw-hero__outer-aurora-blob--3"><span class="sw-hero__outer-aurora-stamp"></span></div></div>{% endif %}
+
+  {# Video background: HubSpot video, file, or embed (per MODULE-SETTINGS-BACKGROUND-STANDARD / SW Text Headings) #}
+  {% if _has_video %}
+  <div class="sw-hero__video-wrap" aria-hidden="true">
+    {% if _video_source_type == 'hubspot_video' and _video_settings.hubspot_video and _video_settings.hubspot_video.player_id %}
+    {% video_player "embed_player"
+      autoplay={{ _video_autoplay }},
+      full_width={{ true }},
+      hidden_controls={{ true }},
+      loop={{ _video_loop }},
+      muted={{ _video_muted }},
+      player_id={{ _video_settings.hubspot_video.player_id }},
+      type={{ _video_settings.hubspot_video.player_type|default('scriptV4') }}
+    %}
+    {% elif _video_source_type == 'file' and _video_url %}
+    <video class="sw-hero__video" id="sw-hero-video-{{ widget_data.instance_id|default('default') }}"
+      preload="metadata"
+      {% if _video_autoplay %}autoplay{% endif %}
+      {% if _video_loop %}loop{% endif %}
+      {% if _video_muted %}muted{% endif %}
+      {% if _video_plays_inline %}playsinline{% endif %}
+      {% if _video_poster_url %}poster="{{ _video_poster_url }}"{% endif %}
+      aria-label="Background video for hero section" role="presentation"
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: {{ _video_position }}; z-index: 0; pointer-events: none;">
+      <source src="{{ _video_url }}" type="video/mp4">Your browser does not support the video tag.
+    </video>
+    {% if _video_autoplay %}
+    <script>
+      (function() {
+        var video = document.getElementById('sw-hero-video-{{ widget_data.instance_id|default("default") }}');
+        if (video) {
+          {% if _video_muted %}video.muted = true;{% endif %}
+          video.play().catch(function() {});
+          video.addEventListener('loadeddata', function() { if (video.paused) { {% if _video_muted %}video.muted = true;{% endif %} video.play().catch(function() {}); } });
+        }
+      })();
+    </script>
+    {% endif %}
+    {% elif _video_source_type == 'embed' and _video_settings.embed_field %}
+    {% if _video_settings.embed_field.source_type == 'oembed' and _video_settings.embed_field.oembed_url %}
+    <div class="sw-hero__embed oembed_container" id="oembed_container-hero-{{ widget_data.instance_id|default('default') }}">
+      <div class="iframe_wrapper" data-embed-url="{{ _video_settings.embed_field.oembed_url }}"
+        {% if _video_settings.embed_field.size_type == 'exact' and _video_settings.embed_field.width and _video_settings.embed_field.height %}
+        data-width="{{ _video_settings.embed_field.width }}" data-height="{{ _video_settings.embed_field.height }}"
+        {% endif %}></div>
+    </div>
+    {% elif _video_settings.embed_field.embed_html %}
+    <div class="sw-hero__embed embed_container">
+      <div class="iframe_wrapper">{{ _video_settings.embed_field.embed_html }}</div>
+    </div>
+    {% endif %}
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# Shared header height calculation system (singleton pattern) - prevents redundant calculations across multiple instances #}
+  <script>
+    (function() {
+      // Singleton pattern: Only initialize once, share across all instances
+      if (!window.__swHeroHeaderHeight) {
+        window.__swHeroHeaderHeight = {
+          height: 0,
+          initialized: false,
+          resizeTimer: null,
+          
+          // Utility function: Extract video URL from HubSpot file field formats
+          extractVideoUrl: function(videoRaw) {
+            if (!videoRaw) return null;
+            
+            // Handle array format
+            if (Array.isArray(videoRaw) && videoRaw.length > 0) {
+              var firstItem = videoRaw[0];
+              if (typeof firstItem === 'string') {
+                return firstItem;
+              } else if (firstItem && (firstItem.url || firstItem.src || firstItem.href)) {
+                return firstItem.url || firstItem.src || firstItem.href;
+              }
+            }
+            
+            // Handle string format
+            if (typeof videoRaw === 'string') {
+              return videoRaw;
+            }
+            
+            // Handle object format
+            if (videoRaw && (videoRaw.url || videoRaw.src || videoRaw.href)) {
+              return videoRaw.url || videoRaw.src || videoRaw.href;
+            }
+            
+            return null;
+          },
+          
+          // Calculate header height
+          calculate: function() {
+            // Look for common header selectors in HubSpot themes
+            var headerSelectors = [
+              'header',
+              '.header',
+              '.site-header',
+              '.header__container',
+              '[data-hs-cos-type="header"]',
+              '.hs_cos_wrapper_type_header',
+              'header.hs_cos_wrapper',
+              '.header-wrapper'
+            ];
+            
+            var headerElement = null;
+            for (var i = 0; i < headerSelectors.length; i++) {
+              var element = document.querySelector(headerSelectors[i]);
+              if (element && element.offsetHeight > 0) {
+                headerElement = element;
+                break;
+              }
+            }
+            
+            if (headerElement) {
+              this.height = headerElement.offsetHeight;
+              document.documentElement.style.setProperty('--sw-hero-header-height', this.height + 'px');
+              return this.height;
+            } else {
+              // Fallback: try to find any element with 'header' in its class/id
+              var allElements = document.querySelectorAll('[class*="header"], [id*="header"], [class*="Header"], [id*="Header"]');
+              for (var j = 0; j < allElements.length; j++) {
+                var elem = allElements[j];
+                if (elem.offsetHeight > 0 && window.getComputedStyle(elem).position !== 'absolute') {
+                  var rect = elem.getBoundingClientRect();
+                  if (rect.top === 0 || (rect.top >= 0 && rect.top < 200)) {
+                    this.height = elem.offsetHeight;
+                    document.documentElement.style.setProperty('--sw-hero-header-height', this.height + 'px');
+                    return this.height;
+                  }
+                }
+              }
+            }
+            
+            return 0;
+          },
+          
+          // Initialize shared calculation system
+          init: function() {
+            if (this.initialized) return;
+            this.initialized = true;
+            
+            var self = this;
+            
+            // Run on load
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', function() {
+                self.calculate();
+              });
+            } else {
+              self.calculate();
+            }
+            
+            // Run on resize (header height might change on mobile/desktop) - shared debounce
+            var self = this;
+            window.addEventListener('resize', function() {
+              if (self.resizeTimer) {
+                clearTimeout(self.resizeTimer);
+              }
+              self.resizeTimer = setTimeout(function() {
+                self.calculate();
+              }, 250);
+            });
+            
+            // Run after a short delay to ensure header is fully rendered
+            setTimeout(function() {
+              self.calculate();
+            }, 100);
+          }
+        };
+        
+        // Initialize the shared system
+        window.__swHeroHeaderHeight.init();
+      }
+      
+      // All instances use the shared calculation (already initialized)
+      // Just ensure the CSS variable is set to current calculated height
+      var currentHeight = window.__swHeroHeaderHeight.height || 0;
+      if (currentHeight > 0) {
+        document.documentElement.style.setProperty('--sw-hero-header-height', currentHeight + 'px');
+      }
+      
+      // Validate custom_id for duplicates (development warning only)
+      {% if module.custom_id %}
+      var customId = '{{ module.custom_id }}';
+      var existingElements = document.querySelectorAll('[id="' + customId + '"]');
+      if (existingElements.length > 1) {
+        console.warn('SW Hero: Duplicate custom_id detected:', customId, 'Multiple instances on page may have conflicting IDs.');
+      }
+      {% endif %}
+    })();
+  </script>
+
+  <div class="sw-hero-container">
+    {# Horizontal spacing: apply as padding on content-row via CSS vars per breakpoint (XL/LG/MD/SM); alignment controls which side(s). #}
+    {% set _has_any_margin = (_margin_xl > 0 or _margin_lg > 0 or _margin_md > 0 or _margin_sm > 0) %}
+    <div class="content-row{% if _has_any_margin %} sr-hero-has-margin{% endif %}"{% if _has_any_margin %} data-hero-align="{{ _text_box_align }}" style="--hero-margin-xl: {{ _margin_xl }}px; --hero-margin-lg: {{ _margin_lg }}px; --hero-margin-md: {{ _margin_md }}px; --hero-margin-sm: {{ _margin_sm }}px;"{% endif %}>
+      {# Row justify-content for alignment; margin auto on wrapper only for center when no XL margin #}
+      {% set _row_justify_class = 'sr-hero-justify-' ~ _text_box_align %}
+      <div class="row row-gap sr-valign-center {{ _row_justify_class }}">
+        <div class="content-column sr-hero-align-{{ _text_box_align }} {{ _col_xl }} {{ _offset_xl }} {{ _col_lg }} {{ _offset_lg }} {{ _col_md }} {{ _offset_md }} {{ _col_sm }} {{ _offset_sm }} order-lg-1 order-md-1 sr-col sr-repeater-1">
+          {% if _text_box_align == 'center' and _margin_xl == 0 %}
+            {% set _wrapper_margin_css = 'margin-left: auto; margin-right: auto;' %}
+          {% else %}
+            {% set _wrapper_margin_css = '' %}
+          {% endif %}
+          <div class="content-wrapper{% if _text_box_glass_active %} sw-hero__text-box--effect-glass{% endif %}{% if _text_box_rim_active %} sw-hero__text-box--effect-rim{% if _text_box_glass_active %} sw-hero__text-box--glass-rim{% endif %}{% endif %}{% if _text_box_grain_active %} sw-hero__text-box--effect-grain sw-hero__text-box--grain-{{ _text_box_grain.density|default('default') }}{% endif %}{% if _text_box_pattern_active %} sw-hero__text-box--effect-pattern{% if _text_box_pattern_style != 'custom' or _text_box_pattern_custom_ready %} sw-hero__text-box--pattern-{{ _text_box_pattern_style }}{% if _text_box_pattern_custom_ready and _text_box_pattern_color_mode == 'svg' %} sw-hero__text-box--pattern-color-svg{% endif %}{% if _text_box_pattern_custom_ready and _text_box_pattern_size_mode == 'overlay' %} sw-hero__text-box--pattern-fit{% endif %}{% endif %}{% endif %}" data-sw-hero-text-box-instance="{{ name|escape }}"{% if _link_context == 'dark' or _link_context == 'light' %} data-link-context="{{ _link_context }}"{% endif %} style="--hero-text-box-background-color: {{ _text_box_background_color }};{% if _text_box_glass_active %} --sw-tb-glass-blur: {{ (_text_box_glass.blur|default(20))|int }}px; --sw-tb-glass-saturate: {{ (_text_box_glass.saturate|default(160))|int }}%;{% endif %}{% if _text_box_rim_active %} --sw-tb-glass-rim: {{ _tb_rim }}px; --sw-tb-glass-face: {{ macros.color(_tb_face) }}; --hero-text-box-border-radius: {{ _text_box_border_radius_css }};{% endif %}{% if _text_box_grain_active %} --sw-grain-scale: {{ (_text_box_grain.scale|default(100))|int }}; --sw-grain-color: {{ macros.color(_text_box_grain.grain_color|default({'color':'#ffffff','opacity':85})) }}; --sw-grain-blend: {{ _text_box_grain.blend|default('normal') }};{% endif %}{% if _text_box_pattern_active %} --sw-tb-pattern-scale: {{ (_text_box_pattern.scale|default(100))|int }}; --sw-tb-pattern-color: {{ macros.color(_text_box_pattern.pattern_color|default({'color':'#ffffff','opacity':28})) }}; --sw-tb-pattern-blend: {{ _text_box_pattern.blend|default('normal') }};{% if _text_box_pattern_custom_ready and _text_box_pattern_color_mode == 'svg' %} --sw-tb-pattern-opacity: {{ (_text_box_pattern.opacity|default(28))|int }};{% endif %}{% endif %} --hero-content-text-align-default: {{ _content_align_default }}; --hero-content-text-align-md: {{ _content_align_md }}; --hero-content-text-align-sm: {{ _content_align_sm }}; --hero-heading-text-wrap: {{ _heading_text_wrap }}; {% if _wrapper_margin_css %}{{ _wrapper_margin_css }} {% endif %}{{ _text_box_glass_border_inline }}{{ _text_box_wrapper_box_css }} border-radius: {{ _text_box_border_radius_css }};">
+            {% if _text_box_rim_active %}<div class="sw-hero__text-box-face" style="{{ _text_box_face_box_css }}">{% endif %}
+            <div class="headings">
+              {% for item in _heading_items %}
+                {% set _tag = item.heading_size|default('h1') %}
+                {% if _tag not in ['h1','h2','h3','h4','h5','h6','p'] %}
+                  {% set _tag = 'h1' %}
+                {% endif %}
+                {% set _display = item.heading_display_size|default('display-4') %}
+                {% set _color_choice = item.heading_color|default('auto') %}
+                {% set _align_default_raw = item.heading_align|default('auto') %}
+                {% set _align_default = _align_default_raw if _align_default_raw in ['left','center','right'] else _content_align_default %}
+                {% set _override_md_align = item.heading_md_text_align_override|default(false) %}
+                {% set _override_sm_align = item.heading_sm_text_align_override|default(false) %}
+                {% if _override_md_align %}{% set _align_md = item.heading_md_text_align|default(_align_default) %}{% elif _align_default_raw not in ['left','center','right'] %}{% set _align_md = _content_align_md %}{% else %}{% set _align_md = _align_default %}{% endif %}
+                {% if _override_sm_align %}{% set _align_sm = item.heading_sm_text_align|default(_align_md) %}{% elif _align_default_raw not in ['left','center','right'] %}{% set _align_sm = _content_align_sm %}{% else %}{% set _align_sm = _align_md %}{% endif %}
+                {% set _classes = ['heading', 'sw-hero__heading'] %}
+                {% if loop.first %}
+                  {% set _classes = _classes + ['main-hero-h1'] %}
+                {% endif %}
+                {% if _display != 'auto' %}
+                  {% set _classes = _classes + [_display] %}
+                {% endif %}
+                {% if _color_choice not in ['auto', 'custom', ''] %}
+                  {% set _classes = _classes + ['text-' ~ _color_choice] %}
+                {% endif %}
+                {% if item.heading_class %}
+                  {% set _classes = _classes + [item.heading_class] %}
+                {% endif %}
+                {% if _color_choice in ['auto', ''] and _text_color_choice not in ['auto', '', 'custom'] %}
+                  {% set _classes = _classes + ['text-' ~ _text_color_choice] %}
+                {% endif %}
+                {% set _style_parts = ['--hero-heading-align-default: ' ~ _align_default, '--hero-heading-align-md: ' ~ _align_md, '--hero-heading-align-sm: ' ~ _align_sm] %}
+                {% if _color_choice == 'custom' and item.heading_color_custom %}
+                  {% set _custom_color = item.heading_color_custom.rgba or item.heading_color_custom.color %}
+                  {% if _custom_color %}
+                    {% set _style_parts = _style_parts + ['color: ' ~ _custom_color] %}
+                  {% endif %}
+                {% elif _color_choice in ['auto', ''] %}
+                  {% if _text_color_choice == 'custom' and _text_color_custom %}
+                    {% set _auto_heading_color = _text_color_custom.css or macros.color(_text_color_custom) %}
+                    {% if _auto_heading_color %}{% set _style_parts = _style_parts + ['color: ' ~ _auto_heading_color ~ ' !important'] %}{% endif %}
+                  {% elif _text_color_choice not in ['auto', '', 'gradient_one', 'gradient_two'] %}
+                    {% set _style_parts = _style_parts + ['color: var(--' ~ _text_color_choice ~ ') !important'] %}
+                  {% endif %}
+                {% endif %}
+  {% if item.heading_text_shadow %}
+    {% set _shadow_style = item.heading_text_shadow_style|default('soft') %}
+    {% if _shadow_style == 'custom' and item.heading_text_shadow_custom %}
+      {% set _shadow_custom = item.heading_text_shadow_custom %}
+      {% set _shadow_color = _shadow_custom.color.rgba or _shadow_custom.color.color or 'rgba(0,0,0,0.25)' %}
+      {% set _style_parts = _style_parts + ['text-shadow: ' ~ (_shadow_custom.offset_x|default(0)) ~ 'px ' ~ (_shadow_custom.offset_y|default(2)) ~ 'px ' ~ (_shadow_custom.blur|default(6)) ~ 'px ' ~ _shadow_color] %}
+    {% elif _shadow_style == 'medium' %}
+      {% set _style_parts = _style_parts + ['text-shadow: 0 4px 12px rgba(0, 0, 0, 0.35)'] %}
+    {% elif _shadow_style == 'glow' %}
+      {% set _style_parts = _style_parts + ['text-shadow: 0 0 12px rgba(255, 255, 255, 0.5)'] %}
+    {% else %}
+      {% set _style_parts = _style_parts + ['text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25)'] %}
+    {% endif %}
+  {% endif %}
+                {# Padding override logic - auto-detect if padding values exist #}
+                {% set _has_padding = (item.heading_padding_top|default(0) != 0) or (item.heading_padding_bottom|default(0) != 0) %}
+                {% set _use_padding = item.heading_padding_override|default(_has_padding) %}
+                {% if _use_padding %}
+                  {% if item.heading_padding_top is not none %}
+                    {% set _style_parts = _style_parts + ['padding-top: ' ~ (item.heading_padding_top|default(0)) ~ 'px'] %}
+                  {% endif %}
+                  {% if item.heading_padding_bottom is not none %}
+                    {% set _style_parts = _style_parts + ['padding-bottom: ' ~ (item.heading_padding_bottom|default(0)) ~ 'px'] %}
+                  {% endif %}
+                {% endif %}
+                {% set _style_attr = _style_parts|join('; ') %}
+                {# Mobile display size override data attributes #}
+                {% set _md_display = '' %}
+                {% if item.heading_md_display_size_override|default(false) and item.heading_md_display_size and item.heading_md_display_size != 'auto' %}
+                  {% set _md_display = 'data-md-display-size="' ~ item.heading_md_display_size ~ '"' %}
+                {% endif %}
+                {% set _sm_display = '' %}
+                {% if item.heading_sm_display_size_override|default(false) and item.heading_sm_display_size and item.heading_sm_display_size != 'auto' %}
+                  {% set _sm_display = 'data-sm-display-size="' ~ item.heading_sm_display_size ~ '"' %}
+                {% endif %}
+                {% set _aria_attrs = '' %}
+                {% if _tag not in ['h1','h2','h3','h4','h5','h6'] %}
+                  {% if _display in ['h1','h2','h3','h4','h5','h6'] %}
+                    {% set _aria_attrs = 'role="heading" aria-level="' ~ _display|replace('h', '') ~ '"' %}
+                  {% else %}
+                    {% set _aria_attrs = 'role="heading" aria-level="1"' %}
+                  {% endif %}
+                {% endif %}
+                <{{ _tag }} class="{{ _classes|join(' ') }}"{% if _style_attr %} style="{{ _style_attr }}"{% endif %}{% if _md_display %} {{ _md_display|safe }}{% endif %}{% if _sm_display %} {{ _sm_display|safe }}{% endif %}{% if _aria_attrs %} {{ _aria_attrs|safe }}{% endif %}>
+                  {{ item.heading_text }}
+                </{{ _tag }}>
+              {% endfor %}
+              {% if module.content_area %}
+                {% set _style = module.content_style|default('default') %}
+                {% set _style_class = '' %}
+                {% if _style == 'large_balanced' %}{% set _style_class = ' lead' %}
+                {% elif _style == 'large_fullwidth' %}{% set _style_class = ' lead sw-content-style--no-balance' %}
+                {% elif _style == 'small' %}{% set _style_class = ' small' %}
+                {% elif _style == 'blockquote' %}{% set _style_class = ' blockquote' %}
+                {% endif %}
+                <div class="content-area{{ _style_class }}">
+                  {{ module.content_area }}
+                </div>
+              {% endif %}
+              
+              <!-- CTA Buttons: repeater (cta_button_items) per standard; legacy fallback from flat button_1/button_2 or cta_buttons -->
+              {% set _repeater = module.cta_button_items if (module.cta_button_items is iterable and module.cta_button_items is not string) else [] %}
+              {% if _repeater|length == 0 %}
+                {% set _cb = module.cta_buttons|default({}) %}
+                {% set _add_b1 = module.add_button_1|default(_cb.add_button_1) %}
+                {% set _add_b2 = module.add_button_2|default(_cb.add_button_2) %}
+                {% set _b1_ok = _add_b1 and (module.button_1_text|default(_cb.button_1_text)) and (module.button_1_link|default(_cb.button_1_link)) and (module.button_1_link|default(_cb.button_1_link)).url and (module.button_1_link|default(_cb.button_1_link)).url.href %}
+                {% set _b2_ok = _add_b2 and (module.button_2_text|default(_cb.button_2_text)) and (module.button_2_link|default(_cb.button_2_link)) and (module.button_2_link|default(_cb.button_2_link)).url and (module.button_2_link|default(_cb.button_2_link)).url.href %}
+                {% set _item1 = {'text': module.button_1_text|default(_cb.button_1_text), 'link': module.button_1_link|default(_cb.button_1_link), 'style': module.button_1_style|default(_cb.button_1_style)|default('primary'), 'size': 'sm', 'add_icon': module.button_1_add_icon|default(_cb.button_1_add_icon)|default(_cb.button_1_arrow)|default(false), 'icon': module.button_1_icon|default(_cb.button_1_icon)|default({})} %}
+                {% set _item2 = {'text': module.button_2_text|default(_cb.button_2_text), 'link': module.button_2_link|default(_cb.button_2_link), 'style': module.button_2_style|default(_cb.button_2_style)|default('secondary'), 'size': 'sm', 'add_icon': module.button_2_add_icon|default(_cb.button_2_add_icon)|default(_cb.button_2_arrow)|default(false), 'icon': module.button_2_icon|default(_cb.button_2_icon)|default({})} %}
+                {% if _b1_ok and _b2_ok %}{% set _cta_button_items = [_item1, _item2] %}
+                {% elif _b1_ok %}{% set _cta_button_items = [_item1] %}
+                {% elif _b2_ok %}{% set _cta_button_items = [_item2] %}
+                {% else %}{% set _cta_button_items = [] %}
+                {% endif %}
+              {% else %}
+                {% set _cta_button_items = _repeater %}
+              {% endif %}
+              {# Only output CTA shell when at least one button will render (avoids empty .sw-hero__cta + margin-top). #}
+              {% set _cta_vis = namespace(n=0) %}
+              {% for btn in _cta_button_items %}
+                {% if btn is mapping and btn.text and btn.link and btn.link.url and btn.link.url.href %}
+                  {% set _cta_vis.n = _cta_vis.n + 1 %}
+                {% endif %}
+              {% endfor %}
+              {% if _cta_vis.n > 0 %}
+              {% set _cta_space_above = (module.cta_buttons_margin_top|default(0))|int %}
+              {% set _cta_row_mt = 20 + _cta_space_above %}
+              {% set _cta_inst_sel = '.sw-hero[data-instance="' ~ name|escape ~ '"]' %}
+              <!-- sw-hero-cta-gate -->
+              <div class="sw-hero__cta sw-hero__cta--{{ _cta_alignment }}" style="margin-top: {{ _cta_row_mt }}px;">
+                {% for btn in _cta_button_items %}
+                  {% if btn.text and btn.link and btn.link.url and btn.link.url.href %}
+                    {% set _bi_icon = btn.icon|default({}) %}
+                    {% set _bi_icon_icon = _bi_icon.icon|default({}) %}
+                    {% set _bi_icon_position = _bi_icon.position|default('right') %}
+                    {% set _bi_add_icon = btn.add_icon|default(false) %}
+                    {% set _btn_style = btn.style|default('primary') %}
+                    {% set _bi_hide_text = (_btn_style == 'simple_link') and btn.hide_text|default(false) and _bi_add_icon %}
+                    {% set _icon_purpose = 'decorative' if _bi_hide_text else _bi_icon.purpose|default('decorative') %}
+                    {% set _btn_href = btn.link.url.href %}
+                    {% set _btn_size = btn.size|default('sm') %}
+                    {% if btn.link.url.type is equalto "PHONE_NUMBER" %}{% set _btn_href = "tel:" + _btn_href %}{% endif %}
+                    {% if btn.link.url.type is equalto "EMAIL_ADDRESS" %}{% set _btn_href = "mailto:" + _btn_href %}{% endif %}
+                    <span class="sw-hero__cta-item sw-hero-cta-{{ loop.index0 }}{% if btn.override_margins|default(false) %} sw-hs-ov{% endif %}">
+                    {% if _btn_style == 'simple_link' %}
+                      <div class="simple-link-wrapper">
+                        <a href="{{ _btn_href }}" class="simple-link sw-simple-link--{{ _btn_size }}" style="{{ sw_hero_cta_icon_gap_style(btn) }}"{% if btn.link.open_in_new_tab %} target="_blank"{% endif %}{% if btn.link.no_follow %} rel="nofollow"{% endif %}>
+                          {% if _bi_add_icon and _bi_icon_position == 'left' and _bi_icon_icon.name %}{% icon extra_classes="button_icon sw-btn-icon--left" name="{{ _bi_icon_icon.name }}" style="{{ _bi_icon_icon.type }}" unicode="{{ _bi_icon_icon.unicode }}" icon_set="fontawesome-5.14.0" purpose="{{ _icon_purpose }}" %}{% endif %}
+                          {{ sw_hero_cta_label(btn.text, _bi_hide_text) }}
+                          {% if _bi_add_icon and _bi_icon_position != 'left' and _bi_icon_icon.name %}{% icon extra_classes="button_icon sw-btn-icon--right" name="{{ _bi_icon_icon.name }}" style="{{ _bi_icon_icon.type }}" unicode="{{ _bi_icon_icon.unicode }}" icon_set="fontawesome-5.14.0" purpose="{{ _icon_purpose }}" %}{% endif %}
+                          {% if _bi_add_icon and not _bi_icon_icon.name %}<span class="caret caret--right"></span>{% endif %}
+                        </a>
+                      </div>
+                    {% else %}
+                      <div class="btn-wrapper btn-{{ _btn_style }}-wrapper btn-wrapper-{{ _btn_size }}">
+                        <a href="{{ _btn_href }}" class="btn btn-{{ _btn_size }} btn-{{ _btn_style }} cta-button" style="{{ sw_hero_cta_icon_gap_style(btn) }}"{% if btn.link.open_in_new_tab %} target="_blank"{% endif %}{% if btn.link.no_follow %} rel="nofollow"{% endif %}>
+                          {% if _bi_add_icon and _bi_icon_position == 'left' and _bi_icon_icon.name %}{% icon extra_classes="button_icon sw-btn-icon--left" name="{{ _bi_icon_icon.name }}" style="{{ _bi_icon_icon.type }}" unicode="{{ _bi_icon_icon.unicode }}" icon_set="fontawesome-5.14.0" purpose="{{ _icon_purpose }}" %}{% endif %}
+                          {{ btn.text }}
+                          {% if _bi_add_icon and _bi_icon_position != 'left' and _bi_icon_icon.name %}{% icon extra_classes="button_icon sw-btn-icon--right" name="{{ _bi_icon_icon.name }}" style="{{ _bi_icon_icon.type }}" unicode="{{ _bi_icon_icon.unicode }}" icon_set="fontawesome-5.14.0" purpose="{{ _icon_purpose }}" %}{% endif %}
+                          {% if _bi_add_icon and not _bi_icon_icon.name %}<span class="caret caret--right"></span>{% endif %}
+                        </a>
+                      </div>
+                    {% endif %}
+                    </span>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              {% set _cta_margin_i = namespace(i=0) %}
+              {% set _cta_margin_css = namespace(s='') %}
+              {% for _cb in _cta_button_items %}
+                {% if _cb is mapping and _cb.text and _cb.link and _cb.link.url and _cb.link.url.href %}
+                  {% if _cb.override_margins|default(false) %}
+                    {% set _cta_margin_css.s = _cta_margin_css.s ~ sw_hero_cta_side_margins(_cta_inst_sel, _cta_margin_i.i, _cta_vis.n > 1, _cta_margin_i.i < (_cta_vis.n - 1), _cb) %}
+                  {% endif %}
+                  {% set _cta_margin_i.i = _cta_margin_i.i + 1 %}
+                {% endif %}
+              {% endfor %}
+              {% if _cta_margin_css.s %}
+              <style>{{ _cta_margin_css.s }}</style>
+              {% endif %}
+              {% endif %}
+            </div>
+            {% if _text_box_rim_active %}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+{% endif %}
